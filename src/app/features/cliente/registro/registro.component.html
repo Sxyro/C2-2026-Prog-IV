@@ -1,0 +1,55 @@
+<div class="registro-container">
+  <h2>Registro de Cliente</h2>
+  <p class="subtitle">Registrate para obtener un <strong>20% de descuento</strong> en tu primera compra.</p>
+
+  <form [formGroup]="form" (ngSubmit)="registrar()" class="form-grid">
+    <div class="field">
+      <label>Email *</label>
+      <input type="email" formControlName="email" placeholder="ejemplo@mail.com">
+    </div>
+
+    <div class="field">
+      <label>Nombre *</label>
+      <input type="text" formControlName="nombre">
+    </div>
+
+    <div class="field">
+      <label>Apellido *</label>
+      <input type="text" formControlName="apellido">
+    </div>
+
+    <div class="field">
+      <label>Fecha de Nacimiento *</label>
+      <input type="date" formControlName="fechaNacimiento">
+    </div>
+
+    <div class="field">
+      <label>Tipo de Sangre *</label>
+      <select formControlName="tipoSangre">
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Color de Ojos *</label>
+      <input type="text" formControlName="colorOjos" placeholder="Marrón, Azul, Verde...">
+    </div>
+
+    <div class="field">
+      <label>Días de vacaciones al año *</label>
+      <input type="number" formControlName="diasVacaciones" min="0">
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary">Registrarme y Obtener 20% OFF</button>
+      <button type="button" (click)="omitirAnonimo()" class="btn-secondary">Continuar como Anónimo</button>
+    </div>
+  </form>
+</div>

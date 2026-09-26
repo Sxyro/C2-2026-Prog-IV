@@ -1,0 +1,25 @@
+<div class="checkout-container">
+  <h2>Finalizar Compra</h2>
+
+  <div class="resumen-box">
+    <h3>{{ datosReserva?.pelicula?.nombre }}</h3>
+    <p><strong>Sala:</strong> {{ datosReserva?.funcion?.salaId }}</p>
+    <p><strong>Asientos:</strong> {{ cantidadAsientos }}</p>
+    <p class="total-text"><strong>Total a pagar:</strong> ${{ datosReserva?.total }}</p>
+  </div>
+
+  <form (ngSubmit)="procesarPago()" class="checkout-form">
+    <label>Email para recibir la entrada:</label>
+    <input 
+      type="email" 
+      [(ngModel)]="emailComprador" 
+      name="email" 
+      required 
+      placeholder="ejemplo@mail.com" 
+      class="input-field">
+
+    <button type="submit" [disabled]="procesando()" class="btn-pagar">
+      {{ procesando() ? 'Procesando Pago...' : 'Pagar y Descargar Entrada (PDF)' }}
+    </button>
+  </form>
+</div>

@@ -1,12 +1,23 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { UsuariosService } from './core/services/usuarios.service';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.css',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
+  styleUrl: './app.css'
 })
-export class App {
-  protected readonly title = signal('cine-app');
+export class AppComponent {
+  private usuariosService = inject(UsuariosService);
+  private router = inject(Router);
+
+  public usuarioActual = this.usuariosService.obtenerUsuarioActual();
+
+  cerrarSesion(): void {
+    this.usuariosService.cerrarSesion();
+    this.router.navigate(['/cartelera']);
+  }
 }

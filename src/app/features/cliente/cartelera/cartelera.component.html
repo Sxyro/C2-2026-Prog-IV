@@ -1,0 +1,25 @@
+<div class="container">
+  <h2>Películas en Cartelera</h2>
+
+  <div class="grid-peliculas">
+    @for (pelicula of peliculas(); track pelicula.id) {
+      <div class="card-pelicula">
+        <img [src]="pelicula.portadaUrl" [alt]="pelicula.nombre" class="portada">
+        <div class="info">
+          <h3>{{ pelicula.nombre }}</h3>
+          <p class="sinopsis">{{ pelicula.sinopsis }}</p>
+          <div class="badges">
+            <span class="badge formato">{{ pelicula.formato }}</span>
+            <span class="badge idioma">{{ pelicula.idioma }}</span>
+            <span class="duracion">⏱ {{ pelicula.duracionMinutos }} min</span>
+          </div>
+
+          <!-- BOTÓN RESERVAR -->
+          <button [routerLink]="['/reserva', pelicula.id]" class="btn-reservar">
+            Reservar Entradas
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

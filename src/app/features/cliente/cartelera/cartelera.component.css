@@ -1,0 +1,74 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.grid-peliculas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card-pelicula {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.portada {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+.info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sinopsis {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: auto;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.formato { background-color: #e63946; color: white; }
+.idioma { background-color: #457b9d; color: white; }
+.duracion { font-size: 0.85rem; color: #666; }
+
+.btn-reservar {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #e63946;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-reservar:hover {
+  background-color: #d62828;
+}
