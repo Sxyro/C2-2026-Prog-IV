@@ -1,7 +1,7 @@
 @if (pelicula(); as peli) {
   <div class="reserva-container">
     <div class="pelicula-header">
-      <img [src]="peli.portadaUrl" [alt]="peli.nombre" class="poster-mini">
+      <img [src]="peli.portadaUrl" [alt]="peli.nombre" class="poster-mini" />
       <div>
         <h2>{{ peli.nombre }}</h2>
         <p>{{ peli.sinopsis }}</p>
@@ -14,10 +14,13 @@
       <h3>Seleccioná la Función</h3>
       <div class="funciones-list">
         @for (func of funcionesDisponibles(); track func.id) {
-          <button 
+          <button
             [class.active]="func.id === funcionSeleccionada()?.id"
-            (click)="seleccionarFuncion(func)">
-            {{ formatearHora(func.fechaHoraInicio) }}hs - Sala {{ func.salaId }} (${{ func.precioEntrada }})
+            (click)="seleccionarFuncion(func)"
+          >
+            {{ formatearHora(func.fechaHoraInicio) }}hs - Sala {{ func.salaId }} (${{
+              func.precioEntrada
+            }})
           </button>
         }
       </div>
@@ -30,15 +33,16 @@
         @for (fila of mapaFilas(); track fila.letra) {
           <div class="fila">
             <span class="letra-fila">{{ fila.letra }}</span>
-            
+
             <div class="bloque bloque-4">
               @for (butaca of fila.butacas.slice(0, 4); track butaca.id) {
-                <button 
+                <button
                   class="butaca"
                   [class.ocupada]="butaca.ocupada"
                   [class.seleccionada]="esButacaSeleccionada(butaca)"
                   [disabled]="butaca.ocupada"
-                  (click)="toggleButaca(butaca)">
+                  (click)="toggleButaca(butaca)"
+                >
                   {{ butaca.columna }}
                 </button>
               }
@@ -46,12 +50,13 @@
 
             <div class="bloque bloque-20">
               @for (butaca of fila.butacas.slice(4, 24); track butaca.id) {
-                <button 
+                <button
                   class="butaca"
                   [class.ocupada]="butaca.ocupada"
                   [class.seleccionada]="esButacaSeleccionada(butaca)"
                   [disabled]="butaca.ocupada"
-                  (click)="toggleButaca(butaca)">
+                  (click)="toggleButaca(butaca)"
+                >
                   {{ butaca.columna }}
                 </button>
               }
@@ -59,12 +64,13 @@
 
             <div class="bloque bloque-4">
               @for (butaca of fila.butacas.slice(24, 28); track butaca.id) {
-                <button 
+                <button
                   class="butaca"
                   [class.ocupada]="butaca.ocupada"
                   [class.seleccionada]="esButacaSeleccionada(butaca)"
                   [disabled]="butaca.ocupada"
-                  (click)="toggleButaca(butaca)">
+                  (click)="toggleButaca(butaca)"
+                >
                   {{ butaca.columna }}
                 </button>
               }
@@ -82,14 +88,25 @@
       </div>
 
       <div class="resumen-reserva">
-        <p>Butacas seleccionadas: <strong>{{ butacasSeleccionadas().length }}</strong></p>
-        
+        <p>
+          Butacas seleccionadas: <strong>{{ butacasSeleccionadas().length }}</strong>
+        </p>
+
         @if (tieneDescuento()) {
-          <p class="descuento-tag">¡Beneficio 1° compra: 20% OFF aplicado!</p>
-          <p>Subtotal: <s>${{ subtotal() }}</s></p>
-          <p class="total">Total a pagar: <strong>${{ total() }}</strong></p>
+          <p class="descuento-tag">
+            ¡Beneficio 1° compra: {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF
+            aplicado!
+          </p>
+          <p>
+            Subtotal: <s>${{ subtotal() }}</s>
+          </p>
+          <p class="total">
+            Total a pagar: <strong>${{ total() }}</strong>
+          </p>
         } @else {
-          <p class="total">Total a pagar: <strong>${{ total() }}</strong></p>
+          <p class="total">
+            Total a pagar: <strong>${{ total() }}</strong>
+          </p>
         }
 
         <button class="btn-confirmar" (click)="confirmarReserva()">Confirmar Asientos</button>

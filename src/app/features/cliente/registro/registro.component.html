@@ -1,6 +1,7 @@
 <div class="registro-container">
+  <div class="bulbs"><span></span><span></span><span></span><span></span><span></span></div>
   <h2>Registro de Cliente</h2>
-  <p class="subtitle">Registrate para obtener un <strong>20% de descuento</strong> en tu primera compra.</p>
+  <p class="subtitle">Registrate para obtener un <strong>{{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento</strong> en tu primera compra.</p>
 
   <form [formGroup]="form" (ngSubmit)="registrar()" class="form-grid">
     <div class="field">
@@ -48,7 +49,7 @@
     </div>
 
     <div class="actions">
-      <button type="submit" class="btn-primary">Registrarme y Obtener 20% OFF</button>
+      <button type="submit" class="btn-primary">Registrarme y obtener {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF</button>
       <button type="button" (click)="omitirAnonimo()" class="btn-secondary">Continuar como Anónimo</button>
     </div>
   </form>

@@ -53,50 +53,37 @@ export class UsuariosService {
   }
 
   async iniciarSesion(email: string): Promise<boolean> {
-  const emailBuscado = email.trim().toLowerCase();
-  console.log('1. Email buscado desde el formulario:', `"${emailBuscado}"`);
+    const emailBuscado = email.trim().toLowerCase();
 
-  const { data, error } = await this.supabase
-    .from('usuarios')
-    .select('*');
+    const { data, error } = await this.supabase
+      .rpc('buscar_usuario_por_email', { p_email: emailBuscado });
 
-  if (error) {
-    console.error('2. Error devuelto por Supabase:', error.message, error.details);
-    return false;
+    if (error) {
+      console.error('Error al buscar usuario:', error.message);
+      return false;
+    }
+
+    const usuarioEncontrado = Array.isArray(data) ? data[0] : data;
+
+    if (!usuarioEncontrado) {
+      return false;
+    }
+
+    const usuarioLogueado: Usuario = {
+      id: usuarioEncontrado.id,
+      email: usuarioEncontrado.email,
+      nombre: usuarioEncontrado.nombre,
+      apellido: usuarioEncontrado.apellido,
+      fechaNacimiento: usuarioEncontrado.fecha_nacimiento,
+      tipoSangre: usuarioEncontrado.tipo_sangre,
+      colorOjos: usuarioEncontrado.color_ojos,
+      diasVacaciones: usuarioEncontrado.dias_vacaciones,
+      tieneDescuentoPrimeraCompra: usuarioEncontrado.tiene_descuento_primera_compra
+    };
+
+    this.usuarioActual.set(usuarioLogueado);
+    return true;
   }
-
-  console.log('2. Filas encontradas en la tabla "usuarios":', data);
-
-  if (!data || data.length === 0) {
-    console.warn('3. La consulta devolvió una lista VACÍA. (Revisar políticas RLS en Supabase)');
-    return false;
-  }
-
-  const usuarioEncontrado = data.find(
-    (u) => u.email.trim().toLowerCase() === emailBuscado
-  );
-
-  if (!usuarioEncontrado) {
-    console.warn('3. El email no coincide con ninguno de los usuarios traídos.');
-    return false;
-  }
-
-  const usuarioLogueado: Usuario = {
-    id: usuarioEncontrado.id,
-    email: usuarioEncontrado.email,
-    nombre: usuarioEncontrado.nombre,
-    apellido: usuarioEncontrado.apellido,
-    fechaNacimiento: usuarioEncontrado.fecha_nacimiento,
-    tipoSangre: usuarioEncontrado.tipo_sangre,
-    colorOjos: usuarioEncontrado.color_ojos,
-    diasVacaciones: usuarioEncontrado.dias_vacaciones,
-    tieneDescuentoPrimeraCompra: usuarioEncontrado.tiene_descuento_primera_compra
-  };
-
-  this.usuarioActual.set(usuarioLogueado);
-  console.log('4. ¡Login exitoso! Usuario cargado:', usuarioLogueado);
-  return true;
-}
 
   cerrarSesion(): void {
     this.usuarioActual.set(null);

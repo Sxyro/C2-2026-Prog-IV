@@ -1,4 +1,5 @@
 <div class="login-container">
+  <div class="bulbs"><span></span><span></span><span></span><span></span><span></span></div>
   <h2>Iniciar Sesión</h2>
   
   <form (ngSubmit)="ingresar()">
@@ -13,7 +14,6 @@
       />
     </div>
 
-    <!-- Asegurate de que tenga type="submit" dentro del <form> -->
     <button type="submit" [disabled]="cargando()">
       {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
     </button>

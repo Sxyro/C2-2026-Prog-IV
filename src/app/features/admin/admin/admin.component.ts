@@ -1,29 +1,48 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { PeliculasService } from '../../core/services/peliculas.service';
-import { FuncionesService } from '../../core/services/funciones.service';
-import { SalasService } from '../../core/services/salas.service';
-
-import { Pelicula } from '../../core/models/pelicula.model';
-import { Funcion } from '../../core/models/funcion.model';
+import { Router } from '@angular/router';
+import { PeliculasService } from '../../../core/services/peliculas.service';
+import { FuncionesService } from '../../../core/services/funciones.service';
+import { SalasService } from '../../../core/services/salas.service';
+import { StaffService } from '../../../core/services/staff.service';
+import { ConfiguracionService } from '../../../core/services/configuracion.service';
+import { Pelicula } from '../../../core/models/pelicula.model';
+import { Funcion } from '../../../core/models/funcion.model';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin.component.html',
-  styleUrl: './admin.component.css'
+  styleUrl: './admin.component.css',
 })
 export class AdminComponent implements OnInit {
   private peliculasService = inject(PeliculasService);
   private funcionesService = inject(FuncionesService);
   private salasService = inject(SalasService);
+  private staffService = inject(StaffService);
+  private configuracionService = inject(ConfiguracionService);
+  private router = inject(Router);
 
   public peliculas = this.peliculasService.obtenerPeliculas();
   public funciones = this.funcionesService.obtenerFunciones();
   public salas = this.salasService.obtenerSalas();
+  public staffActual = this.staffService.obtenerStaffActual();
+  public configuracion = this.configuracionService.obtenerConfiguracion();
+
+  public porcentajeDescuentoForm = 20;
+  public guardandoDescuento = signal(false);
+  public mensajeDescuentoGuardado = signal<string | null>(null);
+
+  constructor() {
+    effect(
+      () => {
+        this.porcentajeDescuentoForm = this.configuracion().porcentajeDescuentoPrimeraCompra;
+      },
+      { allowSignalWrites: true },
+    );
+  }
 
   public nuevaPelicula: Omit<Pelicula, 'id'> = {
     nombre: '',
@@ -31,18 +50,37 @@ export class AdminComponent implements OnInit {
     portadaUrl: '',
     duracionMinutos: 120,
     formato: '2D',
-    idioma: 'Subtitulada'
+    idioma: 'Subtitulada',
   };
 
   public nuevaFuncion = {
     peliculaId: '',
     salaId: 'sala-1',
     fechaHoraInicio: '',
-    precioEntrada: 4500
+    precioEntrada: 4500,
   };
 
   ngOnInit(): void {
     this.peliculasService.cargarPeliculas(false);
+  }
+
+  async cerrarSesionStaff(): Promise<void> {
+    await this.staffService.cerrarSesion();
+    this.router.navigate(['/admin/login']);
+  }
+
+  async guardarPorcentajeDescuento(): Promise<void> {
+    this.guardandoDescuento.set(true);
+    this.mensajeDescuentoGuardado.set(null);
+
+    const exito = await this.configuracionService.actualizarPorcentajeDescuento(
+      this.porcentajeDescuentoForm,
+    );
+
+    this.guardandoDescuento.set(false);
+    this.mensajeDescuentoGuardado.set(
+      exito ? 'Porcentaje actualizado correctamente.' : 'No se pudo guardar el cambio.',
+    );
   }
 
   async toggleVisibilidad(pelicula: Pelicula): Promise<void> {
@@ -62,16 +100,14 @@ export class AdminComponent implements OnInit {
     }
 
     const idsNumericos = this.peliculas()
-      .map(p => parseInt(p.id, 10))
-      .filter(id => !isNaN(id));
+      .map((p) => parseInt(p.id, 10))
+      .filter((id) => !isNaN(id));
 
-    const siguienteId = idsNumericos.length > 0 
-      ? (Math.max(...idsNumericos) + 1).toString() 
-      : '1';
+    const siguienteId = idsNumericos.length > 0 ? (Math.max(...idsNumericos) + 1).toString() : '1';
 
     const peliculaACrear: Pelicula = {
       id: siguienteId,
-      ...this.nuevaPelicula
+      ...this.nuevaPelicula,
     };
 
     const OK = await this.peliculasService.agregarPelicula(peliculaACrear);
@@ -89,7 +125,7 @@ export class AdminComponent implements OnInit {
       portadaUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500',
       duracionMinutos: 120,
       formato: '2D',
-      idioma: 'Subtitulada'
+      idioma: 'Subtitulada',
     };
 
     await this.peliculasService.cargarPeliculas(false);
@@ -106,7 +142,7 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    const pelicula = this.peliculas().find(p => p.id === this.nuevaFuncion.peliculaId);
+    const pelicula = this.peliculas().find((p) => p.id === this.nuevaFuncion.peliculaId);
     if (!pelicula) {
       alert('Película no encontrada.');
       return;
@@ -121,7 +157,7 @@ export class AdminComponent implements OnInit {
       salaId: this.nuevaFuncion.salaId,
       fechaHoraInicio: fechaInicio.toISOString(),
       fechaHoraFin: fechaFin.toISOString(),
-      precioEntrada: this.nuevaFuncion.precioEntrada
+      precioEntrada: this.nuevaFuncion.precioEntrada,
     };
 
     const resultado = await this.funcionesService.agregarFuncion(funcionACrear);
@@ -137,15 +173,15 @@ export class AdminComponent implements OnInit {
       peliculaId: '',
       salaId: 'sala-1',
       fechaHoraInicio: '',
-      precioEntrada: 4500
+      precioEntrada: 4500,
     };
   }
 
   obtenerPelicula(peliculaId: string): Pelicula | undefined {
-    return this.peliculas().find(pelicula => pelicula.id === peliculaId);
+    return this.peliculas().find((pelicula) => pelicula.id === peliculaId);
   }
 
   obtenerSala(salaId: string) {
-    return this.salas().find(sala => sala.id === salaId);
+    return this.salas().find((sala) => sala.id === salaId);
   }
 }

@@ -1,62 +1,110 @@
 .registro-container {
   max-width: 600px;
-  margin: 30px auto;
-  padding: 25px;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  margin: var(--space-5) auto;
+  padding: var(--space-5);
+  border-radius: var(--radio);
+  background: radial-gradient(120% 100% at 50% -10%, var(--bg-elevada-2) 0%, var(--bg-elevada) 55%);
+  border-top: 4px solid var(--marquesina);
+  box-shadow: 0 0 0 1px var(--borde), 0 20px 40px -20px rgba(242, 183, 5, 0.15);
+}
+
+.bulbs {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+.bulbs span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--marquesina);
+  opacity: 0.5;
+}
+
+.bulbs span:nth-child(3) {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--marquesina);
+}
+
+.bulbs span:nth-child(2),
+.bulbs span:nth-child(4) {
+  opacity: 0.85;
+}
+
+.registro-container h2 {
+  text-align: center;
 }
 
 .subtitle {
-  margin-bottom: 20px;
-  color: #444;
+  text-align: center;
+  margin-bottom: var(--space-4);
+  color: #c9c6d6;
+}
+
+.subtitle strong {
+  color: var(--marquesina);
 }
 
 .form-grid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: var(--space-3);
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--space-1);
 }
 
 .field label {
-  font-weight: bold;
+  font-weight: 600;
   font-size: 0.9rem;
+  color: var(--papel);
 }
 
 .field input, .field select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 11px 12px;
+  background-color: var(--bg-elevada-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  color: var(--papel);
+}
+
+.field input:focus-visible, .field select:focus-visible {
+  border-color: var(--marquesina);
 }
 
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 15px;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .btn-primary {
-  background-color: #2b9348;
-  color: white;
-  padding: 12px;
+  background: linear-gradient(180deg, #ffcb2e, var(--marquesina));
+  color: var(--tinta);
+  padding: 13px;
   border: none;
-  border-radius: 4px;
-  font-weight: bold;
+  border-radius: var(--radio-chico);
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 6px 18px -6px rgba(242, 183, 5, 0.6);
 }
 
 .btn-secondary {
   background-color: transparent;
-  color: #555;
+  color: #c9c6d6;
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
   cursor: pointer;
+}
+
+.btn-secondary:hover {
+  color: var(--papel);
+  border-color: var(--muted);
 }

@@ -1,18 +1,10 @@
-import {
-  Component,
-  OnInit,
-  inject,
-  signal
-} from '@angular/core';
-
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { PdfService } from '../../../core/services/pdf.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { ReservasService } from '../../../core/services/reservas.service';
-
 import { Pelicula } from '../../../core/models/pelicula.model';
 import { Funcion } from '../../../core/models/funcion.model';
 import { Butaca } from '../../../core/models/butaca.model';
@@ -29,10 +21,9 @@ interface DatosReserva {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './checkout.component.html',
-  styleUrl: './checkout.component.css'
+  styleUrl: './checkout.component.css',
 })
 export class CheckoutComponent implements OnInit {
-
   private pdfService = inject(PdfService);
   private usuariosService = inject(UsuariosService);
   private reservasService = inject(ReservasService);
@@ -47,9 +38,7 @@ export class CheckoutComponent implements OnInit {
       return '';
     }
 
-    return this.datosReserva.butacas
-      .map(butaca => `${butaca.fila}-${butaca.columna}`)
-      .join(', ');
+    return this.datosReserva.butacas.map((butaca) => `${butaca.fila}-${butaca.columna}`).join(', ');
   }
 
   ngOnInit(): void {
@@ -90,7 +79,7 @@ export class CheckoutComponent implements OnInit {
         usuarioId,
         this.emailComprador,
         this.datosReserva.total,
-        this.datosReserva.butacas
+        this.datosReserva.butacas,
       );
 
       if (!resultadoReserva.exito) {
@@ -99,21 +88,23 @@ export class CheckoutComponent implements OnInit {
       }
 
       await this.pdfService.generarEntradaPdf({
+        reservaId: resultadoReserva.reservaId!,
         pelicula: this.datosReserva.pelicula,
         funcion: this.datosReserva.funcion,
         butacas: this.datosReserva.butacas,
         total: this.datosReserva.total,
-        emailComprador: this.emailComprador
+        emailComprador: this.emailComprador,
       });
-      
+
       if (usuario && usuario.tieneDescuentoPrimeraCompra) {
         await this.usuariosService.usarCuponDescuento();
       }
 
-      alert('¡Pago confirmado! Se ha guardado tu reserva y descargado tu comprobante con el código QR.');
+      alert(
+        '¡Pago confirmado! Se ha guardado tu reserva y descargado tu comprobante con el código QR.',
+      );
 
       this.router.navigate(['/cartelera']);
-
     } catch (error) {
       console.error('Error al generar la entrada:', error);
       alert('Ocurrió un error al procesar el pago o generar la entrada.');

@@ -11,6 +11,7 @@ import { Butaca } from '../models/butaca.model';
 export class PdfService {
 
   async generarEntradaPdf(datos: {
+    reservaId: string;
     pelicula: Pelicula;
     funcion: Funcion;
     butacas: Butaca[];
@@ -18,9 +19,8 @@ export class PdfService {
     emailComprador: string;
   }): Promise<void> {
     const doc = new jsPDF();
-    const { pelicula, funcion, butacas, total, emailComprador } = datos;
+    const { reservaId, pelicula, funcion, butacas, total, emailComprador } = datos;
 
-    // Encabezado
     doc.setFillColor(230, 57, 70);
     doc.rect(0, 0, 210, 30, 'F');
     doc.setTextColor(255, 255, 255);
@@ -48,7 +48,13 @@ export class PdfService {
     doc.text(`Comprador: ${emailComprador}`, 20, 90);
     doc.text(`Monto Total: $${total}`, 20, 98);
 
+    const codigoCorto = reservaId.slice(0, 8).toUpperCase();
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Código de entrada: ${codigoCorto}`, 20, 106);
+    doc.setFont('helvetica', 'normal');
+
     const payloadQR = JSON.stringify({
+      reservaId,
       pelicula: pelicula.nombre,
       sala: funcion.salaId,
       fecha: funcion.fechaHoraInicio,
@@ -58,10 +64,10 @@ export class PdfService {
 
     try {
       const qrDataUrl = await QRCode.toDataURL(payloadQR, { width: 150, margin: 1 });
-      doc.addImage(qrDataUrl, 'PNG', 25, 110, 60, 60);
+      doc.addImage(qrDataUrl, 'PNG', 25, 118, 60, 60);
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
-      doc.text('Escaneá este código en el ingreso a la sala', 25, 175);
+      doc.text('Escaneá este código en el ingreso a la sala', 25, 183);
     } catch (err) {
       console.error('Error al generar el QR:', err);
     }

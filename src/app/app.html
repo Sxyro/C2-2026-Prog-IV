@@ -1,11 +1,11 @@
 <header class="main-header">
   <nav class="nav-container">
     <div class="logo">
-      🎬 <a routerLink="/cartelera">Cine App</a>
+      <a routerLink="/cartelera">🎬 Cine App</a>
     </div>
     <ul class="nav-links">
       <li><a routerLink="/cartelera" routerLinkActive="active">Cartelera</a></li>
-    
+
       @if (!usuarioActual()) {
         <li><a routerLink="/login" routerLinkActive="active">Iniciar Sesión</a></li>
         <li><a routerLink="/registro" routerLinkActive="active">Registro</a></li>

@@ -3,7 +3,7 @@ import { CarteleraComponent } from './features/cliente/cartelera/cartelera.compo
 import { RegistroComponent } from './features/cliente/registro/registro.component';
 import { ReservaComponent } from './features/cliente/reserva/reserva.component';
 import { LoginComponent } from './features/cliente/login/login.component';
-import { adminGuard } from './core/guards/admin.guard';
+import { soloAdminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'cartelera', pathMatch: 'full' },
@@ -15,10 +15,14 @@ export const routes: Routes = [
     path: 'checkout', 
     loadComponent: () => import('./features/cliente/checkout/checkout.component').then(m => m.CheckoutComponent) 
   },
+  {
+    path: 'admin/login',
+    loadComponent: () => import('./features/admin/login/admin-login.component').then(m => m.AdminLoginComponent)
+  },
   { 
     path: 'admin', 
-    loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),
-    canActivate: [adminGuard]
+    loadComponent: () => import('./features/admin/admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [soloAdminGuard]
   },
   { path: '**', redirectTo: 'cartelera' }
 ];

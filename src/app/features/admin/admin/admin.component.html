@@ -1,8 +1,15 @@
 <div class="admin-container">
-  <h1>Panel de Administración del Cine</h1>
+  <div class="admin-header">
+    <h1>Panel de Administración del Cine</h1>
+    <div class="admin-header-staff">
+      @if (staffActual(); as staff) {
+        <span>{{ staff.nombre }} · {{ staff.rol }}</span>
+      }
+      <button type="button" class="btn-logout" (click)="cerrarSesionStaff()">Cerrar sesión</button>
+    </div>
+  </div>
 
   <div class="admin-grid">
-
     <section class="card">
       <h2>1. Cargar Nueva Película</h2>
 
@@ -15,7 +22,7 @@
           required
           placeholder="Ej: Batman"
           class="input-field"
-        >
+        />
 
         <label>Duración (en minutos):</label>
         <input
@@ -26,16 +33,12 @@
           min="1"
           placeholder="Ej: 120"
           class="input-field"
-        >
+        />
 
         <div class="form-row">
           <div>
             <label>Formato:</label>
-            <select
-              [(ngModel)]="nuevaPelicula.formato"
-              name="formato"
-              class="input-field"
-            >
+            <select [(ngModel)]="nuevaPelicula.formato" name="formato" class="input-field">
               <option value="2D">2D</option>
               <option value="3D">3D</option>
               <option value="4D">4D</option>
@@ -45,11 +48,7 @@
 
           <div>
             <label>Idioma:</label>
-            <select
-              [(ngModel)]="nuevaPelicula.idioma"
-              name="idioma"
-              class="input-field"
-            >
+            <select [(ngModel)]="nuevaPelicula.idioma" name="idioma" class="input-field">
               <option value="Castellano">Castellano</option>
               <option value="Subtitulada">Subtitulada</option>
             </select>
@@ -63,7 +62,7 @@
           name="portadaUrl"
           placeholder="https://..."
           class="input-field"
-        >
+        />
 
         <label>Sinopsis:</label>
         <textarea
@@ -73,9 +72,7 @@
           class="input-field"
         ></textarea>
 
-        <button type="submit" class="btn-primary">
-          Guardar Película
-        </button>
+        <button type="submit" class="btn-primary">Guardar Película</button>
       </form>
     </section>
 
@@ -83,8 +80,8 @@
       <h2>2. Programar Función</h2>
 
       <p class="help-text">
-        El sistema calcula automáticamente la duración de la película
-        y verifica que haya al menos 30 minutos entre funciones.
+        El sistema calcula automáticamente la duración de la película y verifica que haya al menos
+        30 minutos entre funciones.
       </p>
 
       <form (ngSubmit)="guardarFuncion()" class="admin-form">
@@ -96,25 +93,14 @@
           class="input-field"
         >
           <option value="">-- Seleccionar --</option>
-          <option
-            *ngFor="let pelicula of peliculas()"
-            [value]="pelicula.id"
-          >
+          <option *ngFor="let pelicula of peliculas()" [value]="pelicula.id">
             {{ pelicula.nombre }} ({{ pelicula.duracionMinutos }} min)
           </option>
         </select>
 
         <label>Seleccionar Sala:</label>
-        <select
-          [(ngModel)]="nuevaFuncion.salaId"
-          name="salaId"
-          required
-          class="input-field"
-        >
-          <option
-            *ngFor="let sala of salas()"
-            [value]="sala.id"
-          >
+        <select [(ngModel)]="nuevaFuncion.salaId" name="salaId" required class="input-field">
+          <option *ngFor="let sala of salas()" [value]="sala.id">
             {{ sala.nombre }}
           </option>
         </select>
@@ -126,7 +112,7 @@
           name="fechaHoraInicio"
           required
           class="input-field"
-        >
+        />
 
         <label>Precio Entrada ($):</label>
         <input
@@ -136,11 +122,9 @@
           required
           min="1"
           class="input-field"
-        >
+        />
 
-        <button type="submit" class="btn-success">
-          Programar Función
-        </button>
+        <button type="submit" class="btn-success">Programar Función</button>
       </form>
     </section>
   </div>
@@ -160,7 +144,9 @@
       </thead>
       <tbody>
         <tr *ngFor="let pelicula of peliculas()">
-          <td><strong>{{ pelicula.nombre }}</strong></td>
+          <td>
+            <strong>{{ pelicula.nombre }}</strong>
+          </td>
           <td>{{ pelicula.formato }}</td>
           <td>{{ pelicula.idioma }}</td>
           <td>
@@ -204,8 +190,8 @@
             {{ obtenerPelicula(funcion.peliculaId)?.nombre || 'Película' }}
             ({{ obtenerPelicula(funcion.peliculaId)?.duracionMinutos }} min)
           </td>
-          <td>{{ funcion.fechaHoraInicio | date:'dd/MM/yyyy HH:mm' }} hs</td>
-          <td>{{ funcion.fechaHoraFin | date:'dd/MM/yyyy HH:mm' }} hs</td>
+          <td>{{ funcion.fechaHoraInicio | date: 'dd/MM/yyyy HH:mm' }} hs</td>
+          <td>{{ funcion.fechaHoraFin | date: 'dd/MM/yyyy HH:mm' }} hs</td>
           <td>${{ funcion.precioEntrada }}</td>
         </tr>
       </tbody>
@@ -214,5 +200,32 @@
     <ng-template #sinFunciones>
       <p>No hay funciones programadas todavía.</p>
     </ng-template>
+  </section>
+
+  <section class="card">
+    <h2>Cupón de Primera Compra</h2>
+    <p class="help-text">
+      Porcentaje de descuento que reciben los usuarios registrados en su primera compra.
+    </p>
+
+    <form (ngSubmit)="guardarPorcentajeDescuento()" class="admin-form form-inline">
+      <label>Porcentaje de descuento (%):</label>
+      <input
+        type="number"
+        [(ngModel)]="porcentajeDescuentoForm"
+        name="porcentajeDescuento"
+        min="0"
+        max="100"
+        required
+        class="input-field"
+      />
+      <button type="submit" class="btn-guardar" [disabled]="guardandoDescuento()">
+        {{ guardandoDescuento() ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </form>
+
+    @if (mensajeDescuentoGuardado()) {
+      <p class="mensaje-ok">{{ mensajeDescuentoGuardado() }}</p>
+    }
   </section>
 </div>
