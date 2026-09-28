@@ -3,10 +3,11 @@ import { SupabaseService } from './supabase.service';
 import { Pelicula } from '../models/pelicula.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PeliculasService {
   private supabase = inject(SupabaseService).client;
+
   private peliculas = signal<Pelicula[]>([]);
 
   constructor() {
@@ -18,7 +19,15 @@ export class PeliculasService {
   }
 
   async cargarPeliculas(soloPublicadas: boolean = true): Promise<Pelicula[]> {
-    let query = this.supabase.from('peliculas').select('*');
+    let query = this.supabase.from('peliculas').select(`
+        *,
+        pelicula_generos (
+          genero:generos (
+            id,
+            nombre
+          )
+        )
+      `);
 
     if (soloPublicadas) {
       query = query.eq('publicada', true);
@@ -27,11 +36,11 @@ export class PeliculasService {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error al cargar películas de Supabase:', error.message);
+      console.error('Error al cargar películas de Supabase:', error);
       return [];
     }
 
-    const mapeadas: Pelicula[] = (data || []).map(row => ({
+    const mapeadas: Pelicula[] = (data || []).map((row) => ({
       id: row.id,
       nombre: row.nombre,
       sinopsis: row.sinopsis,
@@ -39,10 +48,15 @@ export class PeliculasService {
       duracionMinutos: row.duracion_minutos,
       formato: row.formato,
       idioma: row.idioma,
-      publicada: row.publicada
+      publicada: row.publicada,
+
+      generos: (row.pelicula_generos || [])
+        .map((relacion: any) => relacion.genero)
+        .filter((genero: any) => genero !== null),
     }));
 
     this.peliculas.set(mapeadas);
+
     return mapeadas;
   }
 
@@ -55,12 +69,10 @@ export class PeliculasService {
       duracion_minutos: pelicula.duracionMinutos,
       formato: pelicula.formato,
       idioma: pelicula.idioma,
-      publicada: true
+      publicada: true,
     };
 
-    const { error } = await this.supabase
-      .from('peliculas')
-      .insert([row]);
+    const { error } = await this.supabase.from('peliculas').insert([row]);
 
     if (error) {
       console.error('Error al guardar película en Supabase:', error.message);
@@ -68,6 +80,7 @@ export class PeliculasService {
     }
 
     await this.cargarPeliculas();
+
     return true;
   }
 
@@ -83,6 +96,7 @@ export class PeliculasService {
     }
 
     await this.cargarPeliculas();
+
     return true;
   }
 }

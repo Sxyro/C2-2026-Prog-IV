@@ -1,33 +1,102 @@
 <div class="container">
+
   <h2>En cartelera esta semana</h2>
 
+  <div class="filtros-cartelera">
+
+    <input
+      type="text"
+      placeholder="Buscar película..."
+      [(ngModel)]="textoBusqueda"
+    >
+
+    <select [(ngModel)]="generoSeleccionado">
+      <option value="">Todos los géneros</option>
+
+      @for (genero of generosDisponibles; track genero.id) {
+        <option [value]="genero.id">
+          {{ genero.nombre }}
+        </option>
+      }
+    </select>
+
+  </div>
+
   <div class="grid-peliculas">
-    @for (pelicula of peliculas(); track pelicula.id) {
+
+    @for (pelicula of peliculasFiltradas; track pelicula.id) {
+
       <article class="card-pelicula">
-        <img [src]="pelicula.portadaUrl" [alt]="pelicula.nombre" class="portada">
+
+        <img
+          [src]="pelicula.portadaUrl"
+          [alt]="pelicula.nombre"
+          class="portada"
+        >
 
         <div class="borde-perforado"></div>
 
         <div class="info">
+
           <h3>{{ pelicula.nombre }}</h3>
 
           <div class="badges">
-            <span class="badge">{{ pelicula.formato }}</span>
-            <span class="badge">{{ pelicula.idioma }}</span>
-            <span class="duracion">{{ pelicula.duracionMinutos }} min</span>
+
+            <span class="badge">
+              {{ pelicula.formato }}
+            </span>
+
+            <span class="badge">
+              {{ pelicula.idioma }}
+            </span>
+
+            <span class="duracion">
+              {{ pelicula.duracionMinutos }} min
+            </span>
+
           </div>
 
-          <p class="sinopsis">{{ pelicula.sinopsis }}</p>
+          @if (pelicula.generos && pelicula.generos.length > 0) {
 
-          <button [routerLink]="['/reserva', pelicula.id]" class="btn btn-marquesina btn-reservar">
+            <div class="generos">
+
+              @for (genero of pelicula.generos; track genero.id) {
+
+                <span class="badge">
+                  {{ genero.nombre }}
+                </span>
+
+              }
+
+            </div>
+
+          }
+
+          <p class="sinopsis">
+            {{ pelicula.sinopsis }}
+          </p>
+
+          <button
+            [routerLink]="['/reserva', pelicula.id]"
+            class="btn btn-marquesina btn-reservar"
+          >
             Reservar entradas
           </button>
+
         </div>
+
       </article>
+
     }
+
   </div>
 
-  @if (peliculas().length === 0) {
-    <p class="vacio">Todavía no hay funciones cargadas. Volvé más tarde.</p>
+  @if (peliculasFiltradas.length === 0) {
+
+    <p class="vacio">
+      No se encontraron películas.
+    </p>
+
   }
+
 </div>
