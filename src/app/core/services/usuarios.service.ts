@@ -1,5 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
+
 import { SupabaseService } from './supabase.service';
+
 import { Usuario, RolUsuario } from '../models/usuario.model';
 
 export interface UsuarioAdministrable {
@@ -17,6 +19,7 @@ export class UsuariosService {
   private supabase = inject(SupabaseService).client;
 
   private usuarioActual = signal<Usuario | null>(null);
+
   private sesionListaPromise: Promise<void>;
 
   constructor() {
@@ -42,6 +45,7 @@ export class UsuariosService {
 
   private async restaurarSesion(): Promise<void> {
     const { data } = await this.supabase.auth.getSession();
+
     const userId = data.session?.user.id;
 
     if (userId) {
@@ -50,12 +54,7 @@ export class UsuariosService {
   }
 
   private async cargarUsuarioPorAuthId(authUserId: string): Promise<void> {
-    console.log('AUTH USER ID:', authUserId);
-
     const { data, error } = await this.supabase.rpc('obtener_usuario_actual');
-
-    console.log('USUARIO RPC:', data);
-    console.log('ERROR RPC:', error);
 
     if (error || !data || data.length === 0) {
       this.usuarioActual.set(null);
@@ -63,8 +62,6 @@ export class UsuariosService {
     }
 
     const usuario = this.mapearUsuario(data[0]);
-
-    console.log('USUARIO MAPEADO:', usuario);
 
     this.usuarioActual.set(usuario);
   }
@@ -86,16 +83,20 @@ export class UsuariosService {
   }
 
   async registrarUsuario(
-    datos: Omit<Usuario, 'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'rol'> & {
+    datos: Omit<
+      Usuario,
+      'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'rol'
+    > & {
       password: string;
     },
   ): Promise<{ exito: boolean; usuario?: Usuario; mensaje?: string }> {
     const emailNormalizado = datos.email.trim().toLowerCase();
 
-    const { data: authData, error: authError } = await this.supabase.auth.signUp({
-      email: emailNormalizado,
-      password: datos.password,
-    });
+    const { data: authData, error: authError } =
+      await this.supabase.auth.signUp({
+        email: emailNormalizado,
+        password: datos.password,
+      });
 
     if (authError || !authData.user) {
       return {
@@ -115,25 +116,36 @@ export class UsuariosService {
       color_ojos: datos.colorOjos,
       dias_vacaciones: datos.diasVacaciones,
       tiene_descuento_primera_compra: true,
-      rol: 'usuario',
+      rol: 'usuario' as const,
     };
 
-    const { data: usuarioCreado, error } = await this.supabase
+    const { error } = await this.supabase
       .from('usuarios')
-      .insert([nuevoUsuario])
-      .select()
-      .single();
+      .insert([nuevoUsuario]);
 
-    if (error || !usuarioCreado) {
+    if (error) {
       await this.supabase.auth.signOut();
 
       return {
         exito: false,
-        mensaje: error?.message || 'No se pudo crear el perfil.',
+        mensaje: error.message || 'No se pudo crear el perfil.',
       };
     }
 
-    const usuario = this.mapearUsuario(usuarioCreado);
+    const usuario: Usuario = {
+      id: nuevoUsuario.id,
+      authUserId: nuevoUsuario.auth_user_id,
+      email: nuevoUsuario.email,
+      nombre: nuevoUsuario.nombre,
+      apellido: nuevoUsuario.apellido,
+      fechaNacimiento: nuevoUsuario.fecha_nacimiento,
+      tipoSangre: nuevoUsuario.tipo_sangre,
+      colorOjos: nuevoUsuario.color_ojos,
+      diasVacaciones: nuevoUsuario.dias_vacaciones,
+      tieneDescuentoPrimeraCompra:
+        nuevoUsuario.tiene_descuento_primera_compra,
+      rol: nuevoUsuario.rol,
+    };
 
     this.usuarioActual.set(usuario);
 
@@ -177,6 +189,7 @@ export class UsuariosService {
 
   async cerrarSesion(): Promise<void> {
     await this.supabase.auth.signOut();
+
     this.usuarioActual.set(null);
   }
 
@@ -197,7 +210,6 @@ export class UsuariosService {
 
     if (error) {
       console.error('Error al aplicar cupón en Supabase:', error.message);
-
       return;
     }
 
@@ -206,6 +218,7 @@ export class UsuariosService {
       tieneDescuentoPrimeraCompra: false,
     });
   }
+
   async obtenerUsuariosAdmin(): Promise<UsuarioAdministrable[]> {
     const { data, error } = await this.supabase.rpc('obtener_usuarios_admin');
 

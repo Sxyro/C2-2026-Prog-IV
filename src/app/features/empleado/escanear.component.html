@@ -1,0 +1,94 @@
+<div class="escanear-container">
+  <div class="escanear-card">
+    <div class="encabezado">
+      <span class="icono">▣</span>
+      <div>
+        <h1>Escanear códigos</h1>
+        <p>Validá las entradas y códigos de compra.</p>
+      </div>
+    </div>
+
+    <div class="camara-section">
+      <div class="video-container">
+        <video #video autoplay playsinline></video>
+
+        @if (!escaneando()) {
+          <div class="video-placeholder">
+            <span>▣</span>
+            <p>La cámara está apagada</p>
+          </div>
+        }
+      </div>
+
+      <div class="botones-camara">
+        @if (!escaneando()) {
+          <button
+            type="button"
+            class="btn-principal"
+            (click)="iniciarCamara()"
+            [disabled]="procesando()"
+          >
+            Iniciar cámara
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="btn-secundario"
+            (click)="detenerCamara()"
+          >
+            Detener cámara
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="separador">
+      <span>o ingresá el código manualmente</span>
+    </div>
+
+    <div class="manual-section">
+      <label for="codigo">Código de reserva</label>
+
+      <div class="manual-form">
+        <input
+          id="codigo"
+          type="text"
+          [(ngModel)]="codigoManual"
+          placeholder="Pegá el código de reserva"
+          [disabled]="procesando()"
+          (keyup.enter)="validarCodigoManual()"
+        />
+
+        <button
+          type="button"
+          class="btn-principal"
+          (click)="validarCodigoManual()"
+          [disabled]="procesando()"
+        >
+          {{ procesando() ? 'Validando...' : 'Validar código' }}
+        </button>
+      </div>
+    </div>
+
+    @if (mensaje()) {
+      <div
+        class="mensaje"
+        [class.exito]="tipoMensaje() === 'exito'"
+        [class.error]="tipoMensaje() === 'error'"
+        [class.info]="tipoMensaje() === 'info'"
+      >
+        <strong>
+          @if (tipoMensaje() === 'exito') {
+            ✓
+          } @else if (tipoMensaje() === 'error') {
+            ✕
+          } @else {
+            ...
+          }
+        </strong>
+
+        <span>{{ mensaje() }}</span>
+      </div>
+    }
+  </div>
+</div>

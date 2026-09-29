@@ -3,11 +3,11 @@ import { SupabaseService } from './supabase.service';
 import {
   CategoriaCandy,
   ProductoCandy,
-  ProductoCandySeleccionado
+  ProductoCandySeleccionado,
 } from '../models/producto-candy.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CandyService {
   private supabase = inject(SupabaseService).client;
@@ -23,9 +23,9 @@ export class CandyService {
       return [];
     }
 
-    return (data || []).map(row => ({
+    return (data || []).map((row) => ({
       id: row.id,
-      nombre: row.nombre
+      nombre: row.nombre,
     }));
   }
 
@@ -41,43 +41,35 @@ export class CandyService {
       return [];
     }
 
-    return (data || []).map(row => ({
+    return (data || []).map((row) => ({
       id: row.id,
       nombre: row.nombre,
       descripcion: row.descripcion,
       precio: Number(row.precio),
       categoriaId: row.categoria_id,
       imagenUrl: row.imagen_url,
-      activo: row.activo
+      activo: row.activo,
     }));
   }
 
   async agregarProductosAReserva(
     reservaId: string,
-    productos: ProductoCandySeleccionado[]
+    productos: ProductoCandySeleccionado[],
   ): Promise<boolean> {
-    if (productos.length === 0) {
-      return true;
-    }
-
-    const rows = productos.map(item => ({
-      reserva_id: reservaId,
-      producto_id: item.producto.id,
+    const productosData = productos.map((item) => ({
+      productoId: item.producto.id,
       cantidad: item.cantidad,
-      precio_unitario: item.producto.precio,
-      subtotal: item.subtotal
+      precioUnitario: item.producto.precio,
+      subtotal: item.subtotal,
     }));
 
-    const { error } = await this.supabase
-      .from('reserva_productos_candy')
-      .insert(rows);
+    const { error } = await this.supabase.rpc('agregar_productos_candy_reserva', {
+      p_reserva_id: reservaId,
+      p_productos: productosData,
+    });
 
     if (error) {
-      console.error(
-        'Error al guardar productos Candy:',
-        error.message
-      );
-
+      console.error('Error al guardar productos Candy:', error.message);
       return false;
     }
 

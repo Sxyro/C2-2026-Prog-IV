@@ -47,8 +47,8 @@ export class CarteleraComponent implements OnInit {
 
   async cargarDatos(): Promise<void> {
     await this.peliculasService.cargarPeliculas(true);
-    await this.cargarResenas();
     await this.cargarTop3();
+    await this.cargarResenas();
   }
 
   async cargarResenas(): Promise<void> {
@@ -58,22 +58,16 @@ export class CarteleraComponent implements OnInit {
     const nuevosPromedios: Record<string, number> = {};
 
     for (const pelicula of peliculas) {
-      const resenas =
-        await this.resenasService.obtenerResenas(pelicula.id);
+      const resenas = await this.resenasService.obtenerResenas(pelicula.id);
 
       nuevasResenas[pelicula.id] = resenas;
 
       if (resenas.length === 0) {
         nuevosPromedios[pelicula.id] = 0;
       } else {
-        const suma = resenas.reduce(
-          (total, resena) => total + resena.estrellas,
-          0
-        );
+        const suma = resenas.reduce((total, resena) => total + resena.estrellas, 0);
 
-        nuevosPromedios[pelicula.id] = Number(
-          (suma / resenas.length).toFixed(1)
-        );
+        nuevosPromedios[pelicula.id] = Number((suma / resenas.length).toFixed(1));
       }
     }
 
@@ -82,21 +76,17 @@ export class CarteleraComponent implements OnInit {
   }
 
   async cargarTop3(): Promise<void> {
-    this.top3 =
-      await this.estadisticasService.obtenerTop3PeliculasVendidas();
+    this.top3 = await this.estadisticasService.obtenerTop3PeliculasVendidas();
 
-    this.peliculaTop3Ids = new Set(
-      this.top3.map(pelicula => pelicula.peliculaId)
-    );
+    this.peliculaTop3Ids = new Set(this.top3.map((pelicula) => pelicula.peliculaId));
   }
 
   get generosDisponibles() {
-    const generos = this.peliculas()
-      .flatMap(pelicula => pelicula.generos || []);
+    const generos = this.peliculas().flatMap((pelicula) => pelicula.generos || []);
 
     const unicos = new Map<string, { id: string; nombre: string }>();
 
-    generos.forEach(genero => {
+    generos.forEach((genero) => {
       unicos.set(genero.id, genero);
     });
 
@@ -106,24 +96,19 @@ export class CarteleraComponent implements OnInit {
   get peliculasFiltradas() {
     const texto = this.textoBusqueda.toLowerCase().trim();
 
-    return this.peliculas().filter(pelicula => {
-      const coincideNombre =
-        pelicula.nombre.toLowerCase().includes(texto);
+    return this.peliculas().filter((pelicula) => {
+      const coincideNombre = pelicula.nombre.toLowerCase().includes(texto);
 
       const coincideGenero =
         !this.generoSeleccionado ||
-        (pelicula.generos || []).some(
-          genero => genero.id === this.generoSeleccionado
-        );
+        (pelicula.generos || []).some((genero) => genero.id === this.generoSeleccionado);
 
       return coincideNombre && coincideGenero;
     });
   }
 
   obtenerPelicula(peliculaId: string): Pelicula | undefined {
-    return this.peliculas().find(
-      pelicula => pelicula.id === peliculaId
-    );
+    return this.peliculas().find((pelicula) => pelicula.id === peliculaId);
   }
 
   obtenerPromedio(peliculaId: string): number {
@@ -141,10 +126,7 @@ export class CarteleraComponent implements OnInit {
 
     const completas = Math.round(promedio);
 
-    return (
-      '★'.repeat(completas) +
-      '☆'.repeat(5 - completas)
-    );
+    return '★'.repeat(completas) + '☆'.repeat(5 - completas);
   }
 
   esTop3(peliculaId: string): boolean {
@@ -152,17 +134,13 @@ export class CarteleraComponent implements OnInit {
   }
 
   obtenerPosicionTop3(peliculaId: string): number {
-    const posicion = this.top3.findIndex(
-      pelicula => pelicula.peliculaId === peliculaId
-    );
+    const posicion = this.top3.findIndex((pelicula) => pelicula.peliculaId === peliculaId);
 
     return posicion >= 0 ? posicion + 1 : 0;
   }
 
   obtenerVentas(peliculaId: string): number {
-    const pelicula = this.top3.find(
-      item => item.peliculaId === peliculaId
-    );
+    const pelicula = this.top3.find((item) => item.peliculaId === peliculaId);
 
     return pelicula?.cantidadEntradas || 0;
   }
@@ -175,10 +153,7 @@ export class CarteleraComponent implements OnInit {
     }
   }
 
-  mostrarEstrellasHover(
-    peliculaId: string,
-    estrellas: number
-  ): void {
+  mostrarEstrellasHover(peliculaId: string, estrellas: number): void {
     this.estrellasHover[peliculaId] = estrellas;
   }
 
@@ -186,41 +161,28 @@ export class CarteleraComponent implements OnInit {
     delete this.estrellasHover[peliculaId];
   }
 
-  seleccionarEstrellas(
-    peliculaId: string,
-    estrellas: number
-  ): void {
+  seleccionarEstrellas(peliculaId: string, estrellas: number): void {
     this.estrellasNuevaResena[peliculaId] = estrellas;
   }
 
   async publicarResena(peliculaId: string): Promise<void> {
-    const estrellas =
-      this.estrellasNuevaResena[peliculaId] || 0;
+    const estrellas = this.estrellasNuevaResena[peliculaId] || 0;
 
-    const comentario =
-      this.comentarioNuevaResena[peliculaId] || '';
+    const comentario = this.comentarioNuevaResena[peliculaId] || '';
 
     if (estrellas === 0) {
-      this.mensajeResena[peliculaId] =
-        'Seleccioná una puntuación.';
+      this.mensajeResena[peliculaId] = 'Seleccioná una puntuación.';
       return;
     }
 
     if (!comentario.trim()) {
-      this.mensajeResena[peliculaId] =
-        'Escribí un comentario.';
+      this.mensajeResena[peliculaId] = 'Escribí un comentario.';
       return;
     }
 
-    const resultado =
-      await this.resenasService.agregarResena(
-        peliculaId,
-        estrellas,
-        comentario
-      );
+    const resultado = await this.resenasService.agregarResena(peliculaId, estrellas, comentario);
 
-    this.mensajeResena[peliculaId] =
-      resultado.mensaje;
+    this.mensajeResena[peliculaId] = resultado.mensaje;
 
     if (!resultado.exito) {
       return;
@@ -230,32 +192,26 @@ export class CarteleraComponent implements OnInit {
     this.estrellasHover[peliculaId] = 0;
     this.comentarioNuevaResena[peliculaId] = '';
 
-    const nuevasResenas =
-      await this.resenasService.obtenerResenas(peliculaId);
+    const nuevasResenas = await this.resenasService.obtenerResenas(peliculaId);
 
-    this.resenas.update(actuales => ({
+    this.resenas.update((actuales) => ({
       ...actuales,
-      [peliculaId]: nuevasResenas
+      [peliculaId]: nuevasResenas,
     }));
 
     if (nuevasResenas.length === 0) {
-      this.promedios.update(actuales => ({
+      this.promedios.update((actuales) => ({
         ...actuales,
-        [peliculaId]: 0
+        [peliculaId]: 0,
       }));
     } else {
-      const suma = nuevasResenas.reduce(
-        (total, resena) => total + resena.estrellas,
-        0
-      );
+      const suma = nuevasResenas.reduce((total, resena) => total + resena.estrellas, 0);
 
-      const promedio = Number(
-        (suma / nuevasResenas.length).toFixed(1)
-      );
+      const promedio = Number((suma / nuevasResenas.length).toFixed(1));
 
-      this.promedios.update(actuales => ({
+      this.promedios.update((actuales) => ({
         ...actuales,
-        [peliculaId]: promedio
+        [peliculaId]: promedio,
       }));
     }
   }
