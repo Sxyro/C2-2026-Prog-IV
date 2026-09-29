@@ -2,13 +2,18 @@ import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import { PeliculasService } from '../../../core/services/peliculas.service';
 import { FuncionesService } from '../../../core/services/funciones.service';
 import { SalasService } from '../../../core/services/salas.service';
 import { StaffService } from '../../../core/services/staff.service';
 import { ConfiguracionService } from '../../../core/services/configuracion.service';
+import { GenerosService } from '../../../core/services/generos.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
+
 import { Pelicula } from '../../../core/models/pelicula.model';
 import { Funcion } from '../../../core/models/funcion.model';
+import { Genero } from '../../../core/models/genero.model';
 
 @Component({
   selector: 'app-admin',
@@ -23,6 +28,8 @@ export class AdminComponent implements OnInit {
   private salasService = inject(SalasService);
   private staffService = inject(StaffService);
   private configuracionService = inject(ConfiguracionService);
+  private generosService = inject(GenerosService);
+  private supabaseService = inject(SupabaseService);
   private router = inject(Router);
 
   public peliculas = this.peliculasService.obtenerPeliculas();
@@ -31,17 +38,17 @@ export class AdminComponent implements OnInit {
   public staffActual = this.staffService.obtenerStaffActual();
   public configuracion = this.configuracionService.obtenerConfiguracion();
 
+  public generos: Genero[] = [];
+  public generosSeleccionados: string[] = [];
+
   public porcentajeDescuentoForm = 20;
   public guardandoDescuento = signal(false);
   public mensajeDescuentoGuardado = signal<string | null>(null);
 
   constructor() {
-    effect(
-      () => {
-        this.porcentajeDescuentoForm = this.configuracion().porcentajeDescuentoPrimeraCompra;
-      },
-      { allowSignalWrites: true },
-    );
+    effect(() => {
+      this.porcentajeDescuentoForm = this.configuracion().porcentajeDescuentoPrimeraCompra;
+    });
   }
 
   public nuevaPelicula: Omit<Pelicula, 'id'> = {
@@ -60,8 +67,19 @@ export class AdminComponent implements OnInit {
     precioEntrada: 4500,
   };
 
-  ngOnInit(): void {
-    this.peliculasService.cargarPeliculas(false);
+  async ngOnInit(): Promise<void> {
+    const { data } = await this.supabaseService.client.auth.getSession();
+
+    console.log('SESION SUPABASE:', data.session);
+
+    const { data: resultado, error } = await this.supabaseService.client.rpc('es_staff_admin');
+
+    console.log('RESULTADO es_staff_admin:', resultado);
+    console.log('ERROR es_staff_admin:', error);
+
+    await this.peliculasService.cargarPeliculas(false);
+
+    this.generos = await this.generosService.obtenerGeneros();
   }
 
   async cerrarSesionStaff(): Promise<void> {
@@ -78,6 +96,7 @@ export class AdminComponent implements OnInit {
     );
 
     this.guardandoDescuento.set(false);
+
     this.mensajeDescuentoGuardado.set(
       exito ? 'Porcentaje actualizado correctamente.' : 'No se pudo guardar el cambio.',
     );
@@ -85,7 +104,9 @@ export class AdminComponent implements OnInit {
 
   async toggleVisibilidad(pelicula: Pelicula): Promise<void> {
     const nuevoEstado = !(pelicula.publicada ?? true);
+
     const ok = await this.peliculasService.cambiarEstadoPublicacion(pelicula.id, nuevoEstado);
+
     if (!ok) {
       alert('Error al actualizar la visibilidad de la película.');
     } else {
@@ -93,9 +114,22 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  toggleGenero(generoId: string): void {
+    if (this.generosSeleccionados.includes(generoId)) {
+      this.generosSeleccionados = this.generosSeleccionados.filter((id) => id !== generoId);
+    } else {
+      this.generosSeleccionados = [...this.generosSeleccionados, generoId];
+    }
+  }
+
   async guardarPelicula(): Promise<void> {
     if (!this.nuevaPelicula.nombre.trim() || this.nuevaPelicula.duracionMinutos <= 0) {
       alert('Por favor completá los campos obligatorios de la película.');
+      return;
+    }
+
+    if (this.generosSeleccionados.length === 0) {
+      alert('Seleccioná al menos un género para la película.');
       return;
     }
 
@@ -110,7 +144,10 @@ export class AdminComponent implements OnInit {
       ...this.nuevaPelicula,
     };
 
-    const OK = await this.peliculasService.agregarPelicula(peliculaACrear);
+    const OK = await this.peliculasService.agregarPelicula(
+      peliculaACrear,
+      this.generosSeleccionados,
+    );
 
     if (!OK) {
       alert('Error al guardar la película en la base de datos.');
@@ -122,11 +159,13 @@ export class AdminComponent implements OnInit {
     this.nuevaPelicula = {
       nombre: '',
       sinopsis: '',
-      portadaUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500',
+      portadaUrl: '',
       duracionMinutos: 120,
       formato: '2D',
       idioma: 'Subtitulada',
     };
+
+    this.generosSeleccionados = [];
 
     await this.peliculasService.cargarPeliculas(false);
   }
@@ -143,12 +182,14 @@ export class AdminComponent implements OnInit {
     }
 
     const pelicula = this.peliculas().find((p) => p.id === this.nuevaFuncion.peliculaId);
+
     if (!pelicula) {
       alert('Película no encontrada.');
       return;
     }
 
     const fechaInicio = new Date(this.nuevaFuncion.fechaHoraInicio);
+
     const fechaFin = new Date(fechaInicio.getTime() + pelicula.duracionMinutos * 60000);
 
     const funcionACrear: Funcion = {

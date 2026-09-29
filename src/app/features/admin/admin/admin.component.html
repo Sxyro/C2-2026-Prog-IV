@@ -1,11 +1,19 @@
 <div class="admin-container">
   <div class="admin-header">
     <h1>Panel de Administración del Cine</h1>
+
     <div class="admin-header-staff">
       @if (staffActual(); as staff) {
         <span>{{ staff.nombre }} · {{ staff.rol }}</span>
       }
-      <button type="button" class="btn-logout" (click)="cerrarSesionStaff()">Cerrar sesión</button>
+
+      <button
+        type="button"
+        class="btn-logout"
+        (click)="cerrarSesionStaff()"
+      >
+        Cerrar sesión
+      </button>
     </div>
   </div>
 
@@ -13,8 +21,12 @@
     <section class="card">
       <h2>1. Cargar Nueva Película</h2>
 
-      <form (ngSubmit)="guardarPelicula()" class="admin-form">
+      <form
+        (ngSubmit)="guardarPelicula()"
+        class="admin-form"
+      >
         <label>Título de la película:</label>
+
         <input
           type="text"
           [(ngModel)]="nuevaPelicula.nombre"
@@ -25,6 +37,7 @@
         />
 
         <label>Duración (en minutos):</label>
+
         <input
           type="number"
           [(ngModel)]="nuevaPelicula.duracionMinutos"
@@ -38,7 +51,12 @@
         <div class="form-row">
           <div>
             <label>Formato:</label>
-            <select [(ngModel)]="nuevaPelicula.formato" name="formato" class="input-field">
+
+            <select
+              [(ngModel)]="nuevaPelicula.formato"
+              name="formato"
+              class="input-field"
+            >
               <option value="2D">2D</option>
               <option value="3D">3D</option>
               <option value="4D">4D</option>
@@ -48,14 +66,44 @@
 
           <div>
             <label>Idioma:</label>
-            <select [(ngModel)]="nuevaPelicula.idioma" name="idioma" class="input-field">
-              <option value="Castellano">Castellano</option>
-              <option value="Subtitulada">Subtitulada</option>
+
+            <select
+              [(ngModel)]="nuevaPelicula.idioma"
+              name="idioma"
+              class="input-field"
+            >
+              <option value="Castellano">
+                Castellano
+              </option>
+
+              <option value="Subtitulada">
+                Subtitulada
+              </option>
             </select>
           </div>
         </div>
 
+        <label>Géneros:</label>
+
+        <div class="generos-selector">
+          <label
+            *ngFor="let genero of generos"
+            class="genero-option"
+          >
+            <input
+              type="checkbox"
+              [checked]="
+                generosSeleccionados.includes(genero.id)
+              "
+              (change)="toggleGenero(genero.id)"
+            />
+
+            <span>{{ genero.nombre }}</span>
+          </label>
+        </div>
+
         <label>URL del Poster / Portada:</label>
+
         <input
           type="url"
           [(ngModel)]="nuevaPelicula.portadaUrl"
@@ -65,6 +113,7 @@
         />
 
         <label>Sinopsis:</label>
+
         <textarea
           [(ngModel)]="nuevaPelicula.sinopsis"
           name="sinopsis"
@@ -72,7 +121,12 @@
           class="input-field"
         ></textarea>
 
-        <button type="submit" class="btn-primary">Guardar Película</button>
+        <button
+          type="submit"
+          class="btn-primary"
+        >
+          Guardar Película
+        </button>
       </form>
     </section>
 
@@ -80,32 +134,54 @@
       <h2>2. Programar Función</h2>
 
       <p class="help-text">
-        El sistema calcula automáticamente la duración de la película y verifica que haya al menos
-        30 minutos entre funciones.
+        El sistema calcula automáticamente la duración de la
+        película y verifica que haya al menos 30 minutos entre
+        funciones.
       </p>
 
-      <form (ngSubmit)="guardarFuncion()" class="admin-form">
+      <form
+        (ngSubmit)="guardarFuncion()"
+        class="admin-form"
+      >
         <label>Seleccionar Película:</label>
+
         <select
           [(ngModel)]="nuevaFuncion.peliculaId"
           name="peliculaId"
           required
           class="input-field"
         >
-          <option value="">-- Seleccionar --</option>
-          <option *ngFor="let pelicula of peliculas()" [value]="pelicula.id">
-            {{ pelicula.nombre }} ({{ pelicula.duracionMinutos }} min)
+          <option value="">
+            -- Seleccionar --
+          </option>
+
+          <option
+            *ngFor="let pelicula of peliculas()"
+            [value]="pelicula.id"
+          >
+            {{ pelicula.nombre }}
+            ({{ pelicula.duracionMinutos }} min)
           </option>
         </select>
 
         <label>Seleccionar Sala:</label>
-        <select [(ngModel)]="nuevaFuncion.salaId" name="salaId" required class="input-field">
-          <option *ngFor="let sala of salas()" [value]="sala.id">
+
+        <select
+          [(ngModel)]="nuevaFuncion.salaId"
+          name="salaId"
+          required
+          class="input-field"
+        >
+          <option
+            *ngFor="let sala of salas()"
+            [value]="sala.id"
+          >
             {{ sala.nombre }}
           </option>
         </select>
 
         <label>Fecha y Hora de Inicio:</label>
+
         <input
           type="datetime-local"
           [(ngModel)]="nuevaFuncion.fechaHoraInicio"
@@ -115,6 +191,7 @@
         />
 
         <label>Precio Entrada ($):</label>
+
         <input
           type="number"
           [(ngModel)]="nuevaFuncion.precioEntrada"
@@ -124,7 +201,12 @@
           class="input-field"
         />
 
-        <button type="submit" class="btn-success">Programar Función</button>
+        <button
+          type="submit"
+          class="btn-success"
+        >
+          Programar Función
+        </button>
       </form>
     </section>
   </div>
@@ -132,7 +214,13 @@
   <section class="card listado-section">
     <h2>Catálogo de Películas (Visibilidad)</h2>
 
-    <table class="tabla-funciones" *ngIf="peliculas().length > 0; else sinPeliculas">
+    <table
+      class="tabla-funciones"
+      *ngIf="
+        peliculas().length > 0;
+        else sinPeliculas
+      "
+    >
       <thead>
         <tr>
           <th>Título</th>
@@ -142,21 +230,51 @@
           <th>Acción</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let pelicula of peliculas()">
+        <tr
+          *ngFor="let pelicula of peliculas()"
+        >
           <td>
-            <strong>{{ pelicula.nombre }}</strong>
+            <strong>
+              {{ pelicula.nombre }}
+            </strong>
           </td>
-          <td>{{ pelicula.formato }}</td>
-          <td>{{ pelicula.idioma }}</td>
+
           <td>
-            <span [style.color]="(pelicula.publicada ?? true) ? 'green' : 'red'">
-              {{ (pelicula.publicada ?? true) ? 'Publicada' : 'Oculta' }}
+            {{ pelicula.formato }}
+          </td>
+
+          <td>
+            {{ pelicula.idioma }}
+          </td>
+
+          <td>
+            <span
+              [style.color]="
+                (pelicula.publicada ?? true)
+                  ? 'green'
+                  : 'red'
+              "
+            >
+              {{
+                (pelicula.publicada ?? true)
+                  ? 'Publicada'
+                  : 'Oculta'
+              }}
             </span>
           </td>
+
           <td>
-            <button (click)="toggleVisibilidad(pelicula)" class="btn-primary">
-              {{ (pelicula.publicada ?? true) ? 'Ocultar' : 'Publicar' }}
+            <button
+              (click)="toggleVisibilidad(pelicula)"
+              class="btn-primary"
+            >
+              {{
+                (pelicula.publicada ?? true)
+                  ? 'Ocultar'
+                  : 'Publicar'
+              }}
             </button>
           </td>
         </tr>
@@ -171,7 +289,13 @@
   <section class="card listado-section">
     <h2>Funciones Programadas</h2>
 
-    <table class="tabla-funciones" *ngIf="funciones().length > 0; else sinFunciones">
+    <table
+      class="tabla-funciones"
+      *ngIf="
+        funciones().length > 0;
+        else sinFunciones
+      "
+    >
       <thead>
         <tr>
           <th>Sala</th>
@@ -181,35 +305,79 @@
           <th>Precio</th>
         </tr>
       </thead>
+
       <tbody>
-        <tr *ngFor="let funcion of funciones()">
+        <tr
+          *ngFor="let funcion of funciones()"
+        >
           <td>
-            <strong>{{ obtenerSala(funcion.salaId)?.nombre || funcion.salaId }}</strong>
+            <strong>
+              {{
+                obtenerSala(funcion.salaId)?.nombre ||
+                  funcion.salaId
+              }}
+            </strong>
           </td>
+
           <td>
-            {{ obtenerPelicula(funcion.peliculaId)?.nombre || 'Película' }}
-            ({{ obtenerPelicula(funcion.peliculaId)?.duracionMinutos }} min)
+            {{
+              obtenerPelicula(funcion.peliculaId)?.nombre ||
+                'Película'
+            }}
+
+            ({{
+              obtenerPelicula(funcion.peliculaId)
+                ?.duracionMinutos
+            }}
+            min)
           </td>
-          <td>{{ funcion.fechaHoraInicio | date: 'dd/MM/yyyy HH:mm' }} hs</td>
-          <td>{{ funcion.fechaHoraFin | date: 'dd/MM/yyyy HH:mm' }} hs</td>
-          <td>${{ funcion.precioEntrada }}</td>
+
+          <td>
+            {{
+              funcion.fechaHoraInicio
+                | date: 'dd/MM/yyyy HH:mm'
+            }}
+            hs
+          </td>
+
+          <td>
+            {{
+              funcion.fechaHoraFin
+                | date: 'dd/MM/yyyy HH:mm'
+            }}
+            hs
+          </td>
+
+          <td>
+            ${{ funcion.precioEntrada }}
+          </td>
         </tr>
       </tbody>
     </table>
 
     <ng-template #sinFunciones>
-      <p>No hay funciones programadas todavía.</p>
+      <p>
+        No hay funciones programadas todavía.
+      </p>
     </ng-template>
   </section>
 
   <section class="card">
     <h2>Cupón de Primera Compra</h2>
+
     <p class="help-text">
-      Porcentaje de descuento que reciben los usuarios registrados en su primera compra.
+      Porcentaje de descuento que reciben los usuarios
+      registrados en su primera compra.
     </p>
 
-    <form (ngSubmit)="guardarPorcentajeDescuento()" class="admin-form form-inline">
-      <label>Porcentaje de descuento (%):</label>
+    <form
+      (ngSubmit)="guardarPorcentajeDescuento()"
+      class="admin-form form-inline"
+    >
+      <label>
+        Porcentaje de descuento (%):
+      </label>
+
       <input
         type="number"
         [(ngModel)]="porcentajeDescuentoForm"
@@ -219,13 +387,24 @@
         required
         class="input-field"
       />
-      <button type="submit" class="btn-guardar" [disabled]="guardandoDescuento()">
-        {{ guardandoDescuento() ? 'Guardando...' : 'Guardar' }}
+
+      <button
+        type="submit"
+        class="btn-guardar"
+        [disabled]="guardandoDescuento()"
+      >
+        {{
+          guardandoDescuento()
+            ? 'Guardando...'
+            : 'Guardar'
+        }}
       </button>
     </form>
 
     @if (mensajeDescuentoGuardado()) {
-      <p class="mensaje-ok">{{ mensajeDescuentoGuardado() }}</p>
+      <p class="mensaje-ok">
+        {{ mensajeDescuentoGuardado() }}
+      </p>
     }
   </section>
 </div>

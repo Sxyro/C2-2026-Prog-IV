@@ -2,6 +2,53 @@
 
   <h2>En cartelera esta semana</h2>
 
+  @if (top3.length > 0) {
+
+    <section class="top3-section">
+
+      <h2>🏆 Las más vendidas</h2>
+
+      <div class="top3-grid">
+
+        @for (item of top3; track item.peliculaId) {
+
+          @if (obtenerPelicula(item.peliculaId); as pelicula) {
+
+            <article class="top3-card">
+
+              <div class="top3-posicion">
+                #{{ $index + 1 }}
+              </div>
+
+              <img
+                [src]="pelicula.portadaUrl"
+                [alt]="pelicula.nombre"
+              >
+
+              <div class="top3-info">
+
+                <h3>{{ pelicula.nombre }}</h3>
+
+                <p>
+                  {{ item.cantidadEntradas }}
+                  {{ item.cantidadEntradas === 1 ? 'entrada' : 'entradas' }}
+                  vendidas
+                </p>
+
+              </div>
+
+            </article>
+
+          }
+
+        }
+
+      </div>
+
+    </section>
+
+  }
+
   <div class="filtros-cartelera">
 
     <input
@@ -11,13 +58,19 @@
     >
 
     <select [(ngModel)]="generoSeleccionado">
-      <option value="">Todos los géneros</option>
+
+      <option value="">
+        Todos los géneros
+      </option>
 
       @for (genero of generosDisponibles; track genero.id) {
+
         <option [value]="genero.id">
           {{ genero.nombre }}
         </option>
+
       }
+
     </select>
 
   </div>
@@ -39,6 +92,42 @@
         <div class="info">
 
           <h3>{{ pelicula.nombre }}</h3>
+
+          @if (esTop3(pelicula.id)) {
+
+            <div class="top3-badge">
+              🏆 Top {{ obtenerPosicionTop3(pelicula.id) }}
+              · {{ obtenerVentas(pelicula.id) }} entradas vendidas
+            </div>
+
+          }
+
+          <div class="calificacion">
+
+            @if (obtenerPromedio(pelicula.id) > 0) {
+
+              <span class="estrellas">
+                {{ obtenerEstrellas(obtenerPromedio(pelicula.id)) }}
+              </span>
+
+              <span class="promedio">
+                {{ obtenerPromedio(pelicula.id) }}/5
+              </span>
+
+              <span class="cantidad-resenas">
+                ({{ obtenerResenas(pelicula.id).length }}
+                {{ obtenerResenas(pelicula.id).length === 1 ? 'reseña' : 'reseñas' }})
+              </span>
+
+            } @else {
+
+              <span class="sin-calificacion">
+                Sin calificaciones todavía
+              </span>
+
+            }
+
+          </div>
 
           <div class="badges">
 
@@ -75,6 +164,115 @@
           <p class="sinopsis">
             {{ pelicula.sinopsis }}
           </p>
+
+          <button
+            type="button"
+            class="btn-reseñas"
+            (click)="toggleResenas(pelicula.id)"
+          >
+            {{
+              resenaAbierta === pelicula.id
+                ? 'Ocultar reseñas'
+                : 'Ver reseñas'
+            }}
+          </button>
+
+          @if (resenaAbierta === pelicula.id) {
+
+            <div class="reseñas-panel">
+
+              <h4>Opiniones de los usuarios</h4>
+
+              @if (obtenerResenas(pelicula.id).length > 0) {
+
+                @for (
+                  resena of obtenerResenas(pelicula.id);
+                  track resena.id
+                ) {
+
+                  <div class="resena">
+
+                    <div class="resena-estrellas">
+                      {{ obtenerEstrellas(resena.estrellas) }}
+                    </div>
+
+                    <p>
+                      "{{ resena.comentario }}"
+                    </p>
+
+                    <small>
+                      {{ resena.fechaCreacion | date:'dd/MM/yyyy' }}
+                    </small>
+
+                  </div>
+
+                }
+
+              } @else {
+
+                <p class="sin-resenas">
+                  Esta película todavía no tiene reseñas.
+                </p>
+
+              }
+
+              <div class="nueva-resena">
+
+                <h4>Dejá tu opinión</h4>
+
+                <div
+                  class="selector-estrellas"
+                  (mouseleave)="quitarEstrellasHover(pelicula.id)"
+                >
+
+                  @for (estrella of [1,2,3,4,5]; track estrella) {
+
+                    <button
+                      type="button"
+                      [class.seleccionada]="
+                        (estrellasHover[pelicula.id] ||
+                        estrellasNuevaResena[pelicula.id] ||
+                        0) >= estrella
+                      "
+                      (mouseenter)="mostrarEstrellasHover(pelicula.id, estrella)"
+                      (click)="seleccionarEstrellas(pelicula.id, estrella)"
+                    >
+                      ★
+                    </button>
+
+                  }
+
+                </div>
+
+                <textarea
+                  rows="3"
+                  maxlength="300"
+                  placeholder="Contanos qué te pareció..."
+                  [ngModel]="comentarioNuevaResena[pelicula.id] || ''"
+                  (ngModelChange)="comentarioNuevaResena[pelicula.id] = $event"
+                ></textarea>
+
+                <button
+                  type="button"
+                  class="btn-publicar-resena"
+                  (click)="publicarResena(pelicula.id)"
+                >
+                  Publicar reseña
+                </button>
+
+                @if (mensajeResena[pelicula.id]) {
+
+                  <p class="mensaje-resena">
+                    {{ mensajeResena[pelicula.id] }}
+                  </p>
+
+                }
+
+              </div>
+
+            </div>
+
+          }
 
           <button
             [routerLink]="['/reserva', pelicula.id]"

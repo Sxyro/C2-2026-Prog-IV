@@ -1,5 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
+
 import { SupabaseService } from './supabase.service';
+
 import { Pelicula } from '../models/pelicula.model';
 
 @Injectable({
@@ -20,14 +22,14 @@ export class PeliculasService {
 
   async cargarPeliculas(soloPublicadas: boolean = true): Promise<Pelicula[]> {
     let query = this.supabase.from('peliculas').select(`
-        *,
-        pelicula_generos (
-          genero:generos (
-            id,
-            nombre
-          )
+      *,
+      pelicula_generos (
+        genero:generos (
+          id,
+          nombre
         )
-      `);
+      )
+    `);
 
     if (soloPublicadas) {
       query = query.eq('publicada', true);
@@ -49,7 +51,6 @@ export class PeliculasService {
       formato: row.formato,
       idioma: row.idioma,
       publicada: row.publicada,
-
       generos: (row.pelicula_generos || [])
         .map((relacion: any) => relacion.genero)
         .filter((genero: any) => genero !== null),
@@ -60,7 +61,10 @@ export class PeliculasService {
     return mapeadas;
   }
 
-  async agregarPelicula(pelicula: Pelicula): Promise<boolean> {
+  async agregarPelicula(
+    pelicula: Pelicula,
+    generosIds: string[],
+  ): Promise<boolean> {
     const row = {
       id: pelicula.id,
       nombre: pelicula.nombre,
@@ -72,19 +76,52 @@ export class PeliculasService {
       publicada: true,
     };
 
-    const { error } = await this.supabase.from('peliculas').insert([row]);
+    const { error: errorPelicula } = await this.supabase
+      .from('peliculas')
+      .insert([row]);
 
-    if (error) {
-      console.error('Error al guardar película en Supabase:', error.message);
+    if (errorPelicula) {
+      console.error(
+        'Error al guardar película en Supabase:',
+        errorPelicula.message,
+      );
       return false;
     }
 
-    await this.cargarPeliculas();
+    if (generosIds.length > 0) {
+      const relaciones = generosIds.map((generoId) => ({
+        pelicula_id: pelicula.id,
+        genero_id: generoId,
+      }));
+
+      const { error: errorGeneros } = await this.supabase
+        .from('pelicula_generos')
+        .insert(relaciones);
+
+      if (errorGeneros) {
+        console.error(
+          'Error al guardar los géneros de la película:',
+          errorGeneros.message,
+        );
+
+        await this.supabase
+          .from('peliculas')
+          .delete()
+          .eq('id', pelicula.id);
+
+        return false;
+      }
+    }
+
+    await this.cargarPeliculas(false);
 
     return true;
   }
 
-  async cambiarEstadoPublicacion(peliculaId: string, estaPublicada: boolean): Promise<boolean> {
+  async cambiarEstadoPublicacion(
+    peliculaId: string,
+    estaPublicada: boolean,
+  ): Promise<boolean> {
     const { error } = await this.supabase
       .from('peliculas')
       .update({ publicada: estaPublicada })
