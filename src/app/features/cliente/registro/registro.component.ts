@@ -22,6 +22,7 @@ export class RegistroComponent {
 
   public form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
     nombre: ['', [Validators.required]],
     apellido: ['', [Validators.required]],
     fechaNacimiento: ['', [Validators.required]],
@@ -30,20 +31,38 @@ export class RegistroComponent {
     diasVacaciones: [0, [Validators.required, Validators.min(0)]],
   });
 
-  public registrar() {
+  public async registrar(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.usuariosService.registrarUsuario(this.form.value as any);
+    const valor = this.form.getRawValue();
+
+    const resultado = await this.usuariosService.registrarUsuario({
+      email: valor.email || '',
+      password: valor.password || '',
+      nombre: valor.nombre || '',
+      apellido: valor.apellido || '',
+      fechaNacimiento: valor.fechaNacimiento || '',
+      tipoSangre: valor.tipoSangre || '',
+      colorOjos: valor.colorOjos || '',
+      diasVacaciones: valor.diasVacaciones || 0
+    });
+
+    if (!resultado.exito) {
+      alert(resultado.mensaje || 'No se pudo completar el registro.');
+      return;
+    }
+
     alert(
-      `¡Registro exitoso! Se ha aplicado un ${this.configuracion().porcentajeDescuentoPrimeraCompra}% de descuento para tu primera compra.`,
+      `¡Registro exitoso! Se ha aplicado un ${this.configuracion().porcentajeDescuentoPrimeraCompra}% de descuento para tu primera compra.`
     );
+
     this.router.navigate(['/cartelera']);
   }
 
-  public omitirAnonimo() {
+  public omitirAnonimo(): void {
     this.usuariosService.continuarComoAnonimo();
     this.router.navigate(['/cartelera']);
   }

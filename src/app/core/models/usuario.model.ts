@@ -1,5 +1,8 @@
+export type RolUsuario = 'usuario' | 'empleado' | 'admin';
+
 export interface Usuario {
   id: string;
+  authUserId: string;
   email: string;
   nombre: string;
   apellido: string;
@@ -8,4 +11,5 @@ export interface Usuario {
   colorOjos: string;
   diasVacaciones: number;
   tieneDescuentoPrimeraCompra: boolean;
+  rol: RolUsuario;
 }

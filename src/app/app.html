@@ -3,22 +3,75 @@
     <div class="logo">
       <a routerLink="/cartelera">🎬 Cine App</a>
     </div>
+
     <ul class="nav-links">
-      <li><a routerLink="/cartelera" routerLinkActive="active">Cartelera</a></li>
+      <li>
+        <a routerLink="/cartelera" routerLinkActive="active">Cartelera</a>
+      </li>
 
       @if (!usuarioActual()) {
-        <li><a routerLink="/login" routerLinkActive="active">Iniciar Sesión</a></li>
-        <li><a routerLink="/registro" routerLinkActive="active">Registro</a></li>
-      } @else {
-        <li class="user-greeting">
-          👤 Hola, <strong>{{ usuarioActual()?.nombre }}</strong>
-        </li>
         <li>
-          <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
+          <a routerLink="/login" routerLinkActive="active">Iniciar Sesión</a>
+        </li>
+
+        <li>
+          <a routerLink="/registro" routerLinkActive="active">Registro</a>
         </li>
       }
 
-      <li><a routerLink="/admin" routerLinkActive="active">Panel Admin</a></li>
+      @if (esUsuario()) {
+        <li class="user-greeting">
+          👤 Hola, <strong>{{ usuarioActual()?.nombre }}</strong>
+        </li>
+
+        <li>
+          <a routerLink="/mis-peliculas" routerLinkActive="active">
+            Mis películas
+          </a>
+        </li>
+
+        <li>
+          <button (click)="cerrarSesion()" class="btn-logout">
+            Cerrar Sesión
+          </button>
+        </li>
+      }
+
+      @if (esEmpleado()) {
+        <li class="user-greeting">
+          👤 Empleado: <strong>{{ usuarioActual()?.nombre }}</strong>
+        </li>
+
+        <li>
+          <a routerLink="/empleado" routerLinkActive="active">
+            Escanear códigos
+          </a>
+        </li>
+
+        <li>
+          <button (click)="cerrarSesion()" class="btn-logout">
+            Cerrar Sesión
+          </button>
+        </li>
+      }
+
+      @if (esAdmin()) {
+        <li class="user-greeting">
+          👑 Admin: <strong>{{ usuarioActual()?.nombre }}</strong>
+        </li>
+
+        <li>
+          <a routerLink="/admin" routerLinkActive="active">
+            Panel Admin
+          </a>
+        </li>
+
+        <li>
+          <button (click)="cerrarSesion()" class="btn-logout">
+            Cerrar Sesión
+          </button>
+        </li>
+      }
     </ul>
   </nav>
 </header>

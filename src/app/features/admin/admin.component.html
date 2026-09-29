@@ -3,18 +3,17 @@
     <h1>Panel de Administración del Cine</h1>
 
     <div class="admin-header-staff">
-      @if (staffActual(); as staff) {
-        <span>{{ staff.nombre }} · {{ staff.rol }}</span>
+      @if (usuarioActual(); as usuario) {
+        <span>{{ usuario.nombre }} {{ usuario.apellido }} · {{ usuario.rol }}</span>
       }
 
-      <button type="button" class="btn-logout" (click)="cerrarSesionStaff()">Cerrar sesión</button>
+      <button type="button" class="btn-logout" (click)="cerrarSesion()">Cerrar sesión</button>
     </div>
   </div>
 
   <div class="admin-grid">
     <section class="card">
       <h2>1. Cargar Nueva Película</h2>
-
       <form (ngSubmit)="guardarPelicula()" class="admin-form">
         <label>Título de la película:</label>
 
@@ -56,7 +55,6 @@
 
             <select [(ngModel)]="nuevaPelicula.idioma" name="idioma" class="input-field">
               <option value="Castellano">Castellano</option>
-
               <option value="Subtitulada">Subtitulada</option>
             </select>
           </div>
@@ -175,18 +173,12 @@
       <tbody>
         <tr *ngFor="let pelicula of peliculas()">
           <td>
-            <strong>
-              {{ pelicula.nombre }}
-            </strong>
+            <strong>{{ pelicula.nombre }}</strong>
           </td>
 
-          <td>
-            {{ pelicula.formato }}
-          </td>
+          <td>{{ pelicula.formato }}</td>
 
-          <td>
-            {{ pelicula.idioma }}
-          </td>
+          <td>{{ pelicula.idioma }}</td>
 
           <td>
             <span [style.color]="(pelicula.publicada ?? true) ? 'green' : 'red'">
@@ -232,9 +224,7 @@
 
           <td>
             {{ obtenerPelicula(funcion.peliculaId)?.nombre || 'Película' }}
-
-            ({{ obtenerPelicula(funcion.peliculaId)?.duracionMinutos }}
-            min)
+            ({{ obtenerPelicula(funcion.peliculaId)?.duracionMinutos }} min)
           </td>
 
           <td>
@@ -259,13 +249,12 @@
 
   <section class="card">
     <h2>Cupón de Primera Compra</h2>
-
     <p class="help-text">
       Porcentaje de descuento que reciben los usuarios registrados en su primera compra.
     </p>
 
     <form (ngSubmit)="guardarPorcentajeDescuento()" class="admin-form form-inline">
-      <label> Porcentaje de descuento (%): </label>
+      <label>Porcentaje de descuento (%):</label>
 
       <input
         type="number"
@@ -288,13 +277,13 @@
       </p>
     }
   </section>
+
   <section class="card">
     <h2>Descuento para mayores de 50</h2>
-
     <p class="help-text">Porcentaje de descuento que reciben los usuarios mayores de 50 años.</p>
 
     <form (ngSubmit)="guardarPorcentajeMayores50()" class="admin-form form-inline">
-      <label> Porcentaje de descuento (%): </label>
+      <label>Porcentaje de descuento (%):</label>
 
       <input
         type="number"
@@ -315,6 +304,59 @@
       <p class="mensaje-ok">
         {{ mensajeDescuentoMayores50Guardado() }}
       </p>
+    }
+  </section>
+
+  <section class="card listado-section">
+    <h2>Gestión de Usuarios</h2>
+
+    <p class="help-text">Desde acá podés administrar el rol de cada usuario del sistema.</p>
+
+    @if (cargandoUsuarios()) {
+      <p>Cargando usuarios...</p>
+    } @else if (usuariosAdministrables().length === 0) {
+      <p>No hay usuarios registrados.</p>
+    } @else {
+      <table class="tabla-funciones">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (usuario of usuariosAdministrables(); track usuario.id) {
+            <tr>
+              <td>
+                <strong> {{ usuario.nombre }} {{ usuario.apellido }} </strong>
+              </td>
+
+              <td>
+                {{ usuario.email }}
+              </td>
+
+              <td>
+                @if (usuario.id === usuarioActual()?.id) {
+                  <span>Administrador actual</span>
+                } @else {
+                  <select
+                    [value]="usuario.rol"
+                    [disabled]="usuarioModificandoRol() === usuario.id"
+                    (change)="cambiarRolUsuario(usuario, $any($event.target).value)"
+                    class="input-field"
+                  >
+                    <option value="usuario">Usuario</option>
+                    <option value="empleado">Empleado</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     }
   </section>
 </div>

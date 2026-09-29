@@ -1,27 +1,36 @@
 <div class="registro-container">
   <div class="bulbs"><span></span><span></span><span></span><span></span><span></span></div>
   <h2>Registro de Cliente</h2>
-  <p class="subtitle">Registrate para obtener un <strong>{{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento</strong> en tu primera compra.</p>
+  <p class="subtitle">
+    Registrate para obtener un
+    <strong>{{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento</strong> en tu
+    primera compra.
+  </p>
 
   <form [formGroup]="form" (ngSubmit)="registrar()" class="form-grid">
     <div class="field">
       <label>Email *</label>
-      <input type="email" formControlName="email" placeholder="ejemplo@mail.com">
+      <input type="email" formControlName="email" placeholder="ejemplo@mail.com" />
+    </div>
+
+    <div class="field">
+      <label>Contraseña *</label>
+      <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
     </div>
 
     <div class="field">
       <label>Nombre *</label>
-      <input type="text" formControlName="nombre">
+      <input type="text" formControlName="nombre" />
     </div>
 
     <div class="field">
       <label>Apellido *</label>
-      <input type="text" formControlName="apellido">
+      <input type="text" formControlName="apellido" />
     </div>
 
     <div class="field">
       <label>Fecha de Nacimiento *</label>
-      <input type="date" formControlName="fechaNacimiento">
+      <input type="date" formControlName="fechaNacimiento" />
     </div>
 
     <div class="field">
@@ -40,17 +49,21 @@
 
     <div class="field">
       <label>Color de Ojos *</label>
-      <input type="text" formControlName="colorOjos" placeholder="Marrón, Azul, Verde...">
+      <input type="text" formControlName="colorOjos" placeholder="Marrón, Azul, Verde..." />
     </div>
 
     <div class="field">
       <label>Días de vacaciones al año *</label>
-      <input type="number" formControlName="diasVacaciones" min="0">
+      <input type="number" formControlName="diasVacaciones" min="0" />
     </div>
 
     <div class="actions">
-      <button type="submit" class="btn-primary">Registrarme y obtener {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF</button>
-      <button type="button" (click)="omitirAnonimo()" class="btn-secondary">Continuar como Anónimo</button>
+      <button type="submit" class="btn-primary">
+        Registrarme y obtener {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF
+      </button>
+      <button type="button" (click)="omitirAnonimo()" class="btn-secondary">
+        Continuar como Anónimo
+      </button>
     </div>
   </form>
 </div>

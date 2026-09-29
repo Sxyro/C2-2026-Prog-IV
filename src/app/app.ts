@@ -16,8 +16,20 @@ export class AppComponent {
 
   public usuarioActual = this.usuariosService.obtenerUsuarioActual();
 
-  cerrarSesion(): void {
-    this.usuariosService.cerrarSesion();
+  async cerrarSesion(): Promise<void> {
+    await this.usuariosService.cerrarSesion();
     this.router.navigate(['/cartelera']);
+  }
+
+  esAdmin(): boolean {
+    return this.usuarioActual()?.rol === 'admin';
+  }
+
+  esEmpleado(): boolean {
+    return this.usuarioActual()?.rol === 'empleado';
+  }
+
+  esUsuario(): boolean {
+    return this.usuarioActual()?.rol === 'usuario';
   }
 }

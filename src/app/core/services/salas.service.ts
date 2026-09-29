@@ -38,7 +38,7 @@ export class SalasService {
 
     this.salas.set(mapeadas);
     return mapeadas;
-  }
+  } 
 
   generarMapaButacas(cantidadFilas: number = 20): Butaca[] {
     const butacas: Butaca[] = [];

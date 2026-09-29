@@ -1,108 +1,246 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { Usuario } from '../models/usuario.model';
+import { Usuario, RolUsuario } from '../models/usuario.model';
+
+export interface UsuarioAdministrable {
+  id: string;
+  email: string;
+  nombre: string;
+  apellido: string;
+  rol: RolUsuario;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UsuariosService {
   private supabase = inject(SupabaseService).client;
+
   private usuarioActual = signal<Usuario | null>(null);
+  private sesionListaPromise: Promise<void>;
+
+  constructor() {
+    this.sesionListaPromise = this.restaurarSesion();
+
+    this.supabase.auth.onAuthStateChange(async (_evento, sesion) => {
+      if (!sesion) {
+        this.usuarioActual.set(null);
+        return;
+      }
+
+      await this.cargarUsuarioPorAuthId(sesion.user.id);
+    });
+  }
 
   obtenerUsuarioActual() {
     return this.usuarioActual.asReadonly();
   }
 
-  async registrarUsuario(datos: Omit<Usuario, 'id' | 'tieneDescuentoPrimeraCompra'>): Promise<Usuario | null> {
-    const emailNormalizado = datos.email.trim().toLowerCase();
-
-    const nuevoUsuario: Usuario = {
-      ...datos,
-      email: emailNormalizado,
-      id: crypto.randomUUID(),
-      tieneDescuentoPrimeraCompra: true
-    };
-
-    const row = {
-      id: nuevoUsuario.id,
-      email: nuevoUsuario.email,
-      nombre: nuevoUsuario.nombre,
-      apellido: nuevoUsuario.apellido,
-      fecha_nacimiento: nuevoUsuario.fechaNacimiento,
-      tipo_sangre: nuevoUsuario.tipoSangre,
-      color_ojos: nuevoUsuario.colorOjos,
-      dias_vacaciones: nuevoUsuario.diasVacaciones,
-      tiene_descuento_primera_compra: nuevoUsuario.tieneDescuentoPrimeraCompra
-    };
-
-    const { error } = await this.supabase
-      .from('usuarios')
-      .insert([row]);
-
-    if (error) {
-      console.error('Error al registrar usuario en Supabase:', error.message);
-      return null;
-    }
-
-    this.usuarioActual.set(nuevoUsuario);
-    return nuevoUsuario;
+  async esperarSesionLista(): Promise<void> {
+    await this.sesionListaPromise;
   }
 
-  continuarComoAnonimo() {
+  private async restaurarSesion(): Promise<void> {
+    const { data } = await this.supabase.auth.getSession();
+    const userId = data.session?.user.id;
+
+    if (userId) {
+      await this.cargarUsuarioPorAuthId(userId);
+    }
+  }
+
+  private async cargarUsuarioPorAuthId(authUserId: string): Promise<void> {
+    console.log('AUTH USER ID:', authUserId);
+
+    const { data, error } = await this.supabase.rpc('obtener_usuario_actual');
+
+    console.log('USUARIO RPC:', data);
+    console.log('ERROR RPC:', error);
+
+    if (error || !data || data.length === 0) {
+      this.usuarioActual.set(null);
+      return;
+    }
+
+    const usuario = this.mapearUsuario(data[0]);
+
+    console.log('USUARIO MAPEADO:', usuario);
+
+    this.usuarioActual.set(usuario);
+  }
+
+  private mapearUsuario(data: any): Usuario {
+    return {
+      id: data.id,
+      authUserId: data.auth_user_id,
+      email: data.email,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      fechaNacimiento: data.fecha_nacimiento,
+      tipoSangre: data.tipo_sangre,
+      colorOjos: data.color_ojos,
+      diasVacaciones: data.dias_vacaciones,
+      tieneDescuentoPrimeraCompra: data.tiene_descuento_primera_compra,
+      rol: data.rol as RolUsuario,
+    };
+  }
+
+  async registrarUsuario(
+    datos: Omit<Usuario, 'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'rol'> & {
+      password: string;
+    },
+  ): Promise<{ exito: boolean; usuario?: Usuario; mensaje?: string }> {
+    const emailNormalizado = datos.email.trim().toLowerCase();
+
+    const { data: authData, error: authError } = await this.supabase.auth.signUp({
+      email: emailNormalizado,
+      password: datos.password,
+    });
+
+    if (authError || !authData.user) {
+      return {
+        exito: false,
+        mensaje: authError?.message || 'No se pudo crear la cuenta.',
+      };
+    }
+
+    const nuevoUsuario = {
+      id: crypto.randomUUID(),
+      auth_user_id: authData.user.id,
+      email: emailNormalizado,
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      fecha_nacimiento: datos.fechaNacimiento,
+      tipo_sangre: datos.tipoSangre,
+      color_ojos: datos.colorOjos,
+      dias_vacaciones: datos.diasVacaciones,
+      tiene_descuento_primera_compra: true,
+      rol: 'usuario',
+    };
+
+    const { data: usuarioCreado, error } = await this.supabase
+      .from('usuarios')
+      .insert([nuevoUsuario])
+      .select()
+      .single();
+
+    if (error || !usuarioCreado) {
+      await this.supabase.auth.signOut();
+
+      return {
+        exito: false,
+        mensaje: error?.message || 'No se pudo crear el perfil.',
+      };
+    }
+
+    const usuario = this.mapearUsuario(usuarioCreado);
+
+    this.usuarioActual.set(usuario);
+
+    return {
+      exito: true,
+      usuario,
+    };
+  }
+
+  async iniciarSesion(
+    email: string,
+    password: string,
+  ): Promise<{ exito: boolean; mensaje?: string }> {
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (error || !data.user) {
+      return {
+        exito: false,
+        mensaje: 'Email o contraseña incorrectos.',
+      };
+    }
+
+    await this.cargarUsuarioPorAuthId(data.user.id);
+
+    if (!this.usuarioActual()) {
+      await this.supabase.auth.signOut();
+
+      return {
+        exito: false,
+        mensaje: 'No se encontró el perfil del usuario.',
+      };
+    }
+
+    return {
+      exito: true,
+    };
+  }
+
+  async cerrarSesion(): Promise<void> {
+    await this.supabase.auth.signOut();
     this.usuarioActual.set(null);
   }
 
-  async iniciarSesion(email: string): Promise<boolean> {
-    const emailBuscado = email.trim().toLowerCase();
-
-    const { data, error } = await this.supabase
-      .rpc('buscar_usuario_por_email', { p_email: emailBuscado });
-
-    if (error) {
-      console.error('Error al buscar usuario:', error.message);
-      return false;
-    }
-
-    const usuarioEncontrado = Array.isArray(data) ? data[0] : data;
-
-    if (!usuarioEncontrado) {
-      return false;
-    }
-
-    const usuarioLogueado: Usuario = {
-      id: usuarioEncontrado.id,
-      email: usuarioEncontrado.email,
-      nombre: usuarioEncontrado.nombre,
-      apellido: usuarioEncontrado.apellido,
-      fechaNacimiento: usuarioEncontrado.fecha_nacimiento,
-      tipoSangre: usuarioEncontrado.tipo_sangre,
-      colorOjos: usuarioEncontrado.color_ojos,
-      diasVacaciones: usuarioEncontrado.dias_vacaciones,
-      tieneDescuentoPrimeraCompra: usuarioEncontrado.tiene_descuento_primera_compra
-    };
-
-    this.usuarioActual.set(usuarioLogueado);
-    return true;
-  }
-
-  cerrarSesion(): void {
+  continuarComoAnonimo(): void {
     this.usuarioActual.set(null);
   }
 
   async usarCuponDescuento(): Promise<void> {
     const usuario = this.usuarioActual();
-    if (!usuario || !usuario.tieneDescuentoPrimeraCompra) return;
 
-    const { error } = await this.supabase
-      .rpc('usar_cupon_usuario', { p_usuario_id: usuario.id });
+    if (!usuario || !usuario.tieneDescuentoPrimeraCompra) {
+      return;
+    }
+
+    const { error } = await this.supabase.rpc('usar_cupon_usuario', {
+      p_usuario_id: usuario.id,
+    });
 
     if (error) {
       console.error('Error al aplicar cupón en Supabase:', error.message);
-    } else {
-      this.usuarioActual.set({
-        ...usuario,
-        tieneDescuentoPrimeraCompra: false
-      });
+
+      return;
     }
+
+    this.usuarioActual.set({
+      ...usuario,
+      tieneDescuentoPrimeraCompra: false,
+    });
+  }
+  async obtenerUsuariosAdmin(): Promise<UsuarioAdministrable[]> {
+    const { data, error } = await this.supabase.rpc('obtener_usuarios_admin');
+
+    if (error || !data) {
+      console.error('Error al obtener usuarios:', error?.message);
+      return [];
+    }
+
+    return data.map((usuario: any) => ({
+      id: usuario.id,
+      email: usuario.email,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      rol: usuario.rol as RolUsuario,
+    }));
+  }
+
+  async actualizarRolUsuario(
+    usuarioId: string,
+    nuevoRol: RolUsuario,
+  ): Promise<{ exito: boolean; mensaje?: string }> {
+    const { error } = await this.supabase.rpc('actualizar_rol_usuario', {
+      p_usuario_id: usuarioId,
+      p_nuevo_rol: nuevoRol,
+    });
+
+    if (error) {
+      return {
+        exito: false,
+        mensaje: error.message,
+      };
+    }
+
+    return {
+      exito: true,
+    };
   }
 }

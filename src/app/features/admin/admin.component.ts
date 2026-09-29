@@ -2,15 +2,15 @@ import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PeliculasService } from '../../../core/services/peliculas.service';
-import { FuncionesService } from '../../../core/services/funciones.service';
-import { SalasService } from '../../../core/services/salas.service';
-import { StaffService } from '../../../core/services/staff.service';
-import { ConfiguracionService } from '../../../core/services/configuracion.service';
-import { GenerosService } from '../../../core/services/generos.service';
-import { Pelicula } from '../../../core/models/pelicula.model';
-import { Funcion } from '../../../core/models/funcion.model';
-import { Genero } from '../../../core/models/genero.model';
+import { PeliculasService } from '../../core/services/peliculas.service';
+import { FuncionesService } from '../../core/services/funciones.service';
+import { SalasService } from '../../core/services/salas.service';
+import { UsuariosService, UsuarioAdministrable } from '../../core/services/usuarios.service';
+import { ConfiguracionService } from '../../core/services/configuracion.service';
+import { GenerosService } from '../../core/services/generos.service';
+import { Pelicula } from '../../core/models/pelicula.model';
+import { Funcion } from '../../core/models/funcion.model';
+import { Genero } from '../../core/models/genero.model';
 
 @Component({
   selector: 'app-admin',
@@ -23,20 +23,20 @@ export class AdminComponent implements OnInit {
   private peliculasService = inject(PeliculasService);
   private funcionesService = inject(FuncionesService);
   private salasService = inject(SalasService);
-  private staffService = inject(StaffService);
+  private usuariosService = inject(UsuariosService);
   private configuracionService = inject(ConfiguracionService);
   private generosService = inject(GenerosService);
   private router = inject(Router);
-
   public peliculas = this.peliculasService.obtenerPeliculas();
   public funciones = this.funcionesService.obtenerFunciones();
   public salas = this.salasService.obtenerSalas();
-  public staffActual = this.staffService.obtenerStaffActual();
+  public usuarioActual = this.usuariosService.obtenerUsuarioActual();
+  public usuariosAdministrables = signal<UsuarioAdministrable[]>([]);
+  public cargandoUsuarios = signal(false);
+  public usuarioModificandoRol = signal<string | null>(null);
   public configuracion = this.configuracionService.obtenerConfiguracion();
-
   public generos: Genero[] = [];
   public generosSeleccionados: string[] = [];
-
   public porcentajeDescuentoForm = 20;
   public guardandoDescuento = signal(false);
   public mensajeDescuentoGuardado = signal<string | null>(null);
@@ -47,7 +47,6 @@ export class AdminComponent implements OnInit {
   constructor() {
     effect(() => {
       this.porcentajeDescuentoForm = this.configuracion().porcentajeDescuentoPrimeraCompra;
-
       this.porcentajeDescuentoMayores50Form = this.configuracion().porcentajeDescuentoMayores50;
     });
   }
@@ -71,11 +70,12 @@ export class AdminComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.peliculasService.cargarPeliculas(false);
     this.generos = await this.generosService.obtenerGeneros();
+    await this.cargarUsuarios();
   }
 
-  async cerrarSesionStaff(): Promise<void> {
-    await this.staffService.cerrarSesion();
-    this.router.navigate(['/admin/login']);
+  async cerrarSesion(): Promise<void> {
+    await this.usuariosService.cerrarSesion();
+    this.router.navigate(['/cartelera']);
   }
 
   async guardarPorcentajeDescuento(): Promise<void> {
@@ -87,7 +87,6 @@ export class AdminComponent implements OnInit {
     );
 
     this.guardandoDescuento.set(false);
-
     this.mensajeDescuentoGuardado.set(
       exito ? 'Porcentaje actualizado correctamente.' : 'No se pudo guardar el cambio.',
     );
@@ -102,7 +101,6 @@ export class AdminComponent implements OnInit {
     );
 
     this.guardandoDescuentoMayores50.set(false);
-
     this.mensajeDescuentoMayores50Guardado.set(
       exito
         ? 'Descuento para mayores de 50 actualizado correctamente.'
@@ -112,7 +110,6 @@ export class AdminComponent implements OnInit {
 
   async toggleVisibilidad(pelicula: Pelicula): Promise<void> {
     const nuevoEstado = !(pelicula.publicada ?? true);
-
     const ok = await this.peliculasService.cambiarEstadoPublicacion(pelicula.id, nuevoEstado);
 
     if (!ok) {
@@ -197,7 +194,6 @@ export class AdminComponent implements OnInit {
     }
 
     const fechaInicio = new Date(this.nuevaFuncion.fechaHoraInicio);
-
     const fechaFin = new Date(fechaInicio.getTime() + pelicula.duracionMinutos * 60000);
 
     const funcionACrear: Funcion = {
@@ -232,5 +228,36 @@ export class AdminComponent implements OnInit {
 
   obtenerSala(salaId: string) {
     return this.salas().find((sala) => sala.id === salaId);
+  }
+
+  async cargarUsuarios(): Promise<void> {
+    this.cargandoUsuarios.set(true);
+
+    const usuarios = await this.usuariosService.obtenerUsuariosAdmin();
+
+    this.usuariosAdministrables.set(usuarios);
+
+    this.cargandoUsuarios.set(false);
+  }
+
+  async cambiarRolUsuario(usuario: UsuarioAdministrable, nuevoRol: string): Promise<void> {
+    const rol = nuevoRol as UsuarioAdministrable['rol'];
+
+    if (usuario.rol === rol) {
+      return;
+    }
+
+    this.usuarioModificandoRol.set(usuario.id);
+
+    const resultado = await this.usuariosService.actualizarRolUsuario(usuario.id, rol);
+
+    this.usuarioModificandoRol.set(null);
+
+    if (!resultado.exito) {
+      alert(resultado.mensaje || 'No se pudo actualizar el rol.');
+      return;
+    }
+
+    await this.cargarUsuarios();
   }
 }

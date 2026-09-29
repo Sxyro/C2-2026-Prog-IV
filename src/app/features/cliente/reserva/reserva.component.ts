@@ -98,31 +98,28 @@ export class ReservaComponent implements OnInit {
   });
 
   constructor() {
-    effect(
-      () => {
-        const idParam = this.route.snapshot.paramMap.get('idPelicula');
-        if (!idParam) return;
+    effect(() => {
+      const idParam = this.route.snapshot.paramMap.get('idPelicula');
+      if (!idParam) return;
 
-        const peliculas = this.peliculasService.obtenerPeliculas()();
-        const peliculaEncontrada = peliculas.find((p) => p.id === idParam);
+      const peliculas = this.peliculasService.obtenerPeliculas()();
+      const peliculaEncontrada = peliculas.find((p) => p.id === idParam);
 
-        if (peliculaEncontrada && !this.pelicula()) {
-          this.pelicula.set(peliculaEncontrada);
+      if (peliculaEncontrada && !this.pelicula()) {
+        this.pelicula.set(peliculaEncontrada);
+      }
+
+      if (peliculaEncontrada) {
+        const todasLasFunciones = this.funcionesService.obtenerFunciones()();
+        const funciones = todasLasFunciones.filter((f) => f.peliculaId === peliculaEncontrada.id);
+
+        this.funcionesDisponibles.set(funciones);
+
+        if (funciones.length > 0 && !this.funcionSeleccionada()) {
+          this.seleccionarFuncion(funciones[0]);
         }
-
-        if (peliculaEncontrada) {
-          const todasLasFunciones = this.funcionesService.obtenerFunciones()();
-          const funciones = todasLasFunciones.filter((f) => f.peliculaId === peliculaEncontrada.id);
-
-          this.funcionesDisponibles.set(funciones);
-
-          if (funciones.length > 0 && !this.funcionSeleccionada()) {
-            this.seleccionarFuncion(funciones[0]);
-          }
-        }
-      },
-      { allowSignalWrites: true },
-    );
+      }
+    });
   }
 
   ngOnInit(): void {}

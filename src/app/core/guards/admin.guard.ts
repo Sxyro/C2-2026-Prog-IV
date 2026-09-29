@@ -1,31 +1,41 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { StaffService } from '../services/staff.service';
+import { UsuariosService } from '../services/usuarios.service';
 
-export const adminGuard: CanActivateFn = async (route, state) => {
-  const staffService = inject(StaffService);
+export const adminGuard: CanActivateFn = async (_route, state) => {
+  const usuariosService = inject(UsuariosService);
   const router = inject(Router);
 
-  await staffService.esperarSesionLista();
+  await usuariosService.esperarSesionLista();
 
-  if (staffService.esEmpleadoOAdmin()) {
+  const usuario = usuariosService.obtenerUsuarioActual()();
+
+  if (usuario?.rol === 'empleado' || usuario?.rol === 'admin') {
     return true;
   }
 
-  router.navigate(['/admin/login'], { queryParams: { redirect: state.url } });
+  router.navigate(['/login'], {
+    queryParams: { redirect: state.url }
+  });
+
   return false;
 };
 
-export const soloAdminGuard: CanActivateFn = async (route, state) => {
-  const staffService = inject(StaffService);
+export const soloAdminGuard: CanActivateFn = async (_route, state) => {
+  const usuariosService = inject(UsuariosService);
   const router = inject(Router);
 
-  await staffService.esperarSesionLista();
+  await usuariosService.esperarSesionLista();
 
-  if (staffService.esAdmin()) {
+  const usuario = usuariosService.obtenerUsuarioActual()();
+
+  if (usuario?.rol === 'admin') {
     return true;
   }
 
-  router.navigate(['/admin/login'], { queryParams: { redirect: state.url } });
+  router.navigate(['/login'], {
+    queryParams: { redirect: state.url }
+  });
+
   return false;
 };

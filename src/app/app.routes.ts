@@ -15,13 +15,9 @@ export const routes: Routes = [
     path: 'checkout', 
     loadComponent: () => import('./features/cliente/checkout/checkout.component').then(m => m.CheckoutComponent) 
   },
-  {
-    path: 'admin/login',
-    loadComponent: () => import('./features/admin/login/admin-login.component').then(m => m.AdminLoginComponent)
-  },
   { 
     path: 'admin', 
-    loadComponent: () => import('./features/admin/admin/admin.component').then(m => m.AdminComponent),
+    loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),
     canActivate: [soloAdminGuard]
   },
   { path: '**', redirectTo: 'cartelera' }
