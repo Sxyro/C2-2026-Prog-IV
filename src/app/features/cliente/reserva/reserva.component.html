@@ -92,22 +92,29 @@
           Butacas seleccionadas: <strong>{{ butacasSeleccionadas().length }}</strong>
         </p>
 
+        @if (esMayorDe50()) {
+          <p class="descuento-tag">
+            Beneficio mayores de 50:
+            {{ configuracion().porcentajeDescuentoMayores50 }}% OFF aplicado.
+          </p>
+        }
+
         @if (tieneDescuento()) {
           <p class="descuento-tag">
-            ¡Beneficio 1° compra: {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF
-            aplicado!
+            Beneficio 1° compra:
+            {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF aplicado.
           </p>
+        }
+
+        @if (esMayorDe50() || tieneDescuento()) {
           <p>
             Subtotal: <s>${{ subtotal() }}</s>
           </p>
-          <p class="total">
-            Total a pagar: <strong>${{ total() }}</strong>
-          </p>
-        } @else {
-          <p class="total">
-            Total a pagar: <strong>${{ total() }}</strong>
-          </p>
         }
+
+        <p class="total">
+          Total a pagar: <strong>${{ total() }}</strong>
+        </p>
 
         <button class="btn-confirmar" (click)="confirmarReserva()">Confirmar Asientos</button>
       </div>

@@ -1,25 +1,212 @@
 <div class="checkout-container">
+
   <h2>Finalizar Compra</h2>
 
   <div class="resumen-box">
+
     <h3>{{ datosReserva?.pelicula?.nombre }}</h3>
-    <p><strong>Sala:</strong> {{ datosReserva?.funcion?.salaId }}</p>
-    <p><strong>Asientos:</strong> {{ cantidadAsientos }}</p>
-    <p class="total-text"><strong>Total a pagar:</strong> ${{ datosReserva?.total }}</p>
+
+    <p>
+      <strong>Sala:</strong>
+      {{ datosReserva?.funcion?.salaId }}
+    </p>
+
+    <p>
+      <strong>Asientos:</strong>
+      {{ cantidadAsientos }}
+    </p>
+
+    <p>
+      <strong>Entradas:</strong>
+      ${{ datosReserva?.total }}
+    </p>
+
   </div>
 
-  <form (ngSubmit)="procesarPago()" class="checkout-form">
-    <label>Email para recibir la entrada:</label>
-    <input 
-      type="email" 
-      [(ngModel)]="emailComprador" 
-      name="email" 
-      required 
-      placeholder="ejemplo@mail.com" 
-      class="input-field">
+  <section class="candy-section">
 
-    <button type="submit" [disabled]="procesando()" class="btn-pagar">
-      {{ procesando() ? 'Procesando Pago...' : 'Pagar y Descargar Entrada (PDF)' }}
+    <div class="candy-header">
+
+      <h3>🍿 Agregá Candy a tu compra</h3>
+
+      <p>
+        Podés comprar comida y bebidas junto con tus entradas.
+      </p>
+
+    </div>
+
+    <div class="categorias-candy">
+
+      @for (
+        categoria of categoriasCandy();
+        track categoria.id
+      ) {
+
+        <button
+          type="button"
+          [class.activa]="
+            categoriaSeleccionada() === categoria.id
+          "
+          (click)="seleccionarCategoria(categoria.id)"
+        >
+          {{ categoria.nombre }}
+        </button>
+
+      }
+
+    </div>
+
+    <div class="productos-candy">
+
+      @for (
+        producto of productosFiltrados();
+        track producto.id
+      ) {
+
+        <article class="producto-candy">
+
+          <div class="producto-candy-info">
+
+            <h4>
+              {{ producto.nombre }}
+            </h4>
+
+            @if (producto.descripcion) {
+
+              <p>
+                {{ producto.descripcion }}
+              </p>
+
+            }
+
+            <strong>
+              ${{ producto.precio }}
+            </strong>
+
+          </div>
+
+          <div class="cantidad-candy">
+
+            <button
+              type="button"
+              (click)="quitarProducto(producto)"
+              [disabled]="obtenerCantidad(producto.id) === 0"
+            >
+              −
+            </button>
+
+            <span>
+              {{ obtenerCantidad(producto.id) }}
+            </span>
+
+            <button
+              type="button"
+              (click)="agregarProducto(producto)"
+            >
+              +
+            </button>
+
+          </div>
+
+        </article>
+
+      }
+
+    </div>
+
+    @if (productosSeleccionados().length > 0) {
+
+      <div class="candy-resumen">
+
+        <h4>🍿 Candy seleccionado</h4>
+
+        @for (
+          item of productosSeleccionados();
+          track item.producto.id
+        ) {
+
+          <div class="candy-resumen-linea">
+
+            <span>
+              {{ item.cantidad }} ×
+              {{ item.producto.nombre }}
+            </span>
+
+            <strong>
+              ${{ item.subtotal }}
+            </strong>
+
+          </div>
+
+        }
+
+        <div class="candy-subtotal">
+
+          <span>
+            Subtotal Candy
+          </span>
+
+          <strong>
+            ${{ subtotalCandy() }}
+          </strong>
+
+        </div>
+
+      </div>
+
+    }
+
+  </section>
+
+  <div class="total-final">
+
+    <div>
+      <span>Entradas</span>
+      <strong>${{ datosReserva?.total }}</strong>
+    </div>
+
+    <div>
+      <span>Candy</span>
+      <strong>${{ subtotalCandy() }}</strong>
+    </div>
+
+    <div class="total-principal">
+      <span>Total a pagar</span>
+      <strong>${{ totalFinal() }}</strong>
+    </div>
+
+  </div>
+
+  <form
+    (ngSubmit)="procesarPago()"
+    class="checkout-form"
+  >
+
+    <label>
+      Email para recibir la entrada:
+    </label>
+
+    <input
+      type="email"
+      [(ngModel)]="emailComprador"
+      name="email"
+      required
+      placeholder="ejemplo@mail.com"
+      class="input-field"
+    >
+
+    <button
+      type="submit"
+      [disabled]="procesando()"
+      class="btn-pagar"
+    >
+      {{
+        procesando()
+          ? 'Procesando Pago...'
+          : 'Pagar y Descargar Entrada (PDF)'
+      }}
     </button>
+
   </form>
+
 </div>

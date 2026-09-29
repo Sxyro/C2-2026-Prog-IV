@@ -2,15 +2,12 @@ import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { PeliculasService } from '../../../core/services/peliculas.service';
 import { FuncionesService } from '../../../core/services/funciones.service';
 import { SalasService } from '../../../core/services/salas.service';
 import { StaffService } from '../../../core/services/staff.service';
 import { ConfiguracionService } from '../../../core/services/configuracion.service';
 import { GenerosService } from '../../../core/services/generos.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
-
 import { Pelicula } from '../../../core/models/pelicula.model';
 import { Funcion } from '../../../core/models/funcion.model';
 import { Genero } from '../../../core/models/genero.model';
@@ -29,7 +26,6 @@ export class AdminComponent implements OnInit {
   private staffService = inject(StaffService);
   private configuracionService = inject(ConfiguracionService);
   private generosService = inject(GenerosService);
-  private supabaseService = inject(SupabaseService);
   private router = inject(Router);
 
   public peliculas = this.peliculasService.obtenerPeliculas();
@@ -44,10 +40,15 @@ export class AdminComponent implements OnInit {
   public porcentajeDescuentoForm = 20;
   public guardandoDescuento = signal(false);
   public mensajeDescuentoGuardado = signal<string | null>(null);
+  public porcentajeDescuentoMayores50Form = 30;
+  public guardandoDescuentoMayores50 = signal(false);
+  public mensajeDescuentoMayores50Guardado = signal<string | null>(null);
 
   constructor() {
     effect(() => {
       this.porcentajeDescuentoForm = this.configuracion().porcentajeDescuentoPrimeraCompra;
+
+      this.porcentajeDescuentoMayores50Form = this.configuracion().porcentajeDescuentoMayores50;
     });
   }
 
@@ -68,17 +69,7 @@ export class AdminComponent implements OnInit {
   };
 
   async ngOnInit(): Promise<void> {
-    const { data } = await this.supabaseService.client.auth.getSession();
-
-    console.log('SESION SUPABASE:', data.session);
-
-    const { data: resultado, error } = await this.supabaseService.client.rpc('es_staff_admin');
-
-    console.log('RESULTADO es_staff_admin:', resultado);
-    console.log('ERROR es_staff_admin:', error);
-
     await this.peliculasService.cargarPeliculas(false);
-
     this.generos = await this.generosService.obtenerGeneros();
   }
 
@@ -99,6 +90,23 @@ export class AdminComponent implements OnInit {
 
     this.mensajeDescuentoGuardado.set(
       exito ? 'Porcentaje actualizado correctamente.' : 'No se pudo guardar el cambio.',
+    );
+  }
+
+  async guardarPorcentajeMayores50(): Promise<void> {
+    this.guardandoDescuentoMayores50.set(true);
+    this.mensajeDescuentoMayores50Guardado.set(null);
+
+    const exito = await this.configuracionService.actualizarPorcentajeMayores50(
+      this.porcentajeDescuentoMayores50Form,
+    );
+
+    this.guardandoDescuentoMayores50.set(false);
+
+    this.mensajeDescuentoMayores50Guardado.set(
+      exito
+        ? 'Descuento para mayores de 50 actualizado correctamente.'
+        : 'No se pudo guardar el cambio.',
     );
   }
 

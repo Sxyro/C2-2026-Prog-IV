@@ -54,12 +54,47 @@ export class ReservaComponent implements OnInit {
     return usuario ? usuario.tieneDescuentoPrimeraCompra : false;
   });
 
-  public total = computed(() => {
-    const subtotal = this.subtotal();
-    if (!this.tieneDescuento()) return subtotal;
+  public esMayorDe50 = computed(() => {
+    const usuario = this.usuarioActual();
 
-    const porcentaje = this.configuracion().porcentajeDescuentoPrimeraCompra;
-    return subtotal * (1 - porcentaje / 100);
+    if (!usuario) {
+      return false;
+    }
+
+    const fechaNacimiento = new Date(usuario.fechaNacimiento);
+    const hoy = new Date();
+
+    let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+
+    const mesActual = hoy.getMonth();
+    const mesNacimiento = fechaNacimiento.getMonth();
+
+    if (
+      mesActual < mesNacimiento ||
+      (mesActual === mesNacimiento && hoy.getDate() < fechaNacimiento.getDate())
+    ) {
+      edad--;
+    }
+
+    return edad >= 50;
+  });
+
+  public total = computed(() => {
+    let total = this.subtotal();
+
+    if (this.esMayorDe50()) {
+      const porcentajeMayores50 = this.configuracion().porcentajeDescuentoMayores50;
+
+      total = total * (1 - porcentajeMayores50 / 100);
+    }
+
+    if (this.tieneDescuento()) {
+      const porcentajePrimeraCompra = this.configuracion().porcentajeDescuentoPrimeraCompra;
+
+      total = total * (1 - porcentajePrimeraCompra / 100);
+    }
+
+    return total;
   });
 
   constructor() {

@@ -1,5 +1,5 @@
 .checkout-container {
-  max-width: 500px;
+  max-width: 700px;
   margin: var(--space-6) auto;
   padding: var(--space-5);
   background: var(--bg-elevada);
@@ -11,7 +11,7 @@
   background: var(--bg-elevada-2);
   padding: var(--space-4);
   border-radius: var(--radio-chico);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .resumen-box p {
@@ -19,16 +19,190 @@
   font-size: 0.92rem;
 }
 
-.total-text {
-  font-size: 1.2rem;
+.candy-section {
+  margin-top: var(--space-5);
+}
+
+.candy-header {
+  margin-bottom: var(--space-4);
+}
+
+.candy-header p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.categorias-candy {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.categorias-candy button {
+  padding: 9px 15px;
+  border-radius: 100px;
+  border: 1px solid var(--borde);
+  background: var(--bg-elevada-2);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.categorias-candy button:hover {
+  color: var(--papel);
+  border-color: var(--muted);
+}
+
+.categorias-candy button.activa {
+  background: var(--marquesina);
+  border-color: var(--marquesina);
+  color: var(--tinta);
+}
+
+.productos-candy {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.producto-candy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-elevada-2);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+.producto-candy-info {
+  flex: 1;
+}
+
+.producto-candy-info h4 {
+  margin-bottom: 5px;
+}
+
+.producto-candy-info p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+
+.producto-candy-info strong {
   color: var(--marquesina);
+}
+
+.cantidad-candy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cantidad-candy button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--borde);
+  background: var(--bg-elevada);
+  color: var(--papel);
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.cantidad-candy button:hover:not(:disabled) {
+  background: var(--marquesina);
+  color: var(--tinta);
+  border-color: var(--marquesina);
+}
+
+.cantidad-candy button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cantidad-candy span {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.candy-resumen {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--bg-elevada-2);
+  border-radius: var(--radio);
+  border-left: 3px solid var(--marquesina);
+}
+
+.candy-resumen h4 {
+  margin-bottom: var(--space-3);
+}
+
+.candy-resumen-linea {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 7px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.candy-resumen-linea strong {
+  color: var(--papel);
+}
+
+.candy-subtotal {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--borde);
   margin-top: var(--space-2);
+  padding-top: var(--space-3);
+}
+
+.candy-subtotal strong {
+  color: var(--marquesina);
+}
+
+.total-final {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--bg-elevada-2);
+  border-radius: var(--radio);
+  border-top: 3px solid var(--marquesina);
+}
+
+.total-final > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  color: var(--muted);
+}
+
+.total-final strong {
+  color: var(--papel);
+}
+
+.total-final .total-principal {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--borde);
+  color: var(--papel);
+  font-size: 1.15rem;
+}
+
+.total-final .total-principal strong {
+  color: var(--marquesina);
+  font-size: 1.3rem;
 }
 
 .checkout-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
 .checkout-form label {
@@ -55,7 +229,26 @@
   cursor: pointer;
 }
 
+.btn-pagar:hover:not(:disabled) {
+  background: #ffcb2e;
+}
+
 .btn-pagar:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .checkout-container {
+    margin: var(--space-4);
+    padding: var(--space-4);
+  }
+
+  .producto-candy {
+    align-items: flex-start;
+  }
+
+  .cantidad-candy {
+    flex-shrink: 0;
+  }
 }

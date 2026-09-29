@@ -9,7 +9,8 @@ export class ConfiguracionService {
   private supabase = inject(SupabaseService).client;
 
   private configuracion = signal<Configuracion>({
-    porcentajeDescuentoPrimeraCompra: 20
+    porcentajeDescuentoPrimeraCompra: 20,
+    porcentajeDescuentoMayores50: 30
   });
 
   constructor() {
@@ -28,30 +29,68 @@ export class ConfiguracionService {
       .maybeSingle();
 
     if (error || !data) {
-      console.error('No se pudo cargar la configuración, se usa el valor por defecto:', error?.message);
+      console.error(
+        'No se pudo cargar la configuración, se usa el valor por defecto:',
+        error?.message
+      );
       return;
     }
 
     this.configuracion.set({
-      porcentajeDescuentoPrimeraCompra: data.porcentaje_descuento_primera_compra
+      porcentajeDescuentoPrimeraCompra:
+        Number(data.porcentaje_descuento_primera_compra),
+      porcentajeDescuentoMayores50:
+        Number(data.porcentaje_descuento_mayores_50)
     });
   }
 
-  /** Solo el admin puede llamar esto (lo bloquea RLS del lado del servidor). */
-  async actualizarPorcentajeDescuento(nuevoPorcentaje: number): Promise<boolean> {
+  async actualizarPorcentajeDescuento(
+    nuevoPorcentaje: number
+  ): Promise<boolean> {
     const { error } = await this.supabase
       .from('configuracion')
-      .update({ porcentaje_descuento_primera_compra: nuevoPorcentaje })
+      .update({
+        porcentaje_descuento_primera_compra: nuevoPorcentaje
+      })
       .eq('id', 1);
 
     if (error) {
-      console.error('Error al actualizar el porcentaje de descuento:', error.message);
+      console.error(
+        'Error al actualizar el porcentaje de descuento:',
+        error.message
+      );
       return false;
     }
 
-    this.configuracion.update(config => ({
+    this.configuracion.update((config) => ({
       ...config,
       porcentajeDescuentoPrimeraCompra: nuevoPorcentaje
+    }));
+
+    return true;
+  }
+
+  async actualizarPorcentajeMayores50(
+    nuevoPorcentaje: number
+  ): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('configuracion')
+      .update({
+        porcentaje_descuento_mayores_50: nuevoPorcentaje
+      })
+      .eq('id', 1);
+
+    if (error) {
+      console.error(
+        'Error al actualizar el descuento para mayores de 50:',
+        error.message
+      );
+      return false;
+    }
+
+    this.configuracion.update((config) => ({
+      ...config,
+      porcentajeDescuentoMayores50: nuevoPorcentaje
     }));
 
     return true;
