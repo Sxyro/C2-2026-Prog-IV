@@ -4,6 +4,7 @@
   padding: var(--space-5);
   background-color: var(--bg-elevada);
   border-radius: var(--radio);
+  border: 1px solid var(--borde);
 }
 
 .pelicula-header {
@@ -43,13 +44,13 @@
 }
 
 .badge-13 {
-  border-color: #d99b2b;
-  color: #f0b94b;
+  border-color: #8d6c32;
+  color: #d5ad5c;
 }
 
 .badge-18 {
-  border-color: #b23a4e;
-  color: #e66a7f;
+  border-color: var(--imperial);
+  color: #ef7d87;
 }
 
 .seccion-funciones {
@@ -69,17 +70,19 @@
   padding: 11px 16px;
   border-radius: var(--radio-chico);
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .funciones-list button:hover {
-  border-color: var(--muted);
+  border-color: var(--borde-claro);
 }
 
 .funciones-list button.active {
-  background: var(--marquesina);
-  border-color: var(--marquesina);
-  color: var(--tinta);
+  background: var(--imperial);
+  border-color: var(--imperial);
+  color: #ffffff;
   font-weight: 700;
 }
 
@@ -87,14 +90,15 @@
   max-width: 900px;
   margin: var(--space-4) auto var(--space-5);
   padding: 10px;
-  background: var(--bg-elevada-2);
-  color: var(--muted);
+  background: linear-gradient(180deg, #e5e5e5, #777b81);
+  color: #17191c;
   text-align: center;
   border-radius: var(--radio-chico);
   letter-spacing: 5px;
   font-family: var(--fuente-marquesina);
   font-size: 0.85rem;
-  box-shadow: 0 25px 15px -10px rgba(255, 244, 198, 0.25);
+  font-weight: 700;
+  box-shadow: 0 25px 15px -10px rgba(255, 255, 255, 0.12);
 }
 
 .mapa-sala {
@@ -117,6 +121,7 @@
   padding: 12px 0;
   border-top: 1px solid var(--borde);
   border-bottom: 1px solid var(--borde);
+  background: rgba(36, 52, 71, 0.08);
 }
 
 .letra-fila {
@@ -125,6 +130,10 @@
   font-weight: 600;
   color: var(--muted);
   flex-shrink: 0;
+}
+
+.fila-accesible .letra-fila {
+  color: #7f9bb5;
 }
 
 .bloque {
@@ -141,43 +150,55 @@
   color: var(--papel);
   border-radius: 5px 5px 2px 2px;
   cursor: pointer;
-  transition: transform 0.12s ease, background-color 0.15s ease;
+  transition:
+    transform 0.12s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .butaca:hover:not(:disabled) {
   transform: translateY(-1px);
+  border-color: var(--borde-claro);
 }
 
 .butaca.seleccionada {
-  background-color: var(--marquesina);
-  border-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--imperial);
+  border-color: var(--imperial);
+  color: #ffffff;
   font-weight: 700;
 }
 
 .butaca.ocupada {
-  background-color: transparent;
-  border-color: var(--borde);
-  color: var(--borde);
+  background-color: #08090b;
+  border-color: #202328;
+  color: #3f4247;
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .fila-accesible .butaca.accesible {
-  background-color: #244746;
-  border-color: #4b8f8c;
-  color: #9ee3df;
+  background-color: #243447;
+  border-color: #3d5a73;
+  color: #dce8f2;
 }
 
 .fila-accesible .butaca.accesible:hover:not(:disabled) {
-  background-color: #315c5a;
-  border-color: #6bc5c0;
+  background-color: #304b63;
+  border-color: #5c7d99;
+  color: #ffffff;
 }
 
 .fila-accesible .butaca.accesible.seleccionada {
-  background-color: var(--marquesina);
-  border-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--imperial);
+  border-color: var(--imperial-brillante);
+  color: #ffffff;
+}
+
+.fila-accesible .butaca.accesible.ocupada {
+  background-color: #151d25;
+  border-color: #263442;
+  color: #5d6b78;
+  opacity: 0.7;
 }
 
 .leyenda {
@@ -206,31 +227,31 @@
 }
 
 .sample.accesible {
-  background-color: #244746;
-  border-color: #4b8f8c;
+  background-color: #243447;
+  border-color: #3d5a73;
 }
 
 .sample.seleccionada {
-  background-color: var(--marquesina);
-  border-color: var(--marquesina);
+  background-color: var(--imperial);
+  border-color: var(--imperial);
 }
 
 .sample.ocupada {
-  background-color: transparent;
-  opacity: 0.5;
+  background-color: #08090b;
+  opacity: 0.7;
 }
 
 .icono-accesible {
   margin-left: 5px;
   font-size: 0.95rem;
-  color: #9ee3df;
+  color: #7f9bb5;
 }
 
 .resumen-reserva {
   background: var(--bg-elevada-2);
   padding: var(--space-4);
   border-radius: var(--radio);
-  border-top: 3px solid var(--marquesina);
+  border-top: 3px solid var(--imperial);
   text-align: right;
 }
 
@@ -244,8 +265,8 @@
 }
 
 .btn-confirmar {
-  background: var(--marquesina);
-  color: var(--tinta);
+  background: var(--imperial);
+  color: #ffffff;
   border: none;
   padding: 12px 24px;
   font-size: 1rem;
@@ -253,11 +274,13 @@
   border-radius: var(--radio-chico);
   cursor: pointer;
   margin-top: var(--space-2);
-  transition: background-color 0.15s ease, transform 0.12s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
 }
 
 .btn-confirmar:hover {
-  background-color: #ffcb2e;
+  background-color: var(--imperial-brillante);
 }
 
 .btn-confirmar:active {

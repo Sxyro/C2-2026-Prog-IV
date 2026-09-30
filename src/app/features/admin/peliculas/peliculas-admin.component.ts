@@ -44,8 +44,13 @@ export class PeliculasAdminComponent implements OnInit {
     clasificacionEdad: 'ATP',
   };
 
+  public archivoPortada: File | null = null;
+  public vistaPreviaPortada: string | null = null;
+  public subiendoPortada = false;
+
   async ngOnInit(): Promise<void> {
     await this.peliculasService.cargarPeliculas(false);
+
     this.generos =
       await this.generosService.obtenerGeneros();
   }
@@ -64,6 +69,36 @@ export class PeliculasAdminComponent implements OnInit {
         generoId
       ];
     }
+  }
+
+  seleccionarPortada(event: Event): void {
+    const input =
+      event.target as HTMLInputElement;
+
+    const archivo = input.files?.[0];
+
+    if (!archivo) {
+      return;
+    }
+
+    if (!archivo.type.startsWith('image/')) {
+      alert(
+        'Seleccioná un archivo de imagen válido.'
+      );
+      input.value = '';
+      return;
+    }
+
+    this.archivoPortada = archivo;
+
+    if (this.vistaPreviaPortada) {
+      URL.revokeObjectURL(
+        this.vistaPreviaPortada
+      );
+    }
+
+    this.vistaPreviaPortada =
+      URL.createObjectURL(archivo);
   }
 
   async guardarPelicula(): Promise<void> {
@@ -86,6 +121,13 @@ export class PeliculasAdminComponent implements OnInit {
       return;
     }
 
+    if (!this.archivoPortada) {
+      alert(
+        'Seleccioná una imagen para la portada.'
+      );
+      return;
+    }
+
     const idsNumericos =
       this.peliculas()
         .map(p => parseInt(p.id, 10))
@@ -103,11 +145,32 @@ export class PeliculasAdminComponent implements OnInit {
       ...this.nuevaPelicula,
     };
 
+    this.subiendoPortada = true;
+
+    const portadaUrl =
+      await this.peliculasService.subirPortada(
+        this.archivoPortada,
+        siguienteId
+      );
+
+    if (!portadaUrl) {
+      this.subiendoPortada = false;
+
+      alert(
+        'No se pudo subir la imagen de la película.'
+      );
+      return;
+    }
+
+    peliculaACrear.portadaUrl = portadaUrl;
+
     const OK =
       await this.peliculasService.agregarPelicula(
         peliculaACrear,
         this.generosSeleccionados
       );
+
+    this.subiendoPortada = false;
 
     if (!OK) {
       alert(
@@ -129,6 +192,15 @@ export class PeliculasAdminComponent implements OnInit {
     };
 
     this.generosSeleccionados = [];
+    this.archivoPortada = null;
+
+    if (this.vistaPreviaPortada) {
+      URL.revokeObjectURL(
+        this.vistaPreviaPortada
+      );
+    }
+
+    this.vistaPreviaPortada = null;
 
     await this.peliculasService.cargarPeliculas(false);
   }

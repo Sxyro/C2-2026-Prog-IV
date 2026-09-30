@@ -98,15 +98,33 @@
         </label>
       </div>
 
-      <label> URL del Poster / Portada: </label>
+      <div class="portada-upload">
+        <label for="portada"> Poster / Portada: </label>
 
-      <input
-        type="url"
-        [(ngModel)]="nuevaPelicula.portadaUrl"
-        name="portadaUrl"
-        placeholder="https://..."
-        class="input-field"
-      />
+        <input
+          id="portada"
+          type="file"
+          accept="image/*"
+          (change)="seleccionarPortada($event)"
+          class="input-file"
+        />
+
+        @if (archivoPortada) {
+          <div class="archivo-seleccionado">
+            <span>✓</span>
+            <div>
+              <strong>{{ archivoPortada.name }}</strong>
+              <small> {{ (archivoPortada.size / 1024 / 1024).toFixed(2) }} MB </small>
+            </div>
+          </div>
+        }
+
+        @if (vistaPreviaPortada) {
+          <div class="portada-preview">
+            <img [src]="vistaPreviaPortada" alt="Vista previa de la portada" />
+          </div>
+        }
+      </div>
 
       <label>Sinopsis:</label>
 
@@ -117,7 +135,9 @@
         class="input-field"
       ></textarea>
 
-      <button type="submit" class="btn-primary">Guardar Película</button>
+      <button type="submit" class="btn-primary" [disabled]="subiendoPortada">
+        {{ subiendoPortada ? 'Subiendo imagen...' : 'Guardar Película' }}
+      </button>
     </form>
   </section>
 

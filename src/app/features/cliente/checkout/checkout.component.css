@@ -3,7 +3,8 @@
   margin: var(--space-6) auto;
   padding: var(--space-5);
   background: var(--bg-elevada);
-  border-top: 3px solid var(--marquesina);
+  border: 1px solid var(--borde);
+  border-top: 3px solid var(--imperial);
   border-radius: var(--radio);
 }
 
@@ -47,17 +48,21 @@
   color: var(--muted);
   cursor: pointer;
   font-weight: 600;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .categorias-candy button:hover {
   color: var(--papel);
-  border-color: var(--muted);
+  border-color: var(--borde-claro);
 }
 
 .categorias-candy button.activa {
-  background: var(--marquesina);
-  border-color: var(--marquesina);
-  color: var(--tinta);
+  background: var(--imperial);
+  border-color: var(--imperial);
+  color: #ffffff;
 }
 
 .productos-candy {
@@ -91,7 +96,7 @@
 }
 
 .producto-candy-info strong {
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
 }
 
 .cantidad-candy {
@@ -110,12 +115,16 @@
   cursor: pointer;
   font-size: 1.1rem;
   font-weight: 700;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .cantidad-candy button:hover:not(:disabled) {
-  background: var(--marquesina);
-  color: var(--tinta);
-  border-color: var(--marquesina);
+  background: var(--imperial);
+  color: #ffffff;
+  border-color: var(--imperial);
 }
 
 .cantidad-candy button:disabled {
@@ -134,7 +143,7 @@
   padding: var(--space-4);
   background: var(--bg-elevada-2);
   border-radius: var(--radio);
-  border-left: 3px solid var(--marquesina);
+  border-left: 3px solid var(--imperial);
 }
 
 .candy-resumen h4 {
@@ -163,7 +172,7 @@
 }
 
 .candy-subtotal strong {
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
 }
 
 .total-final {
@@ -171,7 +180,7 @@
   padding: var(--space-4);
   background: var(--bg-elevada-2);
   border-radius: var(--radio);
-  border-top: 3px solid var(--marquesina);
+  border-top: 3px solid var(--imperial);
 }
 
 .total-final > div {
@@ -194,7 +203,7 @@
 }
 
 .total-final .total-principal strong {
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
   font-size: 1.3rem;
 }
 
@@ -219,18 +228,30 @@
   color: var(--papel);
 }
 
+.input-field:focus {
+  outline: none;
+  border-color: var(--imperial);
+}
+
 .btn-pagar {
   padding: 12px;
-  background: var(--marquesina);
-  color: var(--tinta);
+  background: var(--imperial);
+  color: #ffffff;
   font-weight: 700;
   border: none;
   border-radius: var(--radio-chico);
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.12s ease;
 }
 
 .btn-pagar:hover:not(:disabled) {
-  background: #ffcb2e;
+  background: var(--imperial-brillante);
+}
+
+.btn-pagar:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn-pagar:disabled {

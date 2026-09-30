@@ -1,16 +1,10 @@
 <div class="admin-container">
-
-  <a routerLink="/admin" class="back-link">
-    ← Volver al panel
-  </a>
+  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
 
   <div class="section-header">
     <span class="admin-kicker">ADMINISTRACIÓN</span>
     <h1>Funciones</h1>
-    <p>
-      Programá las funciones y el sistema asignará
-      automáticamente una sala disponible.
-    </p>
+    <p>Programá las funciones y el sistema asignará automáticamente una sala disponible.</p>
   </div>
 
   <section class="form-card">
@@ -19,19 +13,14 @@
         <span class="section-number">01</span>
         <div>
           <h2>Programar función</h2>
-          <p>
-            Elegí la película, fecha, horario y precio.
-          </p>
+          <p>Elegí la película, fecha, horario y precio.</p>
         </div>
       </div>
     </div>
 
     <div class="admin-form">
-
       <div class="form-group">
-        <label for="pelicula">
-          Película
-        </label>
+        <label for="pelicula"> Película </label>
 
         <select
           id="pelicula"
@@ -39,9 +28,7 @@
           name="pelicula"
           class="input-field"
         >
-          <option value="">
-            Seleccioná una película
-          </option>
+          <option value="">Seleccioná una película</option>
 
           @for (pelicula of peliculas(); track pelicula.id) {
             <option [value]="pelicula.id">
@@ -52,12 +39,10 @@
       </div>
 
       <div class="date-time-row">
-
         <div class="form-group">
           <label>Fecha de inicio</label>
 
           <div class="custom-picker">
-
             <button
               type="button"
               class="picker-button"
@@ -73,40 +58,18 @@
 
             @if (calendarioAbierto) {
               <div class="calendar-popup">
-
                 <div class="calendar-header">
+                  <button type="button" class="calendar-nav" (click)="mesAnterior()">‹</button>
 
-                  <button
-                    type="button"
-                    class="calendar-nav"
-                    (click)="mesAnterior()"
-                  >
-                    ‹
-                  </button>
-
-                  <button
-                    type="button"
-                    class="calendar-month"
-                    (click)="volverAlMesActual()"
-                  >
+                  <button type="button" class="calendar-month" (click)="volverAlMesActual()">
                     {{ obtenerNombreMes() }}
                   </button>
 
-                  <button
-                    type="button"
-                    class="calendar-nav"
-                    (click)="mesSiguiente()"
-                  >
-                    ›
-                  </button>
-
+                  <button type="button" class="calendar-nav" (click)="mesSiguiente()">›</button>
                 </div>
 
                 <div class="calendar-weekdays">
-                  @for (
-                    dia of obtenerDiasSemana();
-                    track dia
-                  ) {
+                  @for (dia of obtenerDiasSemana(); track dia) {
                     <span>
                       {{ dia }}
                     </span>
@@ -114,10 +77,7 @@
                 </div>
 
                 <div class="calendar-grid">
-                  @for (
-                    dia of obtenerDiasCalendario();
-                    track dia.fecha.getTime()
-                  ) {
+                  @for (dia of obtenerDiasCalendario(); track dia.fecha.getTime()) {
                     <button
                       type="button"
                       class="calendar-day"
@@ -134,17 +94,10 @@
                 </div>
 
                 <div class="calendar-footer">
-                  <button
-                    type="button"
-                    (click)="volverAlMesActual()"
-                  >
-                    Hoy
-                  </button>
+                  <button type="button" (click)="volverAlMesActual()">Hoy</button>
                 </div>
-
               </div>
             }
-
           </div>
         </div>
 
@@ -152,7 +105,6 @@
           <label>Hora de inicio</label>
 
           <div class="custom-picker">
-
             <button
               type="button"
               class="picker-button"
@@ -168,46 +120,29 @@
 
             @if (selectorHoraAbierto) {
               <div class="time-popup">
-
-                <div class="time-header">
-                  Seleccioná el horario
-                </div>
+                <div class="time-header">Seleccioná el horario</div>
 
                 <div class="time-grid">
-                  @for (
-                    hora of horasDisponibles;
-                    track hora
-                  ) {
+                  @for (hora of horasDisponibles; track hora) {
                     <button
                       type="button"
                       class="time-option"
-                      [class.selected]="
-                        nuevaFuncion.hora === hora
-                      "
+                      [class.selected]="nuevaFuncion.hora === hora"
                       (click)="seleccionarHora(hora)"
                     >
                       {{ hora }}
                     </button>
                   }
                 </div>
-
               </div>
             }
-
           </div>
         </div>
-
       </div>
 
-      @if (
-        nuevaFuncion.fecha &&
-        nuevaFuncion.hora &&
-        nuevaFuncion.peliculaId
-      ) {
+      @if (nuevaFuncion.fecha && nuevaFuncion.hora && nuevaFuncion.peliculaId) {
         <div class="function-preview">
-          <span class="preview-label">
-            PREVISUALIZACIÓN
-          </span>
+          <span class="preview-label"> PREVISUALIZACIÓN </span>
 
           <strong>
             {{ obtenerPelicula(nuevaFuncion.peliculaId)?.nombre }}
@@ -222,9 +157,7 @@
       }
 
       <div class="form-group">
-        <label for="precio">
-          Precio de entrada
-        </label>
+        <label for="precio"> Precio de entrada </label>
 
         <div class="price-input">
           <span>$</span>
@@ -244,48 +177,32 @@
         <strong>Asignación automática de sala</strong>
 
         <p>
-          La sala se asignará automáticamente buscando
-          una que esté disponible y respetando los
-          30 minutos entre funciones.
+          La sala se asignará automáticamente buscando una que esté disponible y respetando los 30
+          minutos entre funciones.
         </p>
       </div>
 
-      <button
-        type="button"
-        class="btn-guardar"
-        (click)="guardarFuncion()"
-      >
+      <button type="button" class="btn-guardar" (click)="guardarFuncion()">
         Programar función
       </button>
-
     </div>
   </section>
 
   <section class="functions-section">
-
     <div class="section-header section-header-small">
       <span class="admin-kicker">PROGRAMACIÓN</span>
       <h2>Funciones existentes</h2>
-      <p>
-        Funciones actualmente programadas en el sistema.
-      </p>
+      <p>Funciones actualmente programadas en el sistema.</p>
     </div>
 
     @if (funciones().length === 0) {
-
       <div class="empty-state">
         <span>◌</span>
-        <p>
-          No hay funciones programadas.
-        </p>
+        <p>No hay funciones programadas.</p>
       </div>
-
     } @else {
-
       <div class="tabla-wrapper">
-
         <table class="tabla-funciones">
-
           <thead>
             <tr>
               <th>Película</th>
@@ -297,59 +214,60 @@
           </thead>
 
           <tbody>
-            @for (
-              funcion of funciones();
-              track funcion.id
-            ) {
+            @for (funcion of funciones(); track funcion.id) {
               <tr>
-
                 <td>
                   <strong>
-                    {{
-                      obtenerPelicula(
-                        funcion.peliculaId
-                      )?.nombre
-                    }}
+                    {{ obtenerPelicula(funcion.peliculaId)?.nombre }}
                   </strong>
                 </td>
 
                 <td>
-                  {{
-                    funcion.fechaHoraInicio
-                      | date:'dd/MM/yyyy HH:mm'
-                  }}
+                  {{ funcion.fechaHoraInicio | date: 'dd/MM/yyyy HH:mm' }}
                 </td>
 
                 <td>
-                  {{
-                    funcion.fechaHoraFin
-                      | date:'HH:mm'
-                  }}
+                  {{ funcion.fechaHoraFin | date: 'HH:mm' }}
                 </td>
 
                 <td>
-                  {{
-                    obtenerSala(
-                      funcion.salaId
-                    )?.nombre ||
-                    funcion.salaId
-                  }}
+                  {{ obtenerSala(funcion.salaId)?.nombre || funcion.salaId }}
                 </td>
 
-                <td>
-                  ${{ funcion.precioEntrada }}
-                </td>
-
+                <td>${{ funcion.precioEntrada }}</td>
               </tr>
             }
           </tbody>
-
         </table>
-
       </div>
-
     }
-
   </section>
+  @if (modalAbierto) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div
+        class="modal"
+        [class.modal-error]="modalTipo === 'error'"
+        [class.modal-exito]="modalTipo === 'exito'"
+        (click)="$event.stopPropagation()"
+      >
+        <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
 
+        <div class="modal-icon">
+          {{ modalTipo === 'error' ? '!' : '✓' }}
+        </div>
+
+        <div class="modal-contenido">
+          <span class="modal-kicker">
+            {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+          </span>
+
+          <h2>{{ modalTitulo }}</h2>
+
+          <p>{{ modalMensaje }}</p>
+        </div>
+
+        <button type="button" class="modal-boton" (click)="cerrarModal()">Entendido</button>
+      </div>
+    </div>
+  }
 </div>

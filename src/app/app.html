@@ -1,7 +1,10 @@
 <header class="main-header">
   <nav class="nav-container">
     <div class="logo">
-      <a routerLink="/cartelera">🎬 Cine App</a>
+      <a routerLink="/cartelera">
+        <img src="icon-cine-50.png" alt="Cine Imperial" />
+        <span>Cine Imperial</span>
+      </a>
     </div>
 
     <ul class="nav-links">
@@ -25,15 +28,11 @@
         </li>
 
         <li>
-          <a routerLink="/mis-peliculas" routerLinkActive="active">
-            Mis películas
-          </a>
+          <a routerLink="/mis-peliculas" routerLinkActive="active"> Mis películas </a>
         </li>
 
         <li>
-          <button (click)="cerrarSesion()" class="btn-logout">
-            Cerrar Sesión
-          </button>
+          <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
         </li>
       }
 
@@ -43,15 +42,11 @@
         </li>
 
         <li>
-          <a routerLink="/escanear" routerLinkActive="active">
-            Escanear códigos
-          </a>
+          <a routerLink="/escanear" routerLinkActive="active"> Escanear códigos </a>
         </li>
 
         <li>
-          <button (click)="cerrarSesion()" class="btn-logout">
-            Cerrar Sesión
-          </button>
+          <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
         </li>
       }
 
@@ -61,15 +56,11 @@
         </li>
 
         <li>
-          <a routerLink="/admin" routerLinkActive="active">
-            Panel Admin
-          </a>
+          <a routerLink="/admin" routerLinkActive="active"> Panel Admin </a>
         </li>
 
         <li>
-          <button (click)="cerrarSesion()" class="btn-logout">
-            Cerrar Sesión
-          </button>
+          <button (click)="cerrarSesion()" class="btn-logout">Cerrar Sesión</button>
         </li>
       }
     </ul>

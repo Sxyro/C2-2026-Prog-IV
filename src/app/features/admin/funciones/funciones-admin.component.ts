@@ -48,6 +48,11 @@ export class FuncionesAdminComponent implements OnInit {
 
   public horasDisponibles: string[] = [];
 
+  public modalAbierto = false;
+  public modalTitulo = '';
+  public modalMensaje = '';
+  public modalTipo: 'error' | 'exito' = 'error';
+
   private diasSemana = [
     'Lun',
     'Mar',
@@ -244,9 +249,7 @@ export class FuncionesAdminComponent implements OnInit {
   }
 
   mesAnterior(): void {
-    if (
-      this.mesCalendario === 0
-    ) {
+    if (this.mesCalendario === 0) {
       this.mesCalendario = 11;
       this.anioCalendario--;
     } else {
@@ -255,9 +258,7 @@ export class FuncionesAdminComponent implements OnInit {
   }
 
   mesSiguiente(): void {
-    if (
-      this.mesCalendario === 11
-    ) {
+    if (this.mesCalendario === 11) {
       this.mesCalendario = 0;
       this.anioCalendario++;
     } else {
@@ -275,22 +276,37 @@ export class FuncionesAdminComponent implements OnInit {
       hoy.getFullYear();
   }
 
+  abrirModal(
+    titulo: string,
+    mensaje: string,
+    tipo: 'error' | 'exito' = 'error'
+  ): void {
+    this.modalTitulo = titulo;
+    this.modalMensaje = mensaje;
+    this.modalTipo = tipo;
+    this.modalAbierto = true;
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto = false;
+  }
+
   async guardarFuncion(): Promise<void> {
     if (
       !this.nuevaFuncion.peliculaId ||
       !this.nuevaFuncion.fecha ||
       !this.nuevaFuncion.hora
     ) {
-      alert(
+      this.abrirModal(
+        'Datos incompletos',
         'Seleccioná una película, una fecha y un horario válido.'
       );
       return;
     }
 
-    if (
-      this.nuevaFuncion.precioEntrada <= 0
-    ) {
-      alert(
+    if (this.nuevaFuncion.precioEntrada <= 0) {
+      this.abrirModal(
+        'Precio inválido',
         'El precio debe ser mayor a cero.'
       );
       return;
@@ -304,7 +320,10 @@ export class FuncionesAdminComponent implements OnInit {
       );
 
     if (!pelicula) {
-      alert('Película no encontrada.');
+      this.abrirModal(
+        'Película no encontrada',
+        'No se pudo encontrar la película seleccionada.'
+      );
       return;
     }
 
@@ -313,7 +332,8 @@ export class FuncionesAdminComponent implements OnInit {
     );
 
     if (isNaN(fechaInicio.getTime())) {
-      alert(
+      this.abrirModal(
+        'Fecha inválida',
         'La fecha u hora seleccionada no es válida.'
       );
       return;
@@ -343,13 +363,18 @@ export class FuncionesAdminComponent implements OnInit {
       );
 
     if (!resultado.exito) {
-      alert(
-        `ERROR: ${resultado.mensaje}`
+      this.abrirModal(
+        'No se pudo crear la función',
+        resultado.mensaje
       );
       return;
     }
 
-    alert(resultado.mensaje);
+    this.abrirModal(
+      'Función creada',
+      resultado.mensaje,
+      'exito'
+    );
 
     this.nuevaFuncion = {
       peliculaId: '',

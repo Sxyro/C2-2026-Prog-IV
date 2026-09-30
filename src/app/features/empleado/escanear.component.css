@@ -9,7 +9,7 @@
   margin: 0 auto;
   background-color: var(--bg-elevada);
   border: 1px solid var(--borde);
-  border-top: 3px solid var(--marquesina);
+  border-top: 3px solid var(--imperial);
   border-radius: var(--radio);
   padding: var(--space-6);
 }
@@ -28,8 +28,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--imperial);
+  color: #ffffff;
   border-radius: var(--radio);
   font-size: 24px;
 }
@@ -82,7 +82,7 @@ video {
 }
 
 .video-placeholder span {
-  color: var(--marquesina);
+  color: var(--imperial);
   font-size: 48px;
   margin-bottom: var(--space-3);
 }
@@ -114,13 +114,14 @@ video {
 }
 
 .btn-principal {
-  border: 1px solid var(--marquesina);
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  border: 1px solid var(--imperial);
+  background-color: var(--imperial);
+  color: #ffffff;
 }
 
 .btn-principal:hover:not(:disabled) {
-  background-color: #ffcb2e;
+  background-color: var(--imperial-brillante);
+  border-color: var(--imperial-brillante);
 }
 
 .btn-principal:active:not(:disabled) {
@@ -134,7 +135,7 @@ video {
 }
 
 .btn-secundario:hover:not(:disabled) {
-  border-color: var(--muted);
+  border-color: var(--borde-claro);
   background-color: var(--bg-elevada-2);
 }
 
@@ -191,7 +192,7 @@ video {
 
 .manual-form input:focus {
   outline: none;
-  border-color: var(--marquesina);
+  border-color: var(--imperial);
 }
 
 .manual-form button {
@@ -221,36 +222,36 @@ video {
 }
 
 .mensaje.exito {
-  background-color: rgba(79, 174, 122, 0.12);
-  border-color: rgba(79, 174, 122, 0.35);
-  color: var(--exito);
+  background-color: rgba(111, 143, 114, 0.12);
+  border-color: rgba(111, 143, 114, 0.35);
+  color: #9fbc9f;
 }
 
 .mensaje.exito strong {
   background-color: var(--exito);
-  color: var(--tinta);
+  color: #08090b;
 }
 
 .mensaje.error {
-  background-color: rgba(178, 58, 78, 0.12);
-  border-color: rgba(178, 58, 78, 0.35);
-  color: #e88999;
+  background-color: rgba(193, 18, 31, 0.12);
+  border-color: rgba(193, 18, 31, 0.35);
+  color: #ef8d96;
 }
 
 .mensaje.error strong {
-  background-color: var(--velvet);
-  color: var(--papel);
+  background-color: var(--imperial);
+  color: #ffffff;
 }
 
 .mensaje.info {
-  background-color: rgba(242, 183, 5, 0.08);
-  border-color: rgba(242, 183, 5, 0.25);
-  color: var(--marquesina);
+  background-color: rgba(154, 157, 163, 0.08);
+  border-color: rgba(154, 157, 163, 0.25);
+  color: var(--papel);
 }
 
 .mensaje.info strong {
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--borde-claro);
+  color: #ffffff;
 }
 
 @media (max-width: 700px) {

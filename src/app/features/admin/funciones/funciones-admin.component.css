@@ -23,7 +23,7 @@
 .admin-kicker {
   display: block;
   margin-bottom: 8px;
-  color: var(--marquesina);
+  color: var(--imperial);
   font-family: var(--fuente-marquesina);
   font-size: 0.78rem;
   font-weight: 600;
@@ -58,7 +58,7 @@
   position: relative;
   background-color: var(--bg-elevada);
   border-radius: var(--radio);
-  border-top: 3px solid var(--marquesina);
+  border-top: 3px solid var(--imperial);
   padding: var(--space-5);
 }
 
@@ -78,8 +78,8 @@
   justify-content: center;
   min-width: 34px;
   height: 34px;
-  border: 1px solid var(--marquesina);
-  color: var(--marquesina);
+  border: 1px solid var(--imperial);
+  color: var(--imperial);
   font-family: var(--fuente-marquesina);
   font-size: 0.85rem;
 }
@@ -127,7 +127,7 @@
 }
 
 .input-field:focus {
-  border-color: var(--marquesina);
+  border-color: var(--imperial);
 }
 
 .date-time-row {
@@ -165,7 +165,7 @@
 }
 
 .picker-button:focus {
-  outline: 2px solid var(--marquesina);
+  outline: 2px solid var(--imperial);
   outline-offset: 2px;
 }
 
@@ -174,7 +174,7 @@
 }
 
 .picker-icon {
-  color: var(--marquesina);
+  color: var(--imperial);
   font-size: 1.05rem;
 }
 
@@ -218,7 +218,7 @@
   width: 34px;
   height: 34px;
   border-radius: var(--radio-chico);
-  color: var(--marquesina);
+  color: var(--imperial);
   font-size: 1.8rem;
   line-height: 1;
 }
@@ -235,7 +235,7 @@
 }
 
 .calendar-month:hover {
-  color: var(--marquesina);
+  color: var(--imperial);
 }
 
 .calendar-weekdays,
@@ -272,7 +272,7 @@
 
 .calendar-day:hover:not(:disabled) {
   background-color: var(--bg-elevada-2);
-  color: var(--marquesina);
+  color: var(--imperial);
 }
 
 .calendar-day.other-month {
@@ -285,18 +285,18 @@
 }
 
 .calendar-day.today {
-  border: 1px solid var(--marquesina);
+  border: 1px solid var(--imperial);
 }
 
 .calendar-day.selected {
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--imperial);
+  color: #ffffff;
   font-weight: 700;
 }
 
 .calendar-day.selected:hover {
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--imperial-brillante);
+  color: #ffffff;
 }
 
 .calendar-footer {
@@ -310,7 +310,7 @@
 .calendar-footer button {
   border: none;
   background: transparent;
-  color: var(--marquesina);
+  color: var(--imperial);
   font-family: var(--fuente-texto);
   font-weight: 600;
   cursor: pointer;
@@ -352,14 +352,14 @@
 }
 
 .time-option:hover {
-  border-color: var(--marquesina);
-  color: var(--marquesina);
+  border-color: var(--imperial);
+  color: var(--imperial);
 }
 
 .time-option.selected {
-  border-color: var(--marquesina);
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  border-color: var(--imperial);
+  background-color: var(--imperial);
+  color: #ffffff;
   font-weight: 700;
 }
 
@@ -368,7 +368,7 @@
   align-items: center;
   gap: 14px;
   padding: 13px 15px;
-  border-left: 3px solid var(--marquesina);
+  border-left: 3px solid var(--imperial);
   background-color: var(--bg-elevada-2);
 }
 
@@ -381,7 +381,7 @@
 }
 
 .preview-label {
-  color: var(--marquesina);
+  color: var(--imperial);
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -396,7 +396,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--marquesina);
+  color: var(--imperial);
   font-weight: 700;
   pointer-events: none;
 }
@@ -408,7 +408,7 @@
 .classification-box {
   padding: 14px 16px;
   border: 1px solid var(--borde);
-  border-left: 3px solid var(--marquesina);
+  border-left: 3px solid var(--imperial);
   background-color: var(--bg-elevada-2);
 }
 
@@ -431,8 +431,8 @@
   margin-top: 4px;
   border: none;
   border-radius: var(--radio-chico);
-  background-color: var(--marquesina);
-  color: var(--tinta);
+  background-color: var(--imperial);
+  color: #ffffff;
   font-family: var(--fuente-texto);
   font-size: 0.95rem;
   font-weight: 700;
@@ -443,7 +443,7 @@
 }
 
 .btn-guardar:hover {
-  background-color: #ffcb2e;
+  background-color: var(--imperial-brillante);
 }
 
 .btn-guardar:active {
@@ -476,7 +476,7 @@
 
 .tabla-funciones th {
   background-color: var(--bg-elevada-2);
-  color: var(--marquesina);
+  color: var(--imperial);
   font-family: var(--fuente-marquesina);
   font-size: 0.8rem;
   font-weight: 600;
@@ -510,7 +510,7 @@
 
 .empty-state span {
   margin-bottom: 8px;
-  color: var(--marquesina);
+  color: var(--imperial);
   font-size: 2rem;
 }
 
@@ -543,3 +543,125 @@
   }
 }
 
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  position: relative;
+  width: min(440px, 100%);
+  padding: 34px;
+  border: 1px solid var(--borde);
+  border-top: 4px solid var(--imperial);
+  border-radius: var(--radio);
+  background: var(--bg-elevada);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.modal-error {
+  border-top-color: var(--imperial);
+}
+
+.modal-exito {
+  border-top-color: var(--exito);
+}
+
+.modal-cerrar {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-cerrar:hover {
+  color: var(--papel);
+}
+
+.modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 18px;
+  border: 1px solid var(--imperial);
+  border-radius: 50%;
+  color: var(--imperial);
+  font-family: var(--fuente-marquesina);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.modal-error .modal-icon {
+  border-color: var(--imperial);
+  color: var(--imperial);
+}
+
+.modal-exito .modal-icon {
+  border-color: var(--exito);
+  color: var(--exito);
+}
+
+.modal-contenido {
+  margin-bottom: 24px;
+}
+
+.modal-kicker {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--imperial);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.modal-error .modal-kicker {
+  color: var(--imperial);
+}
+
+.modal-exito .modal-kicker {
+  color: var(--exito);
+}
+
+.modal-contenido h2 {
+  margin-bottom: 10px;
+  color: var(--papel);
+  font-size: 1.5rem;
+}
+
+.modal-contenido p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.modal-boton {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radio-chico);
+  background: var(--imperial);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-boton:hover {
+  background: var(--imperial-brillante);
+}

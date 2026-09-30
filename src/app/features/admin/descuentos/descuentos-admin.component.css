@@ -15,7 +15,7 @@
 }
 
 .back-link:hover {
-  color: var(--marquesina);
+  color: var(--imperial);
 }
 
 .section-header {
@@ -24,7 +24,7 @@
 
 .admin-kicker {
   display: block;
-  color: var(--marquesina);
+  color: var(--imperial);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -51,7 +51,7 @@
   background: var(--bg-elevada);
   padding: var(--space-5);
   border-radius: var(--radio);
-  border-top: 3px solid var(--marquesina);
+  border-top: 3px solid var(--imperial);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
@@ -68,9 +68,9 @@
   justify-content: center;
   flex: 0 0 42px;
   height: 42px;
-  border: 1px solid var(--marquesina);
+  border: 1px solid var(--imperial);
   border-radius: var(--radio-chico);
-  color: var(--marquesina);
+  color: var(--imperial);
   font-family: var(--fuente-marquesina);
 }
 
@@ -115,15 +115,15 @@
 }
 
 .input-field:focus {
-  border-color: var(--marquesina);
+  border-color: var(--imperial);
   outline: none;
 }
 
 .btn-guardar {
   width: fit-content;
   padding: 11px 18px;
-  background: var(--marquesina);
-  color: var(--tinta);
+  background: var(--imperial);
+  color: #ffffff;
   border: none;
   border-radius: var(--radio-chico);
   font-weight: 700;
@@ -131,7 +131,7 @@
 }
 
 .btn-guardar:hover:not(:disabled) {
-  background: #ffcb2e;
+  background: var(--imperial-brillante);
 }
 
 .btn-guardar:disabled {

@@ -10,7 +10,7 @@
 
 .admin-kicker {
   display: block;
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -31,8 +31,9 @@
   background: var(--bg-elevada);
   padding: var(--space-5);
   border-radius: var(--radio);
-  border-top: 3px solid var(--marquesina);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--borde);
+  border-top: 3px solid var(--imperial);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .section-heading {
@@ -48,9 +49,9 @@
   justify-content: center;
   flex: 0 0 42px;
   height: 42px;
-  border: 1px solid var(--marquesina);
+  border: 1px solid var(--imperial);
   border-radius: var(--radio-chico);
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
   font-family: var(--fuente-marquesina);
 }
 
@@ -84,7 +85,7 @@
 
 .tabla-usuarios th {
   background: var(--bg-elevada-2);
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
   font-family: var(--fuente-marquesina);
   font-weight: 500;
 }
@@ -109,7 +110,7 @@
 }
 
 .input-field:focus {
-  border-color: var(--marquesina);
+  border-color: var(--imperial);
   outline: none;
 }
 
@@ -118,8 +119,8 @@
   align-items: center;
   padding: 7px 10px;
   border-radius: var(--radio-chico);
-  background: rgba(242, 183, 5, 0.1);
-  color: var(--marquesina);
+  background: rgba(193, 18, 31, 0.1);
+  color: var(--imperial-brillante);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -140,5 +141,5 @@
 }
 
 .back-link:hover {
-  color: var(--marquesina);
+  color: var(--imperial-brillante);
 }

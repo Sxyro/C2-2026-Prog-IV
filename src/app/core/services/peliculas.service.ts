@@ -59,10 +59,28 @@ export class PeliculasService {
     return mapeadas;
   }
 
-  async agregarPelicula(
-    pelicula: Pelicula,
-    generosIds: string[],
-  ): Promise<boolean> {
+  async subirPortada(archivo: File, peliculaId: string): Promise<string | null> {
+    const extension = archivo.name.split('.').pop()?.toLowerCase() || 'jpg';
+
+    const nombreArchivo = `${peliculaId}-${Date.now()}.${extension}`;
+
+    const { error } = await this.supabase.storage.from('peliculas').upload(nombreArchivo, archivo, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: archivo.type,
+    });
+
+    if (error) {
+      console.error('Error al subir portada:', error.message);
+      return null;
+    }
+
+    const { data } = this.supabase.storage.from('peliculas').getPublicUrl(nombreArchivo);
+
+    return data.publicUrl;
+  }
+
+  async agregarPelicula(pelicula: Pelicula, generosIds: string[]): Promise<boolean> {
     const row = {
       id: pelicula.id,
       nombre: pelicula.nombre,
@@ -75,15 +93,10 @@ export class PeliculasService {
       publicada: true,
     };
 
-    const { error: errorPelicula } = await this.supabase
-      .from('peliculas')
-      .insert([row]);
+    const { error: errorPelicula } = await this.supabase.from('peliculas').insert([row]);
 
     if (errorPelicula) {
-      console.error(
-        'Error al guardar película en Supabase:',
-        errorPelicula.message,
-      );
+      console.error('Error al guardar película en Supabase:', errorPelicula.message);
       return false;
     }
 
@@ -98,15 +111,9 @@ export class PeliculasService {
         .insert(relaciones);
 
       if (errorGeneros) {
-        console.error(
-          'Error al guardar los géneros de la película:',
-          errorGeneros.message,
-        );
+        console.error('Error al guardar los géneros de la película:', errorGeneros.message);
 
-        await this.supabase
-          .from('peliculas')
-          .delete()
-          .eq('id', pelicula.id);
+        await this.supabase.from('peliculas').delete().eq('id', pelicula.id);
 
         return false;
       }
@@ -116,13 +123,12 @@ export class PeliculasService {
     return true;
   }
 
-  async cambiarEstadoPublicacion(
-    peliculaId: string,
-    estaPublicada: boolean,
-  ): Promise<boolean> {
+  async cambiarEstadoPublicacion(peliculaId: string, estaPublicada: boolean): Promise<boolean> {
     const { error } = await this.supabase
       .from('peliculas')
-      .update({ publicada: estaPublicada })
+      .update({
+        publicada: estaPublicada,
+      })
       .eq('id', peliculaId);
 
     if (error) {
