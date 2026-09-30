@@ -34,12 +34,20 @@ export class ReservaComponent implements OnInit {
   private configuracionService = inject(ConfiguracionService);
 
   public configuracion = this.configuracionService.obtenerConfiguracion();
+
   public pelicula = signal<Pelicula | null>(null);
   public funcionesDisponibles = signal<Funcion[]>([]);
   public funcionSeleccionada = signal<Funcion | null>(null);
   public mapaFilas = signal<FilaMapa[]>([]);
   public butacasSeleccionadas = signal<Butaca[]>([]);
   public usuarioActual = this.usuariosService.obtenerUsuarioActual();
+
+  public modalAbierto = false;
+  public modalTitulo = '';
+  public modalMensaje = '';
+  public modalTipo: 'error' | 'exito' = 'error';
+  public modalConfirmacion = false;
+  public accionConfirmacion: (() => void) | null = null;
 
   public subtotal = computed(() => {
     const funcion = this.funcionSeleccionada();
@@ -53,6 +61,7 @@ export class ReservaComponent implements OnInit {
 
   public tieneDescuento = computed(() => {
     const usuario = this.usuarioActual();
+
     return usuario ? usuario.tieneDescuentoPrimeraCompra : false;
   });
 
@@ -85,13 +94,15 @@ export class ReservaComponent implements OnInit {
     let total = this.subtotal();
 
     if (this.esMayorDe50()) {
-      const porcentajeMayores50 = this.configuracion().porcentajeDescuentoMayores50;
+      const porcentajeMayores50 =
+        this.configuracion().porcentajeDescuentoMayores50;
 
       total = total * (1 - porcentajeMayores50 / 100);
     }
 
     if (this.tieneDescuento()) {
-      const porcentajePrimeraCompra = this.configuracion().porcentajeDescuentoPrimeraCompra;
+      const porcentajePrimeraCompra =
+        this.configuracion().porcentajeDescuentoPrimeraCompra;
 
       total = total * (1 - porcentajePrimeraCompra / 100);
     }
@@ -108,6 +119,7 @@ export class ReservaComponent implements OnInit {
       }
 
       const peliculas = this.peliculasService.obtenerPeliculas()();
+
       const peliculaEncontrada = peliculas.find((p) => p.id === idParam);
 
       if (peliculaEncontrada && !this.pelicula()) {
@@ -117,7 +129,9 @@ export class ReservaComponent implements OnInit {
       if (peliculaEncontrada) {
         const todasLasFunciones = this.funcionesService.obtenerFunciones()();
 
-        const funciones = todasLasFunciones.filter((f) => f.peliculaId === peliculaEncontrada.id);
+        const funciones = todasLasFunciones.filter(
+          (f) => f.peliculaId === peliculaEncontrada.id
+        );
 
         this.funcionesDisponibles.set(funciones);
 
@@ -158,7 +172,8 @@ export class ReservaComponent implements OnInit {
   }
 
   private async generarMapaButacas(funcion: Funcion): Promise<void> {
-    const idsOcupadas = await this.reservasService.obtenerButacasOcupadas(funcion.id);
+    const idsOcupadas =
+      await this.reservasService.obtenerButacasOcupadas(funcion.id);
 
     let salasDisponibles = this.salasService.obtenerSalas()();
 
@@ -173,10 +188,14 @@ export class ReservaComponent implements OnInit {
       return;
     }
 
-    const todasLasButacas = this.salasService.generarMapaButacas(sala.filas);
+    const todasLasButacas =
+      this.salasService.generarMapaButacas(sala.filas);
+
     const filas: FilaMapa[] = [];
 
-    const letras = [...new Set(todasLasButacas.map((butaca) => butaca.fila))];
+    const letras = [
+      ...new Set(todasLasButacas.map((butaca) => butaca.fila)),
+    ];
 
     for (const letra of letras) {
       const butacasFila = todasLasButacas
@@ -205,7 +224,9 @@ export class ReservaComponent implements OnInit {
     const index = actuales.findIndex((b) => b.id === butaca.id);
 
     if (index >= 0) {
-      this.butacasSeleccionadas.set(actuales.filter((b) => b.id !== butaca.id));
+      this.butacasSeleccionadas.set(
+        actuales.filter((b) => b.id !== butaca.id)
+      );
     } else {
       this.butacasSeleccionadas.set([...actuales, butaca]);
     }
@@ -215,18 +236,23 @@ export class ReservaComponent implements OnInit {
     return this.butacasSeleccionadas().some((b) => b.id === butaca.id);
   }
 
-  private calcularEdad(fechaNacimiento: string, fechaReferencia: string): number {
+  private calcularEdad(
+    fechaNacimiento: string,
+    fechaReferencia: string
+  ): number {
     const nacimiento = new Date(fechaNacimiento);
     const referencia = new Date(fechaReferencia);
 
-    let edad = referencia.getFullYear() - nacimiento.getFullYear();
+    let edad =
+      referencia.getFullYear() - nacimiento.getFullYear();
 
     const mesReferencia = referencia.getMonth();
     const mesNacimiento = nacimiento.getMonth();
 
     if (
       mesReferencia < mesNacimiento ||
-      (mesReferencia === mesNacimiento && referencia.getDate() < nacimiento.getDate())
+      (mesReferencia === mesNacimiento &&
+        referencia.getDate() < nacimiento.getDate())
     ) {
       edad--;
     }
@@ -249,34 +275,72 @@ export class ReservaComponent implements OnInit {
     const usuario = this.usuarioActual();
 
     if (!usuario) {
-      alert(
-        `Esta película tiene clasificación ${pelicula.clasificacionEdad}.\n\nPara comprar entradas necesitás iniciar sesión.`,
+      this.abrirModal(
+        'Inicio de sesión requerido',
+        `Esta película tiene clasificación ${pelicula.clasificacionEdad}. Para comprar entradas necesitás iniciar sesión.`,
+        'error'
       );
 
-      this.router.navigate(['/login']);
+      this.accionConfirmacion = () => {
+        this.cerrarModal();
+        this.router.navigate(['/login']);
+      };
+
+      this.modalConfirmacion = true;
+
       return false;
     }
 
-    const edad = this.calcularEdad(usuario.fechaNacimiento, funcion.fechaHoraInicio);
+    const edad = this.calcularEdad(
+      usuario.fechaNacimiento,
+      funcion.fechaHoraInicio
+    );
 
     if (pelicula.clasificacionEdad === '+18' && edad < 18) {
-      alert('No podés comprar entradas para esta película porque es apta para mayores de 18 años.');
+      this.abrirModal(
+        'Acceso restringido',
+        'No podés comprar entradas para esta película porque es apta para mayores de 18 años.',
+        'error'
+      );
 
       return false;
     }
 
     if (pelicula.clasificacionEdad === '+13' && edad < 13) {
-      alert('No podés comprar entradas para esta película porque es apta para mayores de 13 años.');
+      this.abrirModal(
+        'Acceso restringido',
+        'No podés comprar entradas para esta película porque es apta para mayores de 13 años.',
+        'error'
+      );
 
       return false;
     }
 
     if (pelicula.clasificacionEdad === '+13' && edad >= 13 && edad < 18) {
-      const continuar = confirm(
-        'Esta película es apta para mayores de 13 años.\n\nLos menores de 18 años deben asistir acompañados por un adulto responsable.\n\n¿Querés continuar con la compra?',
+      this.abrirModal(
+        'Película +13',
+        'Los menores de 18 años deben asistir acompañados por un adulto responsable. ¿Querés continuar con la compra?',
+        'error'
       );
 
-      return continuar;
+      this.modalConfirmacion = true;
+
+      this.accionConfirmacion = () => {
+        this.cerrarModal();
+
+        const payloadReserva = {
+          pelicula: this.pelicula(),
+          funcion: this.funcionSeleccionada(),
+          butacas: this.butacasSeleccionadas(),
+          total: this.total(),
+        };
+
+        this.router.navigate(['/checkout'], {
+          state: { reserva: payloadReserva },
+        });
+      };
+
+      return false;
     }
 
     return true;
@@ -284,7 +348,12 @@ export class ReservaComponent implements OnInit {
 
   confirmarReserva(): void {
     if (this.butacasSeleccionadas().length === 0) {
-      alert('Por favor, seleccioná al menos una butaca.');
+      this.abrirModal(
+        'Seleccioná una butaca',
+        'Por favor, seleccioná al menos una butaca antes de continuar.',
+        'error'
+      );
+
       return;
     }
 
@@ -302,5 +371,32 @@ export class ReservaComponent implements OnInit {
     this.router.navigate(['/checkout'], {
       state: { reserva: payloadReserva },
     });
+  }
+
+  abrirModal(
+    titulo: string,
+    mensaje: string,
+    tipo: 'error' | 'exito' = 'error'
+  ): void {
+    this.modalTitulo = titulo;
+    this.modalMensaje = mensaje;
+    this.modalTipo = tipo;
+    this.modalAbierto = true;
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto = false;
+    this.modalConfirmacion = false;
+    this.accionConfirmacion = null;
+  }
+
+  ejecutarConfirmacion(): void {
+    const accion = this.accionConfirmacion;
+
+    if (accion) {
+      accion();
+    } else {
+      this.cerrarModal();
+    }
   }
 }

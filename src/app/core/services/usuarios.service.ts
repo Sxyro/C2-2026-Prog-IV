@@ -25,13 +25,15 @@ export class UsuariosService {
   constructor() {
     this.sesionListaPromise = this.restaurarSesion();
 
-    this.supabase.auth.onAuthStateChange(async (_evento, sesion) => {
+    this.supabase.auth.onAuthStateChange((evento, sesion) => {
       if (!sesion) {
         this.usuarioActual.set(null);
         return;
       }
 
-      await this.cargarUsuarioPorAuthId(sesion.user.id);
+      if (evento === 'SIGNED_IN' || evento === 'INITIAL_SESSION') {
+        this.cargarUsuarioPorAuthId(sesion.user.id);
+      }
     });
   }
 
@@ -83,20 +85,16 @@ export class UsuariosService {
   }
 
   async registrarUsuario(
-    datos: Omit<
-      Usuario,
-      'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'rol'
-    > & {
+    datos: Omit<Usuario, 'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'rol'> & {
       password: string;
     },
   ): Promise<{ exito: boolean; usuario?: Usuario; mensaje?: string }> {
     const emailNormalizado = datos.email.trim().toLowerCase();
 
-    const { data: authData, error: authError } =
-      await this.supabase.auth.signUp({
-        email: emailNormalizado,
-        password: datos.password,
-      });
+    const { data: authData, error: authError } = await this.supabase.auth.signUp({
+      email: emailNormalizado,
+      password: datos.password,
+    });
 
     if (authError || !authData.user) {
       return {
@@ -119,16 +117,22 @@ export class UsuariosService {
       rol: 'usuario' as const,
     };
 
-    const { error } = await this.supabase
-      .from('usuarios')
-      .insert([nuevoUsuario]);
+    const { error: perfilError } = await this.supabase.from('usuarios').insert([nuevoUsuario]);
 
-    if (error) {
+    if (perfilError) {
       await this.supabase.auth.signOut();
+
+      if (perfilError.code === '23505') {
+        return {
+          exito: false,
+          mensaje:
+            'Ya existe una cuenta registrada con ese email. Probá iniciar sesión o utilizar otro email.',
+        };
+      }
 
       return {
         exito: false,
-        mensaje: error.message || 'No se pudo crear el perfil.',
+        mensaje: perfilError.message || 'No se pudo crear el perfil del usuario.',
       };
     }
 
@@ -142,8 +146,7 @@ export class UsuariosService {
       tipoSangre: nuevoUsuario.tipo_sangre,
       colorOjos: nuevoUsuario.color_ojos,
       diasVacaciones: nuevoUsuario.dias_vacaciones,
-      tieneDescuentoPrimeraCompra:
-        nuevoUsuario.tiene_descuento_primera_compra,
+      tieneDescuentoPrimeraCompra: nuevoUsuario.tiene_descuento_primera_compra,
       rol: nuevoUsuario.rol,
     };
 

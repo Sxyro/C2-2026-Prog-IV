@@ -8,9 +8,9 @@
 
         <p>{{ peli.sinopsis }}</p>
 
-        <span class="badge"> {{ peli.duracionMinutos }} min </span>
+        <span class="badge">{{ peli.duracionMinutos }} min</span>
 
-        <span class="badge"> {{ peli.formato }} - {{ peli.idioma }} </span>
+        <span class="badge">{{ peli.formato }} - {{ peli.idioma }}</span>
 
         <span
           class="badge badge-edad"
@@ -31,7 +31,8 @@
             [class.active]="func.id === funcionSeleccionada()?.id"
             (click)="seleccionarFuncion(func)"
           >
-            {{ formatearFecha(func.fechaHoraInicio) }} - {{ formatearHora(func.fechaHoraInicio) }} -
+            {{ formatearFecha(func.fechaHoraInicio) }} -
+            {{ formatearHora(func.fechaHoraInicio) }} -
             {{ formatearSala(func.salaId) }}
           </button>
         }
@@ -198,8 +199,71 @@
           <strong>${{ total() }}</strong>
         </p>
 
-        <button class="btn-confirmar" (click)="confirmarReserva()">Confirmar Asientos</button>
+        <button class="btn-confirmar" (click)="confirmarReserva()">
+          Confirmar Asientos
+        </button>
       </div>
     }
   </div>
+
+  @if (modalAbierto) {
+    <div class="modal-overlay" (click)="cerrarModal()">
+      <div
+        class="modal"
+        [class.modal-error]="modalTipo === 'error'"
+        [class.modal-exito]="modalTipo === 'exito'"
+        (click)="$event.stopPropagation()"
+      >
+        <button
+          type="button"
+          class="modal-cerrar"
+          (click)="cerrarModal()"
+        >
+          ×
+        </button>
+
+        <div class="modal-icon">
+          {{ modalTipo === 'error' ? '!' : '✓' }}
+        </div>
+
+        <div class="modal-contenido">
+          <span class="modal-kicker">
+            {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+          </span>
+
+          <h2>{{ modalTitulo }}</h2>
+
+          <p>{{ modalMensaje }}</p>
+        </div>
+
+        @if (modalConfirmacion) {
+          <div class="modal-acciones">
+            <button
+              type="button"
+              class="modal-boton modal-boton-secundario"
+              (click)="cerrarModal()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="modal-boton"
+              (click)="ejecutarConfirmacion()"
+            >
+              Continuar
+            </button>
+          </div>
+        } @else {
+          <button
+            type="button"
+            class="modal-boton"
+            (click)="cerrarModal()"
+          >
+            Entendido
+          </button>
+        }
+      </div>
+    </div>
+  }
 }

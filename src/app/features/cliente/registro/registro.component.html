@@ -1,5 +1,4 @@
 <div class="registro-container">
-
   <div class="bulbs">
     <span></span>
     <span></span>
@@ -12,67 +11,71 @@
 
   <p class="subtitle">
     Registrate para obtener un
-    <strong>
-      {{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento
-    </strong>
+    <strong> {{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento </strong>
     en tu primera compra.
   </p>
 
-  <form
-    [formGroup]="form"
-    (ngSubmit)="registrar()"
-    class="form-grid"
-  >
-
+  <form [formGroup]="form" (ngSubmit)="registrar()" class="form-grid">
     <div class="field">
       <label>Email *</label>
 
-      <input
-        type="email"
-        formControlName="email"
-        placeholder="ejemplo@mail.com"
-      />
+      <input type="email" formControlName="email" placeholder="ejemplo@mail.com" />
+
+      @if (form.get('email')?.touched && form.get('email')?.invalid) {
+        <span class="field-error">
+          @if (form.get('email')?.hasError('required')) {
+            El email es obligatorio.
+          } @else if (form.get('email')?.hasError('email')) {
+            Ingresá un email válido.
+          }
+        </span>
+      }
     </div>
 
     <div class="field">
       <label>Contraseña *</label>
 
-      <input
-        type="password"
-        formControlName="password"
-        placeholder="Mínimo 6 caracteres"
-      />
+      <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
+
+      @if (form.get('password')?.touched && form.get('password')?.invalid) {
+        <span class="field-error">
+          @if (form.get('password')?.hasError('required')) {
+            La contraseña es obligatoria.
+          } @else if (form.get('password')?.hasError('minlength')) {
+            La contraseña debe tener al menos 6 caracteres.
+          }
+        </span>
+      }
     </div>
 
     <div class="field">
       <label>Nombre *</label>
 
-      <input
-        type="text"
-        formControlName="nombre"
-      />
+      <input type="text" formControlName="nombre" />
+
+      @if (form.get('nombre')?.touched && form.get('nombre')?.invalid) {
+        <span class="field-error"> El nombre es obligatorio. </span>
+      }
     </div>
 
     <div class="field">
       <label>Apellido *</label>
 
-      <input
-        type="text"
-        formControlName="apellido"
-      />
+      <input type="text" formControlName="apellido" />
+
+      @if (form.get('apellido')?.touched && form.get('apellido')?.invalid) {
+        <span class="field-error"> El apellido es obligatorio. </span>
+      }
     </div>
 
     <div class="field">
       <label>Fecha de Nacimiento *</label>
 
       <div class="custom-picker">
-
         <button
           type="button"
           class="picker-button"
-          [class.placeholder]="
-            !form.get('fechaNacimiento')?.value
-          "
+          [class.placeholder]="!form.get('fechaNacimiento')?.value"
           (click)="abrirCalendario()"
         >
           <span class="picker-icon">▣</span>
@@ -85,24 +88,11 @@
         </button>
 
         @if (calendarioAbierto) {
-
           <div class="calendar-popup">
-
             <div class="calendar-header">
+              <button type="button" class="calendar-nav" (click)="mesAnterior()">‹</button>
 
-              <button
-                type="button"
-                class="calendar-nav"
-                (click)="mesAnterior()"
-              >
-                ‹
-              </button>
-
-              <button
-                type="button"
-                class="calendar-month"
-                (click)="abrirSelectorAnio()"
-              >
+              <button type="button" class="calendar-month" (click)="abrirSelectorAnio()">
                 {{ obtenerNombreMes() }}
                 {{ anioCalendario }}
               </button>
@@ -115,113 +105,66 @@
               >
                 ›
               </button>
-
             </div>
 
             @if (selectorAnioAbierto) {
-
               <div class="year-picker">
-
                 <div class="year-picker-header">
-                  <span>
-                    Seleccioná tu año
-                  </span>
+                  <span>Seleccioná tu año</span>
                 </div>
 
                 <div class="year-grid">
-
-                  @for (
-                    anio of aniosDisponibles;
-                    track anio
-                  ) {
-
+                  @for (anio of aniosDisponibles; track anio) {
                     <button
                       type="button"
                       class="year-option"
-                      [class.selected]="
-                        anio === anioCalendario
-                      "
+                      [class.selected]="anio === anioCalendario"
                       (click)="seleccionarAnio(anio)"
                     >
                       {{ anio }}
                     </button>
-
                   }
-
                 </div>
-
               </div>
-
             } @else {
-
               <div class="calendar-weekdays">
-
-                @for (
-                  dia of obtenerDiasSemana();
-                  track dia
-                ) {
+                @for (dia of obtenerDiasSemana(); track dia) {
                   <span>
                     {{ dia }}
                   </span>
                 }
-
               </div>
 
               <div class="calendar-grid">
-
-                @for (
-                  dia of obtenerDiasCalendario();
-                  track dia.fecha.getTime()
-                ) {
-
+                @for (dia of obtenerDiasCalendario(); track dia.fecha.getTime()) {
                   <button
                     type="button"
                     class="calendar-day"
-                    [class.other-month]="
-                      !dia.esDelMesActual
-                    "
+                    [class.other-month]="!dia.esDelMesActual"
                     [class.today]="dia.esHoy"
-                    [class.selected]="
-                      dia.esSeleccionado
-                    "
-                    [class.disabled]="
-                      dia.esFuturo
-                    "
+                    [class.selected]="dia.esSeleccionado"
+                    [class.disabled]="dia.esFuturo"
                     [disabled]="dia.esFuturo"
                     (click)="seleccionarFecha(dia)"
                   >
                     {{ dia.numero }}
                   </button>
-
                 }
-
               </div>
 
               <div class="calendar-footer">
+                <button type="button" (click)="volverAlMesActual()">Ir a hoy</button>
 
-                <button
-                  type="button"
-                  (click)="volverAlMesActual()"
-                >
-                  Ir a hoy
-                </button>
-
-                <button
-                  type="button"
-                  (click)="abrirSelectorAnio()"
-                >
-                  Elegir año
-                </button>
-
+                <button type="button" (click)="abrirSelectorAnio()">Elegir año</button>
               </div>
-
             }
-
           </div>
-
         }
-
       </div>
+
+      @if (form.get('fechaNacimiento')?.touched && form.get('fechaNacimiento')?.invalid) {
+        <span class="field-error"> La fecha de nacimiento es obligatoria. </span>
+      }
     </div>
 
     <div class="field">
@@ -237,48 +180,72 @@
         <option value="O+">O+</option>
         <option value="O-">O-</option>
       </select>
+
+      @if (form.get('tipoSangre')?.touched && form.get('tipoSangre')?.invalid) {
+        <span class="field-error"> Seleccioná un tipo de sangre. </span>
+      }
     </div>
 
     <div class="field">
       <label>Color de Ojos *</label>
 
-      <input
-        type="text"
-        formControlName="colorOjos"
-        placeholder="Marrón, Azul, Verde..."
-      />
+      <input type="text" formControlName="colorOjos" placeholder="Marrón, Azul, Verde..." />
+
+      @if (form.get('colorOjos')?.touched && form.get('colorOjos')?.invalid) {
+        <span class="field-error"> El color de ojos es obligatorio. </span>
+      }
     </div>
 
     <div class="field">
       <label>Días de vacaciones al año *</label>
 
-      <input
-        type="number"
-        formControlName="diasVacaciones"
-        min="0"
-      />
+      <input type="number" formControlName="diasVacaciones" min="0" />
+
+      @if (form.get('diasVacaciones')?.touched && form.get('diasVacaciones')?.invalid) {
+        <span class="field-error"> Ingresá una cantidad válida de días. </span>
+      }
     </div>
 
     <div class="actions">
-
-      <button
-        type="submit"
-        class="btn-primary"
-      >
+      <button type="submit" class="btn-primary">
         Registrarme y obtener
         {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF
       </button>
 
-      <button
-        type="button"
-        (click)="omitirAnonimo()"
-        class="btn-secondary"
-      >
+      <button type="button" (click)="omitirAnonimo()" class="btn-secondary">
         Continuar como Anónimo
       </button>
-
     </div>
-
   </form>
-
 </div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal"
+      [class.modal-error]="modalTipo === 'error'"
+      [class.modal-exito]="modalTipo === 'exito'"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
+
+      <div class="modal-icon">
+        {{ modalTipo === 'error' ? '!' : '✓' }}
+      </div>
+
+      <div class="modal-contenido">
+        <span class="modal-kicker">
+          {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+        </span>
+
+        <h2>{{ modalTitulo }}</h2>
+
+        <p>{{ modalMensaje }}</p>
+      </div>
+
+      <button type="button" class="modal-boton" (click)="cerrarModal()">
+        {{ modalTipo === 'exito' ? 'Continuar' : 'Entendido' }}
+      </button>
+    </div>
+  </div>
+}
