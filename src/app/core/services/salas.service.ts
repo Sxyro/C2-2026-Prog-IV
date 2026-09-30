@@ -1,5 +1,4 @@
 import { Injectable, inject, signal } from '@angular/core';
-
 import { SupabaseService } from './supabase.service';
 import { Sala } from '../models/sala.model';
 import { Butaca } from '../models/butaca.model';
@@ -26,7 +25,10 @@ export class SalasService {
       .order('id', { ascending: true });
 
     if (error) {
-      console.error('Error al cargar salas de Supabase:', error.message);
+      console.error(
+        'Error al cargar salas de Supabase:',
+        error.message
+      );
       return [];
     }
 
@@ -37,23 +39,46 @@ export class SalasService {
     }));
 
     this.salas.set(mapeadas);
+
     return mapeadas;
-  } 
+  }
 
   generarMapaButacas(cantidadFilas: number = 20): Butaca[] {
     const butacas: Butaca[] = [];
 
     const letrasFilas = [
       'A', 'B', 'C', 'D', 'E',
-      'F', 'G', 'H', 'I', 'J',
-      'K', 'L', 'M', 'N', 'O',
+      'F', 'G', 'H', 'I',
+      'J',
+      'L', 'M', 'N', 'O',
       'P', 'Q', 'R', 'S', 'T'
     ].slice(0, cantidadFilas);
 
-    const totalColumnas = 28;
-
     for (const fila of letrasFilas) {
-      for (let columna = 1; columna <= totalColumnas; columna++) {
+      if (fila === 'J') {
+        const bloquesAccesibles = [
+          { desde: 1, hasta: 2, bloque: 1 as const },
+          { desde: 3, hasta: 12, bloque: 2 as const },
+          { desde: 13, hasta: 14, bloque: 3 as const }
+        ];
+
+        for (const grupo of bloquesAccesibles) {
+          for (let columna = grupo.desde; columna <= grupo.hasta; columna++) {
+            butacas.push({
+              id: `J-${columna}`,
+              fila: 'J',
+              columna,
+              bloque: grupo.bloque,
+              ocupada: false,
+              accesible: true
+            });
+          }
+        }
+
+        continue;
+      }
+
+      for (let columna = 1; columna <= 28; columna++) {
         let bloque: 1 | 2 | 3 = 1;
 
         if (columna > 4 && columna <= 24) {
@@ -67,7 +92,8 @@ export class SalasService {
           fila,
           columna,
           bloque,
-          ocupada: false
+          ocupada: false,
+          accesible: false
         });
       }
     }

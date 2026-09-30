@@ -1,0 +1,144 @@
+.admin-container {
+  max-width: 1100px;
+  margin: var(--space-5) auto;
+  padding: 0 var(--space-4);
+}
+
+.section-header {
+  margin-bottom: var(--space-5);
+}
+
+.admin-kicker {
+  display: block;
+  color: var(--marquesina);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin-bottom: var(--space-2);
+}
+
+.section-header h1 {
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+.section-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--bg-elevada);
+  padding: var(--space-5);
+  border-radius: var(--radio);
+  border-top: 3px solid var(--marquesina);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.section-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border: 1px solid var(--marquesina);
+  border-radius: var(--radio-chico);
+  color: var(--marquesina);
+  font-family: var(--fuente-marquesina);
+}
+
+.section-heading h2 {
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla-usuarios {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-usuarios th,
+.tabla-usuarios td {
+  padding: var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--borde);
+}
+
+.tabla-usuarios th {
+  background: var(--bg-elevada-2);
+  color: var(--marquesina);
+  font-family: var(--fuente-marquesina);
+  font-weight: 500;
+}
+
+.tabla-usuarios td {
+  color: var(--papel);
+  font-size: 0.9rem;
+}
+
+.tabla-usuarios tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.input-field {
+  width: 100%;
+  min-width: 150px;
+  padding: 9px 10px;
+  border-radius: var(--radio-chico);
+  border: 1px solid var(--borde);
+  background: var(--bg-elevada-2);
+  color: var(--papel);
+}
+
+.input-field:focus {
+  border-color: var(--marquesina);
+  outline: none;
+}
+
+.current-admin {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: var(--radio-chico);
+  background: rgba(242, 183, 5, 0.1);
+  color: var(--marquesina);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.loading-message,
+.empty-message {
+  color: var(--muted);
+}
+
+.back-link {
+  display: inline-flex;
+  margin-bottom: var(--space-4);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.back-link:hover {
+  color: var(--marquesina);
+}

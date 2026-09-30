@@ -43,52 +43,99 @@
 
       <div class="mapa-sala">
         @for (fila of mapaFilas(); track fila.letra) {
-          <div class="fila">
+          <div class="fila" [class.fila-accesible]="fila.letra === 'J'">
             <span class="letra-fila">
               {{ fila.letra }}
             </span>
 
-            <div class="bloque bloque-4">
-              @for (butaca of fila.butacas.slice(0, 4); track butaca.id) {
-                <button
-                  class="butaca"
-                  [class.ocupada]="butaca.ocupada"
-                  [class.seleccionada]="esButacaSeleccionada(butaca)"
-                  [disabled]="butaca.ocupada"
-                  (click)="toggleButaca(butaca)"
-                >
-                  {{ butaca.columna }}
-                </button>
-              }
-            </div>
+            @if (fila.letra === 'J') {
+              <div class="bloque bloque-2">
+                @for (butaca of fila.butacas.slice(0, 2); track butaca.id) {
+                  <button
+                    class="butaca"
+                    [class.accesible]="butaca.accesible"
+                    [class.ocupada]="butaca.ocupada"
+                    [class.seleccionada]="esButacaSeleccionada(butaca)"
+                    [disabled]="butaca.ocupada"
+                    (click)="toggleButaca(butaca)"
+                  >
+                    {{ butaca.columna }}
+                  </button>
+                }
+              </div>
 
-            <div class="bloque bloque-20">
-              @for (butaca of fila.butacas.slice(4, 24); track butaca.id) {
-                <button
-                  class="butaca"
-                  [class.ocupada]="butaca.ocupada"
-                  [class.seleccionada]="esButacaSeleccionada(butaca)"
-                  [disabled]="butaca.ocupada"
-                  (click)="toggleButaca(butaca)"
-                >
-                  {{ butaca.columna }}
-                </button>
-              }
-            </div>
+              <div class="bloque bloque-10">
+                @for (butaca of fila.butacas.slice(2, 12); track butaca.id) {
+                  <button
+                    class="butaca"
+                    [class.accesible]="butaca.accesible"
+                    [class.ocupada]="butaca.ocupada"
+                    [class.seleccionada]="esButacaSeleccionada(butaca)"
+                    [disabled]="butaca.ocupada"
+                    (click)="toggleButaca(butaca)"
+                  >
+                    {{ butaca.columna }}
+                  </button>
+                }
+              </div>
 
-            <div class="bloque bloque-4">
-              @for (butaca of fila.butacas.slice(24, 28); track butaca.id) {
-                <button
-                  class="butaca"
-                  [class.ocupada]="butaca.ocupada"
-                  [class.seleccionada]="esButacaSeleccionada(butaca)"
-                  [disabled]="butaca.ocupada"
-                  (click)="toggleButaca(butaca)"
-                >
-                  {{ butaca.columna }}
-                </button>
-              }
-            </div>
+              <div class="bloque bloque-2">
+                @for (butaca of fila.butacas.slice(12, 14); track butaca.id) {
+                  <button
+                    class="butaca"
+                    [class.accesible]="butaca.accesible"
+                    [class.ocupada]="butaca.ocupada"
+                    [class.seleccionada]="esButacaSeleccionada(butaca)"
+                    [disabled]="butaca.ocupada"
+                    (click)="toggleButaca(butaca)"
+                  >
+                    {{ butaca.columna }}
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="bloque bloque-4">
+                @for (butaca of fila.butacas.slice(0, 4); track butaca.id) {
+                  <button
+                    class="butaca"
+                    [class.ocupada]="butaca.ocupada"
+                    [class.seleccionada]="esButacaSeleccionada(butaca)"
+                    [disabled]="butaca.ocupada"
+                    (click)="toggleButaca(butaca)"
+                  >
+                    {{ butaca.columna }}
+                  </button>
+                }
+              </div>
+
+              <div class="bloque bloque-20">
+                @for (butaca of fila.butacas.slice(4, 24); track butaca.id) {
+                  <button
+                    class="butaca"
+                    [class.ocupada]="butaca.ocupada"
+                    [class.seleccionada]="esButacaSeleccionada(butaca)"
+                    [disabled]="butaca.ocupada"
+                    (click)="toggleButaca(butaca)"
+                  >
+                    {{ butaca.columna }}
+                  </button>
+                }
+              </div>
+
+              <div class="bloque bloque-4">
+                @for (butaca of fila.butacas.slice(24, 28); track butaca.id) {
+                  <button
+                    class="butaca"
+                    [class.ocupada]="butaca.ocupada"
+                    [class.seleccionada]="esButacaSeleccionada(butaca)"
+                    [disabled]="butaca.ocupada"
+                    (click)="toggleButaca(butaca)"
+                  >
+                    {{ butaca.columna }}
+                  </button>
+                }
+              </div>
+            }
 
             <span class="letra-fila">
               {{ fila.letra }}
@@ -101,6 +148,12 @@
         <div>
           <span class="sample libre"></span>
           Libre
+        </div>
+
+        <div>
+          <span class="sample accesible"></span>
+          Accesible
+          <span class="icono-accesible">♿</span>
         </div>
 
         <div>

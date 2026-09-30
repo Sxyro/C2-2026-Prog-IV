@@ -1,0 +1,113 @@
+.admin-container {
+  max-width: 1100px;
+  margin: var(--space-5) auto;
+  padding: 0 var(--space-4);
+}
+
+.admin-header {
+  margin-bottom: var(--space-5);
+}
+
+.admin-kicker {
+  display: block;
+  color: var(--marquesina);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  margin-bottom: var(--space-2);
+}
+
+.admin-header h1 {
+  font-size: 2.2rem;
+  margin-bottom: var(--space-2);
+}
+
+.admin-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.admin-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 150px;
+  padding: var(--space-5);
+  background: var(--bg-elevada);
+  border: 1px solid var(--borde);
+  border-top: 3px solid var(--marquesina);
+  border-radius: var(--radio);
+  color: var(--papel);
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.admin-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--marquesina);
+  background: var(--bg-elevada-2);
+}
+
+.card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 58px;
+  background: rgba(242, 183, 5, 0.1);
+  border: 1px solid rgba(242, 183, 5, 0.25);
+  border-radius: var(--radio);
+  font-size: 1.7rem;
+}
+
+.admin-card h2 {
+  margin: 0 0 6px;
+  color: var(--papel);
+  font-size: 1.3rem;
+}
+
+.admin-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.card-arrow {
+  margin-left: auto;
+  color: var(--marquesina);
+  font-size: 1.5rem;
+  transition: transform 0.15s ease;
+}
+
+.admin-card:hover .card-arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    margin-top: var(--space-4);
+  }
+
+  .admin-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-card {
+    min-height: 130px;
+    padding: var(--space-4);
+  }
+}

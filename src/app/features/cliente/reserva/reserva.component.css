@@ -1,7 +1,7 @@
 .reserva-container {
-  max-width: 1000px;
+  width: min(1200px, calc(100% - 32px));
   margin: var(--space-4) auto;
-  padding: var(--space-4);
+  padding: var(--space-5);
   background-color: var(--bg-elevada);
   border-radius: var(--radio);
 }
@@ -38,6 +38,20 @@
   margin-right: var(--space-2);
 }
 
+.badge-edad {
+  font-weight: 700;
+}
+
+.badge-13 {
+  border-color: #d99b2b;
+  color: #f0b94b;
+}
+
+.badge-18 {
+  border-color: #b23a4e;
+  color: #e66a7f;
+}
+
 .seccion-funciones {
   margin-bottom: var(--space-5);
 }
@@ -52,9 +66,14 @@
   background: var(--bg-elevada-2);
   color: var(--papel);
   border: 1px solid var(--borde);
-  padding: 10px 15px;
+  padding: 11px 16px;
   border-radius: var(--radio-chico);
   cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.funciones-list button:hover {
+  border-color: var(--muted);
 }
 
 .funciones-list button.active {
@@ -65,54 +84,68 @@
 }
 
 .pantalla-cine {
+  max-width: 900px;
+  margin: var(--space-4) auto var(--space-5);
+  padding: 10px;
   background: var(--bg-elevada-2);
   color: var(--muted);
   text-align: center;
-  padding: 8px;
-  margin: var(--space-4) 0 var(--space-5) 0;
   border-radius: var(--radio-chico);
-  letter-spacing: 4px;
+  letter-spacing: 5px;
   font-family: var(--fuente-marquesina);
-  font-size: 0.8rem;
-  box-shadow: 0 -18px 30px -14px rgba(242, 183, 5, 0.25);
+  font-size: 0.85rem;
+  box-shadow: 0 25px 15px -10px rgba(255, 244, 198, 0.25);
 }
 
 .mapa-sala {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: var(--space-2);
+  gap: 7px;
+  padding: var(--space-3) 0;
+  width: 100%;
 }
 
 .fila {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 16px;
+}
+
+.fila-accesible {
+  margin: 14px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
 }
 
 .letra-fila {
-  width: 20px;
+  width: 24px;
   text-align: center;
   font-weight: 600;
   color: var(--muted);
+  flex-shrink: 0;
 }
 
 .bloque {
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
 .butaca {
-  width: 24px;
-  height: 24px;
-  font-size: 0.68rem;
+  width: 30px;
+  height: 30px;
+  font-size: 0.72rem;
   background-color: var(--bg-elevada-2);
   border: 1px solid var(--borde);
   color: var(--papel);
-  border-radius: 4px 4px 2px 2px;
+  border-radius: 5px 5px 2px 2px;
   cursor: pointer;
+  transition: transform 0.12s ease, background-color 0.15s ease;
+}
+
+.butaca:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .butaca.seleccionada {
@@ -130,12 +163,30 @@
   opacity: 0.5;
 }
 
+.fila-accesible .butaca.accesible {
+  background-color: #244746;
+  border-color: #4b8f8c;
+  color: #9ee3df;
+}
+
+.fila-accesible .butaca.accesible:hover:not(:disabled) {
+  background-color: #315c5a;
+  border-color: #6bc5c0;
+}
+
+.fila-accesible .butaca.accesible.seleccionada {
+  background-color: var(--marquesina);
+  border-color: var(--marquesina);
+  color: var(--tinta);
+}
+
 .leyenda {
   display: flex;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--space-4);
-  margin: var(--space-4) 0;
+  margin: var(--space-5) 0;
   font-size: 0.85rem;
   color: var(--muted);
 }
@@ -153,13 +204,26 @@
 .sample.libre {
   background-color: var(--bg-elevada-2);
 }
+
+.sample.accesible {
+  background-color: #244746;
+  border-color: #4b8f8c;
+}
+
 .sample.seleccionada {
   background-color: var(--marquesina);
   border-color: var(--marquesina);
 }
+
 .sample.ocupada {
   background-color: transparent;
   opacity: 0.5;
+}
+
+.icono-accesible {
+  margin-left: 5px;
+  font-size: 0.95rem;
+  color: #9ee3df;
 }
 
 .resumen-reserva {
@@ -189,18 +253,69 @@
   border-radius: var(--radio-chico);
   cursor: pointer;
   margin-top: var(--space-2);
+  transition: background-color 0.15s ease, transform 0.12s ease;
 }
 
-.badge-edad {
-  font-weight: 700;
+.btn-confirmar:hover {
+  background-color: #ffcb2e;
 }
 
-.badge-13 {
-  border-color: #d99b2b;
-  color: #f0b94b;
+.btn-confirmar:active {
+  transform: translateY(1px);
 }
 
-.badge-18 {
-  border-color: #b23a4e;
-  color: #e66a7f;
+@media (max-width: 1100px) {
+  .reserva-container {
+    width: min(100% - 24px, 1000px);
+    padding: var(--space-4);
+  }
+
+  .fila {
+    gap: 10px;
+  }
+
+  .bloque {
+    gap: 4px;
+  }
+
+  .butaca {
+    width: 27px;
+    height: 27px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-width: 800px) {
+  .reserva-container {
+    width: calc(100% - 16px);
+    padding: var(--space-3);
+  }
+
+  .pelicula-header {
+    flex-direction: column;
+  }
+
+  .poster-mini {
+    width: 100px;
+    height: 145px;
+  }
+
+  .mapa-sala {
+    overflow-x: auto;
+    padding-bottom: var(--space-3);
+  }
+
+  .fila {
+    justify-content: flex-start;
+    min-width: max-content;
+  }
+
+  .butaca {
+    width: 28px;
+    height: 28px;
+  }
+
+  .leyenda {
+    gap: var(--space-3);
+  }
 }

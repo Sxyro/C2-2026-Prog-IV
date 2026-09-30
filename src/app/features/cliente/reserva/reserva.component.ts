@@ -174,12 +174,11 @@ export class ReservaComponent implements OnInit {
     }
 
     const todasLasButacas = this.salasService.generarMapaButacas(sala.filas);
-
     const filas: FilaMapa[] = [];
 
-    for (let i = 0; i < sala.filas; i++) {
-      const letra = String.fromCharCode('A'.charCodeAt(0) + i);
+    const letras = [...new Set(todasLasButacas.map((butaca) => butaca.fila))];
 
+    for (const letra of letras) {
       const butacasFila = todasLasButacas
         .filter((butaca) => butaca.fila === letra)
         .map((butaca) => ({

@@ -1,0 +1,200 @@
+<div class="admin-container">
+  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+  <header class="section-header">
+    <span class="admin-kicker">ADMINISTRACIÓN</span>
+    <h1>Gestión de Películas</h1>
+    <p>Cargá películas y controlá cuáles aparecen en cartelera.</p>
+  </header>
+
+  <section class="card">
+    <div class="section-heading">
+      <span class="section-number">01</span>
+
+      <div>
+        <h2>Cargar Nueva Película</h2>
+        <p>Agregá una película al catálogo del cine.</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="guardarPelicula()" class="admin-form">
+      <label> Título de la película: </label>
+
+      <input
+        type="text"
+        [(ngModel)]="nuevaPelicula.nombre"
+        name="nombre"
+        required
+        placeholder="Ej: Batman"
+        class="input-field"
+      />
+
+      <label> Duración (en minutos): </label>
+
+      <input
+        type="number"
+        [(ngModel)]="nuevaPelicula.duracionMinutos"
+        name="duracionMinutos"
+        required
+        min="1"
+        class="input-field"
+      />
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Formato:</label>
+
+          <select [(ngModel)]="nuevaPelicula.formato" name="formato" class="input-field">
+            <option value="2D">2D</option>
+            <option value="3D">3D</option>
+            <option value="4D">4D</option>
+            <option value="5D">5D</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Idioma:</label>
+
+          <select [(ngModel)]="nuevaPelicula.idioma" name="idioma" class="input-field">
+            <option value="Castellano">Castellano</option>
+
+            <option value="Subtitulada">Subtitulada</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="classification-box">
+        <div>
+          <label> Clasificación por edad: </label>
+
+          <span class="field-help"> Determina quién puede comprar entradas. </span>
+        </div>
+
+        <select
+          [(ngModel)]="nuevaPelicula.clasificacionEdad"
+          name="clasificacionEdad"
+          class="input-field classification-select"
+        >
+          @for (clasificacion of clasificacionesEdad; track clasificacion) {
+            <option [value]="clasificacion">
+              {{ clasificacion }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <label>Géneros:</label>
+
+      <div class="generos-selector">
+        <label *ngFor="let genero of generos" class="genero-option">
+          <input
+            type="checkbox"
+            [checked]="generosSeleccionados.includes(genero.id)"
+            (change)="toggleGenero(genero.id)"
+          />
+
+          <span>
+            {{ genero.nombre }}
+          </span>
+        </label>
+      </div>
+
+      <label> URL del Poster / Portada: </label>
+
+      <input
+        type="url"
+        [(ngModel)]="nuevaPelicula.portadaUrl"
+        name="portadaUrl"
+        placeholder="https://..."
+        class="input-field"
+      />
+
+      <label>Sinopsis:</label>
+
+      <textarea
+        [(ngModel)]="nuevaPelicula.sinopsis"
+        name="sinopsis"
+        rows="4"
+        class="input-field"
+      ></textarea>
+
+      <button type="submit" class="btn-primary">Guardar Película</button>
+    </form>
+  </section>
+
+  <section class="card listado-section">
+    <div class="section-heading">
+      <span class="section-number">02</span>
+
+      <div>
+        <h2>Catálogo de Películas</h2>
+        <p>Controlá la visibilidad de las películas publicadas.</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="tabla-peliculas" *ngIf="peliculas().length > 0; else sinPeliculas">
+        <thead>
+          <tr>
+            <th>Película</th>
+            <th>Duración</th>
+            <th>Formato</th>
+            <th>Idioma</th>
+            <th>Edad</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let pelicula of peliculas()">
+            <td>
+              <strong>
+                {{ pelicula.nombre }}
+              </strong>
+            </td>
+
+            <td>{{ pelicula.duracionMinutos }} min</td>
+
+            <td>
+              {{ pelicula.formato }}
+            </td>
+
+            <td>
+              {{ pelicula.idioma }}
+            </td>
+
+            <td>
+              <span
+                class="classification-badge"
+                [class.warning]="pelicula.clasificacionEdad === '+13'"
+                [class.adult]="pelicula.clasificacionEdad === '+18'"
+              >
+                {{ pelicula.clasificacionEdad }}
+              </span>
+            </td>
+
+            <td>
+              <span
+                class="status-badge"
+                [class.published]="pelicula.publicada ?? true"
+                [class.hidden]="!(pelicula.publicada ?? true)"
+              >
+                {{ (pelicula.publicada ?? true) ? 'Publicada' : 'Oculta' }}
+              </span>
+            </td>
+
+            <td>
+              <button type="button" class="btn-small" (click)="toggleVisibilidad(pelicula)">
+                {{ (pelicula.publicada ?? true) ? 'Ocultar' : 'Publicar' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #sinPeliculas>
+      <p class="empty-message">No hay películas registradas.</p>
+    </ng-template>
+  </section>
+</div>

@@ -25,8 +25,42 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadComponent: () => import('./features/admin/admin.component').then((m) => m.AdminComponent),
     canActivate: [soloAdminGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/admin/panel-admin/admin.component').then((m) => m.AdminComponent),
+      },
+      {
+        path: 'funciones',
+        loadComponent: () =>
+          import('./features/admin/funciones/funciones-admin.component').then(
+            (m) => m.FuncionesAdminComponent,
+          ),
+      },
+      {
+        path: 'peliculas',
+        loadComponent: () =>
+          import('./features/admin/peliculas/peliculas-admin.component').then(
+            (m) => m.PeliculasAdminComponent,
+          ),
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./features/admin/usuarios/usuarios-admin.component').then(
+            (m) => m.UsuariosAdminComponent,
+          ),
+      },
+      {
+        path: 'descuentos',
+        loadComponent: () =>
+          import('./features/admin/descuentos/descuentos-admin.component').then(
+            (m) => m.DescuentosAdminComponent,
+          ),
+      },
+    ],
   },
   { path: '**', redirectTo: 'cartelera' },
 ];

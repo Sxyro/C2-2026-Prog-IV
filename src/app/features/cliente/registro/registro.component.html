@@ -1,40 +1,232 @@
 <div class="registro-container">
-  <div class="bulbs"><span></span><span></span><span></span><span></span><span></span></div>
+
+  <div class="bulbs">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
   <h2>Registro de Cliente</h2>
+
   <p class="subtitle">
     Registrate para obtener un
-    <strong>{{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento</strong> en tu
-    primera compra.
+    <strong>
+      {{ configuracion().porcentajeDescuentoPrimeraCompra }}% de descuento
+    </strong>
+    en tu primera compra.
   </p>
 
-  <form [formGroup]="form" (ngSubmit)="registrar()" class="form-grid">
+  <form
+    [formGroup]="form"
+    (ngSubmit)="registrar()"
+    class="form-grid"
+  >
+
     <div class="field">
       <label>Email *</label>
-      <input type="email" formControlName="email" placeholder="ejemplo@mail.com" />
+
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="ejemplo@mail.com"
+      />
     </div>
 
     <div class="field">
       <label>Contraseña *</label>
-      <input type="password" formControlName="password" placeholder="Mínimo 6 caracteres" />
+
+      <input
+        type="password"
+        formControlName="password"
+        placeholder="Mínimo 6 caracteres"
+      />
     </div>
 
     <div class="field">
       <label>Nombre *</label>
-      <input type="text" formControlName="nombre" />
+
+      <input
+        type="text"
+        formControlName="nombre"
+      />
     </div>
 
     <div class="field">
       <label>Apellido *</label>
-      <input type="text" formControlName="apellido" />
+
+      <input
+        type="text"
+        formControlName="apellido"
+      />
     </div>
 
     <div class="field">
       <label>Fecha de Nacimiento *</label>
-      <input type="date" formControlName="fechaNacimiento" />
+
+      <div class="custom-picker">
+
+        <button
+          type="button"
+          class="picker-button"
+          [class.placeholder]="
+            !form.get('fechaNacimiento')?.value
+          "
+          (click)="abrirCalendario()"
+        >
+          <span class="picker-icon">▣</span>
+
+          <span>
+            {{ obtenerFechaFormateada() }}
+          </span>
+
+          <span class="picker-arrow">⌄</span>
+        </button>
+
+        @if (calendarioAbierto) {
+
+          <div class="calendar-popup">
+
+            <div class="calendar-header">
+
+              <button
+                type="button"
+                class="calendar-nav"
+                (click)="mesAnterior()"
+              >
+                ‹
+              </button>
+
+              <button
+                type="button"
+                class="calendar-month"
+                (click)="abrirSelectorAnio()"
+              >
+                {{ obtenerNombreMes() }}
+                {{ anioCalendario }}
+              </button>
+
+              <button
+                type="button"
+                class="calendar-nav"
+                [disabled]="esMesActual()"
+                (click)="mesSiguiente()"
+              >
+                ›
+              </button>
+
+            </div>
+
+            @if (selectorAnioAbierto) {
+
+              <div class="year-picker">
+
+                <div class="year-picker-header">
+                  <span>
+                    Seleccioná tu año
+                  </span>
+                </div>
+
+                <div class="year-grid">
+
+                  @for (
+                    anio of aniosDisponibles;
+                    track anio
+                  ) {
+
+                    <button
+                      type="button"
+                      class="year-option"
+                      [class.selected]="
+                        anio === anioCalendario
+                      "
+                      (click)="seleccionarAnio(anio)"
+                    >
+                      {{ anio }}
+                    </button>
+
+                  }
+
+                </div>
+
+              </div>
+
+            } @else {
+
+              <div class="calendar-weekdays">
+
+                @for (
+                  dia of obtenerDiasSemana();
+                  track dia
+                ) {
+                  <span>
+                    {{ dia }}
+                  </span>
+                }
+
+              </div>
+
+              <div class="calendar-grid">
+
+                @for (
+                  dia of obtenerDiasCalendario();
+                  track dia.fecha.getTime()
+                ) {
+
+                  <button
+                    type="button"
+                    class="calendar-day"
+                    [class.other-month]="
+                      !dia.esDelMesActual
+                    "
+                    [class.today]="dia.esHoy"
+                    [class.selected]="
+                      dia.esSeleccionado
+                    "
+                    [class.disabled]="
+                      dia.esFuturo
+                    "
+                    [disabled]="dia.esFuturo"
+                    (click)="seleccionarFecha(dia)"
+                  >
+                    {{ dia.numero }}
+                  </button>
+
+                }
+
+              </div>
+
+              <div class="calendar-footer">
+
+                <button
+                  type="button"
+                  (click)="volverAlMesActual()"
+                >
+                  Ir a hoy
+                </button>
+
+                <button
+                  type="button"
+                  (click)="abrirSelectorAnio()"
+                >
+                  Elegir año
+                </button>
+
+              </div>
+
+            }
+
+          </div>
+
+        }
+
+      </div>
     </div>
 
     <div class="field">
       <label>Tipo de Sangre *</label>
+
       <select formControlName="tipoSangre">
         <option value="A+">A+</option>
         <option value="A-">A-</option>
@@ -49,21 +241,44 @@
 
     <div class="field">
       <label>Color de Ojos *</label>
-      <input type="text" formControlName="colorOjos" placeholder="Marrón, Azul, Verde..." />
+
+      <input
+        type="text"
+        formControlName="colorOjos"
+        placeholder="Marrón, Azul, Verde..."
+      />
     </div>
 
     <div class="field">
       <label>Días de vacaciones al año *</label>
-      <input type="number" formControlName="diasVacaciones" min="0" />
+
+      <input
+        type="number"
+        formControlName="diasVacaciones"
+        min="0"
+      />
     </div>
 
     <div class="actions">
-      <button type="submit" class="btn-primary">
-        Registrarme y obtener {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF
+
+      <button
+        type="submit"
+        class="btn-primary"
+      >
+        Registrarme y obtener
+        {{ configuracion().porcentajeDescuentoPrimeraCompra }}% OFF
       </button>
-      <button type="button" (click)="omitirAnonimo()" class="btn-secondary">
+
+      <button
+        type="button"
+        (click)="omitirAnonimo()"
+        class="btn-secondary"
+      >
         Continuar como Anónimo
       </button>
+
     </div>
+
   </form>
+
 </div>

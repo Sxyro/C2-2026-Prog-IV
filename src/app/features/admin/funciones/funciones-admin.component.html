@@ -1,0 +1,355 @@
+<div class="admin-container">
+
+  <a routerLink="/admin" class="back-link">
+    ← Volver al panel
+  </a>
+
+  <div class="section-header">
+    <span class="admin-kicker">ADMINISTRACIÓN</span>
+    <h1>Funciones</h1>
+    <p>
+      Programá las funciones y el sistema asignará
+      automáticamente una sala disponible.
+    </p>
+  </div>
+
+  <section class="form-card">
+    <div class="card-heading">
+      <div>
+        <span class="section-number">01</span>
+        <div>
+          <h2>Programar función</h2>
+          <p>
+            Elegí la película, fecha, horario y precio.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-form">
+
+      <div class="form-group">
+        <label for="pelicula">
+          Película
+        </label>
+
+        <select
+          id="pelicula"
+          [(ngModel)]="nuevaFuncion.peliculaId"
+          name="pelicula"
+          class="input-field"
+        >
+          <option value="">
+            Seleccioná una película
+          </option>
+
+          @for (pelicula of peliculas(); track pelicula.id) {
+            <option [value]="pelicula.id">
+              {{ pelicula.nombre }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="date-time-row">
+
+        <div class="form-group">
+          <label>Fecha de inicio</label>
+
+          <div class="custom-picker">
+
+            <button
+              type="button"
+              class="picker-button"
+              [class.placeholder]="!nuevaFuncion.fecha"
+              (click)="abrirCalendario()"
+            >
+              <span class="picker-icon">▣</span>
+              <span>
+                {{ obtenerFechaFormateada() }}
+              </span>
+              <span class="picker-arrow">⌄</span>
+            </button>
+
+            @if (calendarioAbierto) {
+              <div class="calendar-popup">
+
+                <div class="calendar-header">
+
+                  <button
+                    type="button"
+                    class="calendar-nav"
+                    (click)="mesAnterior()"
+                  >
+                    ‹
+                  </button>
+
+                  <button
+                    type="button"
+                    class="calendar-month"
+                    (click)="volverAlMesActual()"
+                  >
+                    {{ obtenerNombreMes() }}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="calendar-nav"
+                    (click)="mesSiguiente()"
+                  >
+                    ›
+                  </button>
+
+                </div>
+
+                <div class="calendar-weekdays">
+                  @for (
+                    dia of obtenerDiasSemana();
+                    track dia
+                  ) {
+                    <span>
+                      {{ dia }}
+                    </span>
+                  }
+                </div>
+
+                <div class="calendar-grid">
+                  @for (
+                    dia of obtenerDiasCalendario();
+                    track dia.fecha.getTime()
+                  ) {
+                    <button
+                      type="button"
+                      class="calendar-day"
+                      [class.other-month]="!dia.esDelMesActual"
+                      [class.today]="dia.esHoy"
+                      [class.selected]="dia.esSeleccionado"
+                      [class.disabled]="dia.esAnterior"
+                      [disabled]="dia.esAnterior"
+                      (click)="seleccionarFecha(dia)"
+                    >
+                      {{ dia.numero }}
+                    </button>
+                  }
+                </div>
+
+                <div class="calendar-footer">
+                  <button
+                    type="button"
+                    (click)="volverAlMesActual()"
+                  >
+                    Hoy
+                  </button>
+                </div>
+
+              </div>
+            }
+
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Hora de inicio</label>
+
+          <div class="custom-picker">
+
+            <button
+              type="button"
+              class="picker-button"
+              [class.placeholder]="!nuevaFuncion.hora"
+              (click)="abrirSelectorHora()"
+            >
+              <span class="picker-icon">◷</span>
+              <span>
+                {{ obtenerHoraFormateada() }}
+              </span>
+              <span class="picker-arrow">⌄</span>
+            </button>
+
+            @if (selectorHoraAbierto) {
+              <div class="time-popup">
+
+                <div class="time-header">
+                  Seleccioná el horario
+                </div>
+
+                <div class="time-grid">
+                  @for (
+                    hora of horasDisponibles;
+                    track hora
+                  ) {
+                    <button
+                      type="button"
+                      class="time-option"
+                      [class.selected]="
+                        nuevaFuncion.hora === hora
+                      "
+                      (click)="seleccionarHora(hora)"
+                    >
+                      {{ hora }}
+                    </button>
+                  }
+                </div>
+
+              </div>
+            }
+
+          </div>
+        </div>
+
+      </div>
+
+      @if (
+        nuevaFuncion.fecha &&
+        nuevaFuncion.hora &&
+        nuevaFuncion.peliculaId
+      ) {
+        <div class="function-preview">
+          <span class="preview-label">
+            PREVISUALIZACIÓN
+          </span>
+
+          <strong>
+            {{ obtenerPelicula(nuevaFuncion.peliculaId)?.nombre }}
+          </strong>
+
+          <span>
+            {{ obtenerFechaFormateada() }}
+            ·
+            {{ obtenerHoraFormateada() }}
+          </span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="precio">
+          Precio de entrada
+        </label>
+
+        <div class="price-input">
+          <span>$</span>
+
+          <input
+            id="precio"
+            type="number"
+            [(ngModel)]="nuevaFuncion.precioEntrada"
+            name="precio"
+            min="1"
+            class="input-field"
+          />
+        </div>
+      </div>
+
+      <div class="classification-box">
+        <strong>Asignación automática de sala</strong>
+
+        <p>
+          La sala se asignará automáticamente buscando
+          una que esté disponible y respetando los
+          30 minutos entre funciones.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-guardar"
+        (click)="guardarFuncion()"
+      >
+        Programar función
+      </button>
+
+    </div>
+  </section>
+
+  <section class="functions-section">
+
+    <div class="section-header section-header-small">
+      <span class="admin-kicker">PROGRAMACIÓN</span>
+      <h2>Funciones existentes</h2>
+      <p>
+        Funciones actualmente programadas en el sistema.
+      </p>
+    </div>
+
+    @if (funciones().length === 0) {
+
+      <div class="empty-state">
+        <span>◌</span>
+        <p>
+          No hay funciones programadas.
+        </p>
+      </div>
+
+    } @else {
+
+      <div class="tabla-wrapper">
+
+        <table class="tabla-funciones">
+
+          <thead>
+            <tr>
+              <th>Película</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Sala</th>
+              <th>Precio</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (
+              funcion of funciones();
+              track funcion.id
+            ) {
+              <tr>
+
+                <td>
+                  <strong>
+                    {{
+                      obtenerPelicula(
+                        funcion.peliculaId
+                      )?.nombre
+                    }}
+                  </strong>
+                </td>
+
+                <td>
+                  {{
+                    funcion.fechaHoraInicio
+                      | date:'dd/MM/yyyy HH:mm'
+                  }}
+                </td>
+
+                <td>
+                  {{
+                    funcion.fechaHoraFin
+                      | date:'HH:mm'
+                  }}
+                </td>
+
+                <td>
+                  {{
+                    obtenerSala(
+                      funcion.salaId
+                    )?.nombre ||
+                    funcion.salaId
+                  }}
+                </td>
+
+                <td>
+                  ${{ funcion.precioEntrada }}
+                </td>
+
+              </tr>
+            }
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+
+  </section>
+
+</div>

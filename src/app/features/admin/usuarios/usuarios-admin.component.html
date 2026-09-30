@@ -1,0 +1,73 @@
+<div class="admin-container">
+  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+  <header class="section-header">
+    <span class="admin-kicker">ADMINISTRACIÓN</span>
+    <h1>Gestión de Usuarios</h1>
+    <p>Administrá los roles de los usuarios del sistema.</p>
+  </header>
+
+  <section class="card">
+    <div class="section-heading">
+      <span class="section-number">01</span>
+
+      <div>
+        <h2>Usuarios registrados</h2>
+        <p>Desde acá podés administrar el rol de cada usuario.</p>
+      </div>
+    </div>
+
+    @if (cargandoUsuarios()) {
+      <p class="loading-message">Cargando usuarios...</p>
+    } @else if (usuariosAdministrables().length === 0) {
+      <p class="empty-message">No hay usuarios registrados.</p>
+    } @else {
+      <div class="table-wrapper">
+        <table class="tabla-usuarios">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (usuario of usuariosAdministrables(); track usuario.id) {
+              <tr>
+                <td>
+                  <strong>
+                    {{ usuario.nombre }}
+                    {{ usuario.apellido }}
+                  </strong>
+                </td>
+
+                <td>
+                  {{ usuario.email }}
+                </td>
+
+                <td>
+                  @if (usuario.id === usuarioActual()?.id) {
+                    <span class="current-admin"> Administrador actual </span>
+                  } @else {
+                    <select
+                      [value]="usuario.rol"
+                      [disabled]="usuarioModificandoRol() === usuario.id"
+                      (change)="cambiarRolUsuario(usuario, $any($event.target).value)"
+                      class="input-field"
+                    >
+                      <option value="usuario">Usuario</option>
+
+                      <option value="empleado">Empleado</option>
+
+                      <option value="admin">Administrador</option>
+                    </select>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

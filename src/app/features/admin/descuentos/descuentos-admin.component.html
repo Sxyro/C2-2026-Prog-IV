@@ -1,0 +1,86 @@
+<div class="admin-container">
+  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+  <header class="section-header">
+    <span class="admin-kicker">ADMINISTRACIÓN</span>
+    <h1>Descuentos</h1>
+    <p>Configurá los beneficios disponibles para los clientes.</p>
+  </header>
+
+  <div class="discount-grid">
+    <section class="card">
+      <div class="section-heading">
+        <span class="section-number">01</span>
+
+        <div>
+          <h2>Primera Compra</h2>
+          <p>Beneficio para usuarios registrados.</p>
+        </div>
+      </div>
+
+      <p class="help-text">
+        Porcentaje de descuento que reciben los usuarios registrados en su primera compra.
+      </p>
+
+      <form (ngSubmit)="guardarPorcentajeDescuento()" class="admin-form">
+        <label> Porcentaje de descuento (%): </label>
+
+        <input
+          type="number"
+          [(ngModel)]="porcentajeDescuentoForm"
+          name="porcentajeDescuento"
+          min="0"
+          max="100"
+          required
+          class="input-field"
+        />
+
+        <button type="submit" class="btn-guardar" [disabled]="guardandoDescuento()">
+          {{ guardandoDescuento() ? 'Guardando...' : 'Guardar descuento' }}
+        </button>
+      </form>
+
+      @if (mensajeDescuentoGuardado()) {
+        <p class="mensaje-ok">
+          {{ mensajeDescuentoGuardado() }}
+        </p>
+      }
+    </section>
+
+    <section class="card">
+      <div class="section-heading">
+        <span class="section-number">02</span>
+
+        <div>
+          <h2>Mayores de 50</h2>
+          <p>Beneficio para usuarios mayores de 50 años.</p>
+        </div>
+      </div>
+
+      <p class="help-text">Porcentaje de descuento que reciben los usuarios mayores de 50 años.</p>
+
+      <form (ngSubmit)="guardarPorcentajeMayores50()" class="admin-form">
+        <label> Porcentaje de descuento (%): </label>
+
+        <input
+          type="number"
+          [(ngModel)]="porcentajeDescuentoMayores50Form"
+          name="porcentajeDescuentoMayores50"
+          min="0"
+          max="100"
+          required
+          class="input-field"
+        />
+
+        <button type="submit" class="btn-guardar" [disabled]="guardandoDescuentoMayores50()">
+          {{ guardandoDescuentoMayores50() ? 'Guardando...' : 'Guardar descuento' }}
+        </button>
+      </form>
+
+      @if (mensajeDescuentoMayores50Guardado()) {
+        <p class="mensaje-ok">
+          {{ mensajeDescuentoMayores50Guardado() }}
+        </p>
+      }
+    </section>
+  </div>
+</div>
