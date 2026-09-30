@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { SalasService } from './salas.service';
 import { Funcion } from '../models/funcion.model';
 
 @Injectable({
@@ -7,6 +8,8 @@ import { Funcion } from '../models/funcion.model';
 })
 export class FuncionesService {
   private supabase = inject(SupabaseService).client;
+  private salasService = inject(SalasService);
+
   private funciones = signal<Funcion[]>([]);
 
   constructor() {
@@ -23,7 +26,10 @@ export class FuncionesService {
       .select('*');
 
     if (error) {
-      console.error('Error al cargar funciones de Supabase:', error.message);
+      console.error(
+        'Error al cargar funciones de Supabase:',
+        error.message
+      );
       return [];
     }
 
@@ -37,39 +43,101 @@ export class FuncionesService {
     }));
 
     this.funciones.set(mapeadas);
+
     return mapeadas;
   }
 
-  async agregarFuncion(nuevaFuncion: Funcion): Promise<{ exito: boolean; mensaje: string }> {
-    const inicioNuevo = new Date(nuevaFuncion.fechaHoraInicio).getTime();
-    const finNuevo = new Date(nuevaFuncion.fechaHoraFin).getTime();
-
-    const funcionesMismaSala = this.funciones()
-      .filter(f => f.salaId === nuevaFuncion.salaId);
+  private salaEstaDisponible(
+    salaId: string,
+    inicioNuevo: number,
+    finNuevo: number
+  ): boolean {
+    const funcionesMismaSala = this.funciones().filter(
+      funcion => funcion.salaId === salaId
+    );
 
     for (const funcionExistente of funcionesMismaSala) {
-      const inicioExistente = new Date(funcionExistente.fechaHoraInicio).getTime();
-      const finExistente = new Date(funcionExistente.fechaHoraFin).getTime();
+      const inicioExistente = new Date(
+        funcionExistente.fechaHoraInicio
+      ).getTime();
 
-      const finOcupacionExistente = finExistente + 30 * 60000;
-      const finOcupacionNueva = finNuevo + 30 * 60000;
+      const finExistente = new Date(
+        funcionExistente.fechaHoraFin
+      ).getTime();
+
+      const finOcupacionExistente =
+        finExistente + 30 * 60000;
+
+      const finOcupacionNueva =
+        finNuevo + 30 * 60000;
 
       const haySuperposicion =
         inicioNuevo < finOcupacionExistente &&
         finOcupacionNueva > inicioExistente;
 
       if (haySuperposicion) {
-        return {
-          exito: false,
-          mensaje: 'Conflicto de horario: la sala está ocupada o no se respetan los 30 minutos entre funciones.'
-        };
+        return false;
       }
+    }
+
+    return true;
+  }
+
+  private async buscarSalaDisponible(
+    inicioNuevo: number,
+    finNuevo: number
+  ): Promise<string | null> {
+    let salas = this.salasService.obtenerSalas()();
+
+    if (salas.length === 0) {
+      salas = await this.salasService.cargarSalas();
+    }
+
+    for (const sala of salas) {
+      if (
+        this.salaEstaDisponible(
+          sala.id,
+          inicioNuevo,
+          finNuevo
+        )
+      ) {
+        return sala.id;
+      }
+    }
+
+    return null;
+  }
+
+  async agregarFuncion(
+    nuevaFuncion: Funcion
+  ): Promise<{ exito: boolean; mensaje: string }> {
+    const inicioNuevo = new Date(
+      nuevaFuncion.fechaHoraInicio
+    ).getTime();
+
+    const finNuevo = new Date(
+      nuevaFuncion.fechaHoraFin
+    ).getTime();
+
+    await this.cargarFunciones();
+
+    const salaAsignada = await this.buscarSalaDisponible(
+      inicioNuevo,
+      finNuevo
+    );
+
+    if (!salaAsignada) {
+      return {
+        exito: false,
+        mensaje:
+          'No hay ninguna sala disponible para ese horario respetando los 30 minutos entre funciones.'
+      };
     }
 
     const row = {
       id: nuevaFuncion.id,
       pelicula_id: nuevaFuncion.peliculaId,
-      sala_id: nuevaFuncion.salaId,
+      sala_id: salaAsignada,
       fecha_hora_inicio: nuevaFuncion.fechaHoraInicio,
       fecha_hora_fin: nuevaFuncion.fechaHoraFin,
       precio_entrada: nuevaFuncion.precioEntrada
@@ -80,11 +148,22 @@ export class FuncionesService {
       .insert([row]);
 
     if (error) {
-      console.error('Error al guardar función en Supabase:', error.message);
-      return { exito: false, mensaje: error.message };
+      console.error(
+        'Error al guardar función en Supabase:',
+        error.message
+      );
+
+      return {
+        exito: false,
+        mensaje: error.message
+      };
     }
 
     await this.cargarFunciones();
-    return { exito: true, mensaje: 'Función programada con éxito.' };
+
+    return {
+      exito: true,
+      mensaje: `Función programada con éxito. Sala asignada: ${salaAsignada}.`
+    };
   }
 }

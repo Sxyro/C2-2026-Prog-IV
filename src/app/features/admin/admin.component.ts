@@ -8,7 +8,7 @@ import { SalasService } from '../../core/services/salas.service';
 import { UsuariosService, UsuarioAdministrable } from '../../core/services/usuarios.service';
 import { ConfiguracionService } from '../../core/services/configuracion.service';
 import { GenerosService } from '../../core/services/generos.service';
-import { Pelicula } from '../../core/models/pelicula.model';
+import { Pelicula, ClasificacionEdad } from '../../core/models/pelicula.model';
 import { Funcion } from '../../core/models/funcion.model';
 import { Genero } from '../../core/models/genero.model';
 
@@ -27,6 +27,7 @@ export class AdminComponent implements OnInit {
   private configuracionService = inject(ConfiguracionService);
   private generosService = inject(GenerosService);
   private router = inject(Router);
+
   public peliculas = this.peliculasService.obtenerPeliculas();
   public funciones = this.funcionesService.obtenerFunciones();
   public salas = this.salasService.obtenerSalas();
@@ -37,6 +38,7 @@ export class AdminComponent implements OnInit {
   public configuracion = this.configuracionService.obtenerConfiguracion();
   public generos: Genero[] = [];
   public generosSeleccionados: string[] = [];
+  public clasificacionesEdad: ClasificacionEdad[] = ['ATP', '+13', '+18'];
   public porcentajeDescuentoForm = 20;
   public guardandoDescuento = signal(false);
   public mensajeDescuentoGuardado = signal<string | null>(null);
@@ -47,6 +49,7 @@ export class AdminComponent implements OnInit {
   constructor() {
     effect(() => {
       this.porcentajeDescuentoForm = this.configuracion().porcentajeDescuentoPrimeraCompra;
+
       this.porcentajeDescuentoMayores50Form = this.configuracion().porcentajeDescuentoMayores50;
     });
   }
@@ -58,11 +61,11 @@ export class AdminComponent implements OnInit {
     duracionMinutos: 120,
     formato: '2D',
     idioma: 'Subtitulada',
+    clasificacionEdad: 'ATP',
   };
 
   public nuevaFuncion = {
     peliculaId: '',
-    salaId: 'sala-1',
     fechaHoraInicio: '',
     precioEntrada: 4500,
   };
@@ -87,6 +90,7 @@ export class AdminComponent implements OnInit {
     );
 
     this.guardandoDescuento.set(false);
+
     this.mensajeDescuentoGuardado.set(
       exito ? 'Porcentaje actualizado correctamente.' : 'No se pudo guardar el cambio.',
     );
@@ -101,6 +105,7 @@ export class AdminComponent implements OnInit {
     );
 
     this.guardandoDescuentoMayores50.set(false);
+
     this.mensajeDescuentoMayores50Guardado.set(
       exito
         ? 'Descuento para mayores de 50 actualizado correctamente.'
@@ -110,6 +115,7 @@ export class AdminComponent implements OnInit {
 
   async toggleVisibilidad(pelicula: Pelicula): Promise<void> {
     const nuevoEstado = !(pelicula.publicada ?? true);
+
     const ok = await this.peliculasService.cambiarEstadoPublicacion(pelicula.id, nuevoEstado);
 
     if (!ok) {
@@ -168,6 +174,7 @@ export class AdminComponent implements OnInit {
       duracionMinutos: 120,
       formato: '2D',
       idioma: 'Subtitulada',
+      clasificacionEdad: 'ATP',
     };
 
     this.generosSeleccionados = [];
@@ -194,12 +201,13 @@ export class AdminComponent implements OnInit {
     }
 
     const fechaInicio = new Date(this.nuevaFuncion.fechaHoraInicio);
+
     const fechaFin = new Date(fechaInicio.getTime() + pelicula.duracionMinutos * 60000);
 
     const funcionACrear: Funcion = {
       id: 'f_' + Date.now(),
       peliculaId: this.nuevaFuncion.peliculaId,
-      salaId: this.nuevaFuncion.salaId,
+      salaId: '',
       fechaHoraInicio: fechaInicio.toISOString(),
       fechaHoraFin: fechaFin.toISOString(),
       precioEntrada: this.nuevaFuncion.precioEntrada,
@@ -212,11 +220,10 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    alert('¡Función programada correctamente!');
+    alert(resultado.mensaje);
 
     this.nuevaFuncion = {
       peliculaId: '',
-      salaId: 'sala-1',
       fechaHoraInicio: '',
       precioEntrada: 4500,
     };
@@ -236,7 +243,6 @@ export class AdminComponent implements OnInit {
     const usuarios = await this.usuariosService.obtenerUsuariosAdmin();
 
     this.usuariosAdministrables.set(usuarios);
-
     this.cargandoUsuarios.set(false);
   }
 

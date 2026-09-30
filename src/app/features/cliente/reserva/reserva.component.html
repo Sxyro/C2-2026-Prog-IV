@@ -2,25 +2,37 @@
   <div class="reserva-container">
     <div class="pelicula-header">
       <img [src]="peli.portadaUrl" [alt]="peli.nombre" class="poster-mini" />
+
       <div>
         <h2>{{ peli.nombre }}</h2>
+
         <p>{{ peli.sinopsis }}</p>
-        <span class="badge">{{ peli.duracionMinutos }} min</span>
-        <span class="badge badge-sub">{{ peli.formato }} - {{ peli.idioma }}</span>
+
+        <span class="badge"> {{ peli.duracionMinutos }} min </span>
+
+        <span class="badge"> {{ peli.formato }} - {{ peli.idioma }} </span>
+
+        <span
+          class="badge badge-edad"
+          [class.badge-13]="peli.clasificacionEdad === '+13'"
+          [class.badge-18]="peli.clasificacionEdad === '+18'"
+        >
+          {{ peli.clasificacionEdad }}
+        </span>
       </div>
     </div>
 
     <div class="seccion-funciones">
       <h3>Seleccioná la Función</h3>
+
       <div class="funciones-list">
         @for (func of funcionesDisponibles(); track func.id) {
           <button
             [class.active]="func.id === funcionSeleccionada()?.id"
             (click)="seleccionarFuncion(func)"
           >
-            {{ formatearHora(func.fechaHoraInicio) }}hs - Sala {{ func.salaId }} (${{
-              func.precioEntrada
-            }})
+            {{ formatearFecha(func.fechaHoraInicio) }} - {{ formatearHora(func.fechaHoraInicio) }} -
+            {{ formatearSala(func.salaId) }}
           </button>
         }
       </div>
@@ -32,7 +44,9 @@
       <div class="mapa-sala">
         @for (fila of mapaFilas(); track fila.letra) {
           <div class="fila">
-            <span class="letra-fila">{{ fila.letra }}</span>
+            <span class="letra-fila">
+              {{ fila.letra }}
+            </span>
 
             <div class="bloque bloque-4">
               @for (butaca of fila.butacas.slice(0, 4); track butaca.id) {
@@ -76,20 +90,34 @@
               }
             </div>
 
-            <span class="letra-fila">{{ fila.letra }}</span>
+            <span class="letra-fila">
+              {{ fila.letra }}
+            </span>
           </div>
         }
       </div>
 
       <div class="leyenda">
-        <div><span class="sample libre"></span> Libre</div>
-        <div><span class="sample seleccionada"></span> Seleccionada</div>
-        <div><span class="sample ocupada"></span> Ocupada</div>
+        <div>
+          <span class="sample libre"></span>
+          Libre
+        </div>
+
+        <div>
+          <span class="sample seleccionada"></span>
+          Seleccionada
+        </div>
+
+        <div>
+          <span class="sample ocupada"></span>
+          Ocupada
+        </div>
       </div>
 
       <div class="resumen-reserva">
         <p>
-          Butacas seleccionadas: <strong>{{ butacasSeleccionadas().length }}</strong>
+          Butacas seleccionadas:
+          <strong>{{ butacasSeleccionadas().length }}</strong>
         </p>
 
         @if (esMayorDe50()) {
@@ -113,7 +141,8 @@
         }
 
         <p class="total">
-          Total a pagar: <strong>${{ total() }}</strong>
+          Total a pagar:
+          <strong>${{ total() }}</strong>
         </p>
 
         <button class="btn-confirmar" (click)="confirmarReserva()">Confirmar Asientos</button>

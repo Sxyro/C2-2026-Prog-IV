@@ -26,7 +26,6 @@ interface FilaMapa {
 export class ReservaComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-
   private peliculasService = inject(PeliculasService);
   private funcionesService = inject(FuncionesService);
   private salasService = inject(SalasService);
@@ -35,7 +34,6 @@ export class ReservaComponent implements OnInit {
   private configuracionService = inject(ConfiguracionService);
 
   public configuracion = this.configuracionService.obtenerConfiguracion();
-
   public pelicula = signal<Pelicula | null>(null);
   public funcionesDisponibles = signal<Funcion[]>([]);
   public funcionSeleccionada = signal<Funcion | null>(null);
@@ -45,7 +43,11 @@ export class ReservaComponent implements OnInit {
 
   public subtotal = computed(() => {
     const funcion = this.funcionSeleccionada();
-    if (!funcion) return 0;
+
+    if (!funcion) {
+      return 0;
+    }
+
     return this.butacasSeleccionadas().length * funcion.precioEntrada;
   });
 
@@ -100,7 +102,10 @@ export class ReservaComponent implements OnInit {
   constructor() {
     effect(() => {
       const idParam = this.route.snapshot.paramMap.get('idPelicula');
-      if (!idParam) return;
+
+      if (!idParam) {
+        return;
+      }
 
       const peliculas = this.peliculasService.obtenerPeliculas()();
       const peliculaEncontrada = peliculas.find((p) => p.id === idParam);
@@ -111,6 +116,7 @@ export class ReservaComponent implements OnInit {
 
       if (peliculaEncontrada) {
         const todasLasFunciones = this.funcionesService.obtenerFunciones()();
+
         const funciones = todasLasFunciones.filter((f) => f.peliculaId === peliculaEncontrada.id);
 
         this.funcionesDisponibles.set(funciones);
@@ -124,9 +130,30 @@ export class ReservaComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  formatearFecha(fecha: string): string {
+    return new Date(fecha).toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  }
+
+  formatearHora(fecha: string): string {
+    return new Date(fecha).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  }
+
+  formatearSala(salaId: string): string {
+    return salaId.replace('-', ' ').replace(/^sala/, 'Sala');
+  }
+
   async seleccionarFuncion(funcion: Funcion): Promise<void> {
     this.funcionSeleccionada.set(funcion);
     this.butacasSeleccionadas.set([]);
+
     await this.generarMapaButacas(funcion);
   }
 
@@ -134,6 +161,7 @@ export class ReservaComponent implements OnInit {
     const idsOcupadas = await this.reservasService.obtenerButacasOcupadas(funcion.id);
 
     let salasDisponibles = this.salasService.obtenerSalas()();
+
     if (salasDisponibles.length === 0) {
       salasDisponibles = await this.salasService.cargarSalas();
     }
@@ -146,6 +174,7 @@ export class ReservaComponent implements OnInit {
     }
 
     const todasLasButacas = this.salasService.generarMapaButacas(sala.filas);
+
     const filas: FilaMapa[] = [];
 
     for (let i = 0; i < sala.filas; i++) {
@@ -168,9 +197,12 @@ export class ReservaComponent implements OnInit {
   }
 
   toggleButaca(butaca: Butaca): void {
-    if (butaca.ocupada) return;
+    if (butaca.ocupada) {
+      return;
+    }
 
     const actuales = this.butacasSeleccionadas();
+
     const index = actuales.findIndex((b) => b.id === butaca.id);
 
     if (index >= 0) {
@@ -184,15 +216,80 @@ export class ReservaComponent implements OnInit {
     return this.butacasSeleccionadas().some((b) => b.id === butaca.id);
   }
 
-  formatearHora(fechaIso: string): string {
-    if (!fechaIso) return '';
-    const fecha = new Date(fechaIso);
-    return fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  private calcularEdad(fechaNacimiento: string, fechaReferencia: string): number {
+    const nacimiento = new Date(fechaNacimiento);
+    const referencia = new Date(fechaReferencia);
+
+    let edad = referencia.getFullYear() - nacimiento.getFullYear();
+
+    const mesReferencia = referencia.getMonth();
+    const mesNacimiento = nacimiento.getMonth();
+
+    if (
+      mesReferencia < mesNacimiento ||
+      (mesReferencia === mesNacimiento && referencia.getDate() < nacimiento.getDate())
+    ) {
+      edad--;
+    }
+
+    return edad;
+  }
+
+  private verificarRestriccionEdad(): boolean {
+    const pelicula = this.pelicula();
+    const funcion = this.funcionSeleccionada();
+
+    if (!pelicula || !funcion) {
+      return false;
+    }
+
+    if (pelicula.clasificacionEdad === 'ATP') {
+      return true;
+    }
+
+    const usuario = this.usuarioActual();
+
+    if (!usuario) {
+      alert(
+        `Esta película tiene clasificación ${pelicula.clasificacionEdad}.\n\nPara comprar entradas necesitás iniciar sesión.`,
+      );
+
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    const edad = this.calcularEdad(usuario.fechaNacimiento, funcion.fechaHoraInicio);
+
+    if (pelicula.clasificacionEdad === '+18' && edad < 18) {
+      alert('No podés comprar entradas para esta película porque es apta para mayores de 18 años.');
+
+      return false;
+    }
+
+    if (pelicula.clasificacionEdad === '+13' && edad < 13) {
+      alert('No podés comprar entradas para esta película porque es apta para mayores de 13 años.');
+
+      return false;
+    }
+
+    if (pelicula.clasificacionEdad === '+13' && edad >= 13 && edad < 18) {
+      const continuar = confirm(
+        'Esta película es apta para mayores de 13 años.\n\nLos menores de 18 años deben asistir acompañados por un adulto responsable.\n\n¿Querés continuar con la compra?',
+      );
+
+      return continuar;
+    }
+
+    return true;
   }
 
   confirmarReserva(): void {
     if (this.butacasSeleccionadas().length === 0) {
       alert('Por favor, seleccioná al menos una butaca.');
+      return;
+    }
+
+    if (!this.verificarRestriccionEdad()) {
       return;
     }
 

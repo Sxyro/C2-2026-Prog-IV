@@ -1,7 +1,10 @@
 import { Genero } from "./genero.model";
+
 export type FormatoPelicula = '2D' | '3D' | '4D' | '5D';
+
 export type IdiomaPelicula = 'Castellano' | 'Subtitulada';
 
+export type ClasificacionEdad = 'ATP' | '+13' | '+18';
 
 export interface Pelicula {
   id: string;
@@ -12,5 +15,6 @@ export interface Pelicula {
   duracionMinutos: number;
   formato: FormatoPelicula;
   idioma: IdiomaPelicula;
+  clasificacionEdad: ClasificacionEdad;
   publicada?: boolean;
 }

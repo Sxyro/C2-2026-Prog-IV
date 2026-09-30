@@ -150,9 +150,17 @@
   border: 1px solid var(--borde);
 }
 
-.sample.libre { background-color: var(--bg-elevada-2); }
-.sample.seleccionada { background-color: var(--marquesina); border-color: var(--marquesina); }
-.sample.ocupada { background-color: transparent; opacity: 0.5; }
+.sample.libre {
+  background-color: var(--bg-elevada-2);
+}
+.sample.seleccionada {
+  background-color: var(--marquesina);
+  border-color: var(--marquesina);
+}
+.sample.ocupada {
+  background-color: transparent;
+  opacity: 0.5;
+}
 
 .resumen-reserva {
   background: var(--bg-elevada-2);
@@ -181,4 +189,18 @@
   border-radius: var(--radio-chico);
   cursor: pointer;
   margin-top: var(--space-2);
+}
+
+.badge-edad {
+  font-weight: 700;
+}
+
+.badge-13 {
+  border-color: #d99b2b;
+  color: #f0b94b;
+}
+
+.badge-18 {
+  border-color: #b23a4e;
+  color: #e66a7f;
 }

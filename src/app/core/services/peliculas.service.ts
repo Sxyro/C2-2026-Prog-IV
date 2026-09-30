@@ -1,7 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-
 import { SupabaseService } from './supabase.service';
-
 import { Pelicula } from '../models/pelicula.model';
 
 @Injectable({
@@ -50,6 +48,7 @@ export class PeliculasService {
       duracionMinutos: row.duracion_minutos,
       formato: row.formato,
       idioma: row.idioma,
+      clasificacionEdad: row.clasificacion_edad,
       publicada: row.publicada,
       generos: (row.pelicula_generos || [])
         .map((relacion: any) => relacion.genero)
@@ -57,7 +56,6 @@ export class PeliculasService {
     }));
 
     this.peliculas.set(mapeadas);
-
     return mapeadas;
   }
 
@@ -73,6 +71,7 @@ export class PeliculasService {
       duracion_minutos: pelicula.duracionMinutos,
       formato: pelicula.formato,
       idioma: pelicula.idioma,
+      clasificacion_edad: pelicula.clasificacionEdad,
       publicada: true,
     };
 
@@ -114,7 +113,6 @@ export class PeliculasService {
     }
 
     await this.cargarPeliculas(false);
-
     return true;
   }
 
@@ -133,7 +131,6 @@ export class PeliculasService {
     }
 
     await this.cargarPeliculas();
-
     return true;
   }
 }
