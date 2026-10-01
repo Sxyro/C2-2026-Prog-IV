@@ -1,5 +1,6 @@
 <div class="admin-container">
   <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+
   <header class="section-header">
     <span class="admin-kicker">ADMINISTRACIÓN</span>
     <h1>Gestión de Películas</h1>
@@ -17,7 +18,7 @@
     </div>
 
     <form (ngSubmit)="guardarPelicula()" class="admin-form">
-      <label> Título de la película: </label>
+      <label>Título de la película:</label>
 
       <input
         type="text"
@@ -28,7 +29,7 @@
         class="input-field"
       />
 
-      <label> Duración (en minutos): </label>
+      <label>Duración (en minutos):</label>
 
       <input
         type="number"
@@ -56,7 +57,6 @@
 
           <select [(ngModel)]="nuevaPelicula.idioma" name="idioma" class="input-field">
             <option value="Castellano">Castellano</option>
-
             <option value="Subtitulada">Subtitulada</option>
           </select>
         </div>
@@ -64,7 +64,7 @@
 
       <div class="classification-box">
         <div>
-          <label> Clasificación por edad: </label>
+          <label>Clasificación por edad:</label>
 
           <span class="field-help"> Determina quién puede comprar entradas. </span>
         </div>
@@ -99,7 +99,7 @@
       </div>
 
       <div class="portada-upload">
-        <label for="portada"> Poster / Portada: </label>
+        <label for="portada">Poster / Portada:</label>
 
         <input
           id="portada"
@@ -112,6 +112,7 @@
         @if (archivoPortada) {
           <div class="archivo-seleccionado">
             <span>✓</span>
+
             <div>
               <strong>{{ archivoPortada.name }}</strong>
               <small> {{ (archivoPortada.size / 1024 / 1024).toFixed(2) }} MB </small>
@@ -175,13 +176,9 @@
 
             <td>{{ pelicula.duracionMinutos }} min</td>
 
-            <td>
-              {{ pelicula.formato }}
-            </td>
+            <td>{{ pelicula.formato }}</td>
 
-            <td>
-              {{ pelicula.idioma }}
-            </td>
+            <td>{{ pelicula.idioma }}</td>
 
             <td>
               <span
@@ -218,3 +215,34 @@
     </ng-template>
   </section>
 </div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal"
+      [class.modal-error]="modalTipo === 'error'"
+      [class.modal-exito]="modalTipo === 'exito'"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
+
+      <div class="modal-icon">
+        {{ modalTipo === 'error' ? '!' : '✓' }}
+      </div>
+
+      <div class="modal-contenido">
+        <span class="modal-kicker">
+          {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+        </span>
+
+        <h2>{{ modalTitulo }}</h2>
+
+        <p>{{ modalMensaje }}</p>
+      </div>
+
+      <button type="button" class="modal-boton" (click)="cerrarModal()">
+        {{ modalTipo === 'exito' ? 'Continuar' : 'Entendido' }}
+      </button>
+    </div>
+  </div>
+}

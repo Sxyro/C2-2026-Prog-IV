@@ -4,6 +4,7 @@ import { RegistroComponent } from './features/cliente/registro/registro.componen
 import { ReservaComponent } from './features/cliente/reserva/reserva.component';
 import { LoginComponent } from './features/cliente/login/login.component';
 import { soloAdminGuard } from './core/guards/admin.guard';
+import { PerfilComponent } from './features/cliente/perfil/perfil.component';
 import { adminGuard } from './core/guards/admin.guard';
 import { EscanearComponent } from './features/empleado/escanear.component';
 
@@ -12,6 +13,7 @@ export const routes: Routes = [
   { path: 'cartelera', component: CarteleraComponent },
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
+  { path: 'perfil', component: PerfilComponent },
   { path: 'reserva/:idPelicula', component: ReservaComponent },
   {
     path: 'checkout',

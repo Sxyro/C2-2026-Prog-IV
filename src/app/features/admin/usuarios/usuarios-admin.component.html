@@ -1,5 +1,6 @@
 <div class="admin-container">
   <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+
   <header class="section-header">
     <span class="admin-kicker">ADMINISTRACIÓN</span>
     <h1>Gestión de Usuarios</h1>
@@ -56,9 +57,7 @@
                       class="input-field"
                     >
                       <option value="usuario">Usuario</option>
-
                       <option value="empleado">Empleado</option>
-
                       <option value="admin">Administrador</option>
                     </select>
                   }
@@ -71,3 +70,34 @@
     }
   </section>
 </div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal"
+      [class.modal-error]="modalTipo === 'error'"
+      [class.modal-exito]="modalTipo === 'exito'"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
+
+      <div class="modal-icon">
+        {{ modalTipo === 'error' ? '!' : '✓' }}
+      </div>
+
+      <div class="modal-contenido">
+        <span class="modal-kicker">
+          {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+        </span>
+
+        <h2>{{ modalTitulo }}</h2>
+
+        <p>{{ modalMensaje }}</p>
+      </div>
+
+      <button type="button" class="modal-boton" (click)="cerrarModal()">
+        {{ modalTipo === 'exito' ? 'Continuar' : 'Entendido' }}
+      </button>
+    </div>
+  </div>
+}

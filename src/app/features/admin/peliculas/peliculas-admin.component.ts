@@ -4,10 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { PeliculasService } from '../../../core/services/peliculas.service';
 import { GenerosService } from '../../../core/services/generos.service';
-import {
-  Pelicula,
-  ClasificacionEdad
-} from '../../../core/models/pelicula.model';
+import { Pelicula, ClasificacionEdad } from '../../../core/models/pelicula.model';
 import { Genero } from '../../../core/models/genero.model';
 
 @Component({
@@ -21,18 +18,11 @@ export class PeliculasAdminComponent implements OnInit {
   private peliculasService = inject(PeliculasService);
   private generosService = inject(GenerosService);
 
-  public peliculas =
-    this.peliculasService.obtenerPeliculas();
-
+  public peliculas = this.peliculasService.obtenerPeliculas();
   public generos: Genero[] = [];
-
   public generosSeleccionados: string[] = [];
 
-  public clasificacionesEdad: ClasificacionEdad[] = [
-    'ATP',
-    '+13',
-    '+18'
-  ];
+  public clasificacionesEdad: ClasificacionEdad[] = ['ATP', '+13', '+18'];
 
   public nuevaPelicula: Omit<Pelicula, 'id'> = {
     nombre: '',
@@ -48,43 +38,37 @@ export class PeliculasAdminComponent implements OnInit {
   public vistaPreviaPortada: string | null = null;
   public subiendoPortada = false;
 
+  public modalAbierto = false;
+  public modalTitulo = '';
+  public modalMensaje = '';
+  public modalTipo: 'error' | 'exito' = 'error';
+
   async ngOnInit(): Promise<void> {
     await this.peliculasService.cargarPeliculas(false);
-
-    this.generos =
-      await this.generosService.obtenerGeneros();
+    this.generos = await this.generosService.obtenerGeneros();
   }
 
   toggleGenero(generoId: string): void {
-    if (
-      this.generosSeleccionados.includes(generoId)
-    ) {
-      this.generosSeleccionados =
-        this.generosSeleccionados.filter(
-          id => id !== generoId
-        );
+    if (this.generosSeleccionados.includes(generoId)) {
+      this.generosSeleccionados = this.generosSeleccionados.filter((id) => id !== generoId);
     } else {
-      this.generosSeleccionados = [
-        ...this.generosSeleccionados,
-        generoId
-      ];
+      this.generosSeleccionados = [...this.generosSeleccionados, generoId];
     }
   }
 
   seleccionarPortada(event: Event): void {
-    const input =
-      event.target as HTMLInputElement;
-
+    const input = event.target as HTMLInputElement;
     const archivo = input.files?.[0];
 
-    if (!archivo) {
-      return;
-    }
+    if (!archivo) return;
 
     if (!archivo.type.startsWith('image/')) {
-      alert(
-        'Seleccioná un archivo de imagen válido.'
+      this.abrirModal(
+        'Archivo no válido',
+        'Seleccioná un archivo de imagen válido para la portada.',
+        'error',
       );
+
       input.value = '';
       return;
     }
@@ -92,53 +76,41 @@ export class PeliculasAdminComponent implements OnInit {
     this.archivoPortada = archivo;
 
     if (this.vistaPreviaPortada) {
-      URL.revokeObjectURL(
-        this.vistaPreviaPortada
-      );
+      URL.revokeObjectURL(this.vistaPreviaPortada);
     }
 
-    this.vistaPreviaPortada =
-      URL.createObjectURL(archivo);
+    this.vistaPreviaPortada = URL.createObjectURL(archivo);
   }
 
   async guardarPelicula(): Promise<void> {
-    if (
-      !this.nuevaPelicula.nombre.trim() ||
-      this.nuevaPelicula.duracionMinutos <= 0
-    ) {
-      alert(
-        'Por favor completá los campos obligatorios de la película.'
+    if (!this.nuevaPelicula.nombre.trim() || this.nuevaPelicula.duracionMinutos <= 0) {
+      this.abrirModal(
+        'Datos incompletos',
+        'Por favor completá los campos obligatorios de la película.',
+        'error',
       );
       return;
     }
 
-    if (
-      this.generosSeleccionados.length === 0
-    ) {
-      alert(
-        'Seleccioná al menos un género para la película.'
+    if (this.generosSeleccionados.length === 0) {
+      this.abrirModal(
+        'Falta seleccionar género',
+        'Seleccioná al menos un género para la película.',
+        'error',
       );
       return;
     }
 
     if (!this.archivoPortada) {
-      alert(
-        'Seleccioná una imagen para la portada.'
-      );
+      this.abrirModal('Falta la portada', 'Seleccioná una imagen para la portada.', 'error');
       return;
     }
 
-    const idsNumericos =
-      this.peliculas()
-        .map(p => parseInt(p.id, 10))
-        .filter(id => !isNaN(id));
+    const idsNumericos = this.peliculas()
+      .map((p) => parseInt(p.id, 10))
+      .filter((id) => !isNaN(id));
 
-    const siguienteId =
-      idsNumericos.length > 0
-        ? (
-            Math.max(...idsNumericos) + 1
-          ).toString()
-        : '1';
+    const siguienteId = idsNumericos.length > 0 ? (Math.max(...idsNumericos) + 1).toString() : '1';
 
     const peliculaACrear: Pelicula = {
       id: siguienteId,
@@ -147,39 +119,44 @@ export class PeliculasAdminComponent implements OnInit {
 
     this.subiendoPortada = true;
 
-    const portadaUrl =
-      await this.peliculasService.subirPortada(
-        this.archivoPortada,
-        siguienteId
-      );
+    const portadaUrl = await this.peliculasService.subirPortada(this.archivoPortada, siguienteId);
 
     if (!portadaUrl) {
       this.subiendoPortada = false;
 
-      alert(
-        'No se pudo subir la imagen de la película.'
+      this.abrirModal(
+        'Error al subir la portada',
+        'No se pudo subir la imagen de la película.',
+        'error',
       );
+
       return;
     }
 
     peliculaACrear.portadaUrl = portadaUrl;
 
-    const OK =
-      await this.peliculasService.agregarPelicula(
-        peliculaACrear,
-        this.generosSeleccionados
-      );
+    const OK = await this.peliculasService.agregarPelicula(
+      peliculaACrear,
+      this.generosSeleccionados,
+    );
 
     this.subiendoPortada = false;
 
     if (!OK) {
-      alert(
-        'Error al guardar la película en la base de datos.'
+      this.abrirModal(
+        'Error al guardar',
+        'Ocurrió un error al guardar la película en la base de datos.',
+        'error',
       );
+
       return;
     }
 
-    alert('¡Película agregada con éxito!');
+    this.abrirModal(
+      '¡Película agregada!',
+      'La película fue agregada correctamente al catálogo.',
+      'exito',
+    );
 
     this.nuevaPelicula = {
       nombre: '',
@@ -195,9 +172,7 @@ export class PeliculasAdminComponent implements OnInit {
     this.archivoPortada = null;
 
     if (this.vistaPreviaPortada) {
-      URL.revokeObjectURL(
-        this.vistaPreviaPortada
-      );
+      URL.revokeObjectURL(this.vistaPreviaPortada);
     }
 
     this.vistaPreviaPortada = null;
@@ -205,26 +180,40 @@ export class PeliculasAdminComponent implements OnInit {
     await this.peliculasService.cargarPeliculas(false);
   }
 
-  async toggleVisibilidad(
-    pelicula: Pelicula
-  ): Promise<void> {
-    const nuevoEstado =
-      !(pelicula.publicada ?? true);
+  async toggleVisibilidad(pelicula: Pelicula): Promise<void> {
+    const nuevoEstado = !(pelicula.publicada ?? true);
 
-    const ok =
-      await this.peliculasService
-        .cambiarEstadoPublicacion(
-          pelicula.id,
-          nuevoEstado
-        );
+    const ok = await this.peliculasService.cambiarEstadoPublicacion(pelicula.id, nuevoEstado);
 
     if (!ok) {
-      alert(
-        'Error al actualizar la visibilidad de la película.'
+      this.abrirModal(
+        'Error al actualizar',
+        'No se pudo actualizar la visibilidad de la película.',
+        'error',
       );
+
       return;
     }
 
     await this.peliculasService.cargarPeliculas(false);
+
+    this.abrirModal(
+      nuevoEstado ? 'Película publicada' : 'Película ocultada',
+      nuevoEstado
+        ? 'La película ahora aparece en la cartelera.'
+        : 'La película fue ocultada de la cartelera.',
+      'exito',
+    );
+  }
+
+  abrirModal(titulo: string, mensaje: string, tipo: 'error' | 'exito' = 'error'): void {
+    this.modalTitulo = titulo;
+    this.modalMensaje = mensaje;
+    this.modalTipo = tipo;
+    this.modalAbierto = true;
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto = false;
   }
 }

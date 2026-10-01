@@ -2,12 +2,10 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { PdfService } from '../../../core/services/pdf.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { ReservasService } from '../../../core/services/reservas.service';
 import { CandyService } from '../../../core/services/candy.service';
-
 import { Pelicula } from '../../../core/models/pelicula.model';
 import { Funcion } from '../../../core/models/funcion.model';
 import { Butaca } from '../../../core/models/butaca.model';
@@ -47,6 +45,11 @@ export class CheckoutComponent implements OnInit {
   public categoriaSeleccionada = signal<string>('');
   public cantidadesCandy = signal<Record<string, number>>({});
 
+  public modalAbierto = false;
+  public modalTitulo = '';
+  public modalMensaje = '';
+  public modalTipo: 'error' | 'exito' = 'error';
+
   public productosFiltrados = computed(() => {
     const categoria = this.categoriaSeleccionada();
 
@@ -80,9 +83,7 @@ export class CheckoutComponent implements OnInit {
   });
 
   get cantidadAsientos(): string {
-    if (!this.datosReserva) {
-      return '';
-    }
+    if (!this.datosReserva) return '';
 
     return this.datosReserva.butacas.map((butaca) => `${butaca.fila}-${butaca.columna}`).join(', ');
   }
@@ -155,12 +156,14 @@ export class CheckoutComponent implements OnInit {
   }
 
   async procesarPago(): Promise<void> {
-    if (!this.datosReserva) {
-      return;
-    }
+    if (!this.datosReserva) return;
 
     if (!this.emailComprador.trim()) {
-      alert('Ingresá un email válido.');
+      this.abrirModal(
+        'Email requerido',
+        'Ingresá un email válido para recibir tu entrada.',
+        'error',
+      );
       return;
     }
 
@@ -182,7 +185,11 @@ export class CheckoutComponent implements OnInit {
       );
 
       if (!resultadoReserva.exito) {
-        alert(`Error al procesar la reserva: ${resultadoReserva.mensaje}`);
+        this.abrirModal(
+          'Error al procesar la reserva',
+          resultadoReserva.mensaje || 'No se pudo completar la reserva.',
+          'error',
+        );
         return;
       }
 
@@ -195,7 +202,11 @@ export class CheckoutComponent implements OnInit {
         );
 
         if (!candyGuardado) {
-          alert('La reserva fue creada, pero ocurrió un error al guardar los productos Candy.');
+          this.abrirModal(
+            'Reserva creada con inconvenientes',
+            'La reserva fue creada, pero ocurrió un error al guardar los productos Candy.',
+            'error',
+          );
           return;
         }
       }
@@ -214,17 +225,38 @@ export class CheckoutComponent implements OnInit {
         await this.usuariosService.usarCuponDescuento();
       }
 
-      alert(
-        '¡Pago confirmado! Se ha guardado tu reserva, tus productos Candy y descargado tu comprobante con el código QR.',
+      this.abrirModal(
+        '¡Pago confirmado!',
+        'Tu reserva fue guardada correctamente. Se descargó tu comprobante con el código QR.',
+        'exito',
       );
-
-      this.router.navigate(['/cartelera']);
     } catch (error) {
       console.error('Error al generar la entrada:', error);
 
-      alert('Ocurrió un error al procesar el pago o generar la entrada.');
+      this.abrirModal(
+        'Error al procesar el pago',
+        'Ocurrió un error al procesar el pago o generar la entrada.',
+        'error',
+      );
     } finally {
       this.procesando.set(false);
+    }
+  }
+
+  abrirModal(titulo: string, mensaje: string, tipo: 'error' | 'exito' = 'error'): void {
+    this.modalTitulo = titulo;
+    this.modalMensaje = mensaje;
+    this.modalTipo = tipo;
+    this.modalAbierto = true;
+  }
+
+  cerrarModal(): void {
+    const eraExito = this.modalTipo === 'exito';
+
+    this.modalAbierto = false;
+
+    if (eraExito) {
+      this.router.navigate(['/cartelera']);
     }
   }
 }

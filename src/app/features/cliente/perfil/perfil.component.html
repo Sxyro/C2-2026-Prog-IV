@@ -1,0 +1,203 @@
+<section class="perfil-page">
+  <div class="perfil-container">
+
+    <div class="perfil-header">
+      <div>
+        <span class="perfil-kicker">CINE IMPERIAL</span>
+        <h1>Mi cuenta</h1>
+        <p>Gestioná tu información, tus puntos y tu actividad.</p>
+      </div>
+
+      <div class="perfil-identidad">
+        <div class="perfil-avatar">
+          {{ usuarioActual()?.nombre?.charAt(0)?.toUpperCase() }}
+        </div>
+
+        <div>
+          <strong>{{ obtenerNombreCompleto() }}</strong>
+          <span>{{ usuarioActual()?.email }}</span>
+        </div>
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <div class="perfil-cargando">
+        <span></span>
+        <p>Cargando tu cuenta...</p>
+      </div>
+    } @else {
+
+      <div class="perfil-grid">
+
+        <article class="tarjeta-puntos">
+          <div class="tarjeta-puntos-top">
+            <span class="tarjeta-kicker">FIDELIZACIÓN</span>
+            <span class="puntos-icono">★</span>
+          </div>
+
+          <div class="puntos-numero">
+            {{ puntos | number }}
+          </div>
+
+          <h2>Puntos acumulados</h2>
+
+          <p>
+            Ganás 1 punto por cada peso gastado en tus compras.
+          </p>
+
+          <button type="button" class="btn-principal">
+            Ver recompensas
+          </button>
+        </article>
+
+        <article class="tarjeta-menu">
+          <span class="tarjeta-kicker">MI ACTIVIDAD</span>
+
+          <a routerLink="/mis-peliculas" class="opcion-menu">
+            <span class="opcion-icono">🎬</span>
+            <span>
+              <strong>Mis películas</strong>
+              <small>Consultá todo lo que viste y tus calificaciones.</small>
+            </span>
+            <span class="opcion-flecha">›</span>
+          </a>
+
+          <div class="opcion-menu opcion-deshabilitada">
+            <span class="opcion-icono">🎁</span>
+            <span>
+              <strong>Recompensas</strong>
+              <small>Canjeá tus puntos por entradas y productos.</small>
+            </span>
+            <span class="opcion-etiqueta">PRÓXIMAMENTE</span>
+          </div>
+
+          <div class="opcion-menu opcion-deshabilitada">
+            <span class="opcion-icono">💳</span>
+            <span>
+              <strong>Crédito disponible</strong>
+              <small>Crédito obtenido por cancelaciones.</small>
+            </span>
+            <span class="opcion-etiqueta">PRÓXIMAMENTE</span>
+          </div>
+        </article>
+
+      </div>
+
+      <section class="seccion-perfil">
+        <div class="seccion-titulo">
+          <div>
+            <span class="perfil-kicker">CUENTA</span>
+            <h2>Mis datos</h2>
+          </div>
+        </div>
+
+        <div class="datos-grid">
+
+          <div class="dato">
+            <span>Nombre</span>
+            <strong>{{ usuarioActual()?.nombre }}</strong>
+          </div>
+
+          <div class="dato">
+            <span>Apellido</span>
+            <strong>{{ usuarioActual()?.apellido }}</strong>
+          </div>
+
+          <div class="dato dato-completo">
+            <span>Email</span>
+            <strong>{{ usuarioActual()?.email }}</strong>
+          </div>
+
+          <div class="dato">
+            <span>Fecha de nacimiento</span>
+            <strong>
+              {{ usuarioActual()?.fechaNacimiento | date:'dd/MM/yyyy' }}
+            </strong>
+          </div>
+
+          <div class="dato">
+            <span>Tipo de sangre</span>
+            <strong>{{ usuarioActual()?.tipoSangre }}</strong>
+          </div>
+
+          <div class="dato">
+            <span>Color de ojos</span>
+            <strong>{{ usuarioActual()?.colorOjos }}</strong>
+          </div>
+
+          <div class="dato">
+            <span>Días de vacaciones</span>
+            <strong>{{ usuarioActual()?.diasVacaciones }}</strong>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="seccion-perfil">
+        <div class="seccion-titulo">
+          <div>
+            <span class="perfil-kicker">FIDELIZACIÓN</span>
+            <h2>Historial de puntos</h2>
+          </div>
+
+          <strong class="saldo-mini">
+            {{ puntos | number }} pts
+          </strong>
+        </div>
+
+        @if (movimientos.length === 0) {
+
+          <div class="sin-movimientos">
+            <span>★</span>
+            <h3>Todavía no tenés movimientos</h3>
+            <p>
+              Realizá una compra para comenzar a acumular puntos.
+            </p>
+          </div>
+
+        } @else {
+
+          <div class="movimientos">
+
+            @for (movimiento of movimientos; track movimiento.id) {
+
+              <div class="movimiento">
+
+                <div
+                  class="movimiento-icono"
+                  [class]="obtenerClaseMovimiento(movimiento.tipo)"
+                >
+                  {{ movimiento.tipo === 'ganancia' ? '+' : '−' }}
+                </div>
+
+                <div class="movimiento-info">
+                  <strong>{{ movimiento.descripcion }}</strong>
+                  <span>
+                    {{ formatearFecha(movimiento.created_at) }}
+                    ·
+                    {{ formatearHora(movimiento.created_at) }}
+                  </span>
+                </div>
+
+                <strong
+                  class="movimiento-puntos"
+                  [class]="obtenerClaseMovimiento(movimiento.tipo)"
+                >
+                  {{ obtenerSignoMovimiento(movimiento.tipo) }}{{ movimiento.puntos }}
+                  pts
+                </strong>
+
+              </div>
+
+            }
+
+          </div>
+
+        }
+
+      </section>
+
+    }
+
+  </div>
+</section>

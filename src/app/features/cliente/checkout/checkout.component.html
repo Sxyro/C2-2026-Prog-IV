@@ -1,9 +1,7 @@
 <div class="checkout-container">
-
   <h2>Finalizar Compra</h2>
 
   <div class="resumen-box">
-
     <h3>{{ datosReserva?.pelicula?.nombre }}</h3>
 
     <p>
@@ -20,73 +18,45 @@
       <strong>Entradas:</strong>
       ${{ datosReserva?.total }}
     </p>
-
   </div>
 
   <section class="candy-section">
-
     <div class="candy-header">
-
       <h3>🍿 Agregá Candy a tu compra</h3>
 
-      <p>
-        Podés comprar comida y bebidas junto con tus entradas.
-      </p>
-
+      <p>Podés comprar comida y bebidas junto con tus entradas.</p>
     </div>
 
     <div class="categorias-candy">
-
-      @for (
-        categoria of categoriasCandy();
-        track categoria.id
-      ) {
-
+      @for (categoria of categoriasCandy(); track categoria.id) {
         <button
           type="button"
-          [class.activa]="
-            categoriaSeleccionada() === categoria.id
-          "
+          [class.activa]="categoriaSeleccionada() === categoria.id"
           (click)="seleccionarCategoria(categoria.id)"
         >
           {{ categoria.nombre }}
         </button>
-
       }
-
     </div>
 
     <div class="productos-candy">
-
-      @for (
-        producto of productosFiltrados();
-        track producto.id
-      ) {
-
+      @for (producto of productosFiltrados(); track producto.id) {
         <article class="producto-candy">
-
           <div class="producto-candy-info">
-
             <h4>
               {{ producto.nombre }}
             </h4>
 
             @if (producto.descripcion) {
-
               <p>
                 {{ producto.descripcion }}
               </p>
-
             }
 
-            <strong>
-              ${{ producto.precio }}
-            </strong>
-
+            <strong> ${{ producto.precio }} </strong>
           </div>
 
           <div class="cantidad-candy">
-
             <button
               type="button"
               (click)="quitarProducto(producto)"
@@ -99,67 +69,37 @@
               {{ obtenerCantidad(producto.id) }}
             </span>
 
-            <button
-              type="button"
-              (click)="agregarProducto(producto)"
-            >
-              +
-            </button>
-
+            <button type="button" (click)="agregarProducto(producto)">+</button>
           </div>
-
         </article>
-
       }
-
     </div>
 
     @if (productosSeleccionados().length > 0) {
-
       <div class="candy-resumen">
-
         <h4>🍿 Candy seleccionado</h4>
 
-        @for (
-          item of productosSeleccionados();
-          track item.producto.id
-        ) {
-
+        @for (item of productosSeleccionados(); track item.producto.id) {
           <div class="candy-resumen-linea">
-
             <span>
               {{ item.cantidad }} ×
               {{ item.producto.nombre }}
             </span>
 
-            <strong>
-              ${{ item.subtotal }}
-            </strong>
-
+            <strong> ${{ item.subtotal }} </strong>
           </div>
-
         }
 
         <div class="candy-subtotal">
+          <span> Subtotal Candy </span>
 
-          <span>
-            Subtotal Candy
-          </span>
-
-          <strong>
-            ${{ subtotalCandy() }}
-          </strong>
-
+          <strong> ${{ subtotalCandy() }} </strong>
         </div>
-
       </div>
-
     }
-
   </section>
 
   <div class="total-final">
-
     <div>
       <span>Entradas</span>
       <strong>${{ datosReserva?.total }}</strong>
@@ -174,17 +114,10 @@
       <span>Total a pagar</span>
       <strong>${{ totalFinal() }}</strong>
     </div>
-
   </div>
 
-  <form
-    (ngSubmit)="procesarPago()"
-    class="checkout-form"
-  >
-
-    <label>
-      Email para recibir la entrada:
-    </label>
+  <form (ngSubmit)="procesarPago()" class="checkout-form">
+    <label> Email para recibir la entrada: </label>
 
     <input
       type="email"
@@ -193,20 +126,41 @@
       required
       placeholder="ejemplo@mail.com"
       class="input-field"
-    >
+    />
 
-    <button
-      type="submit"
-      [disabled]="procesando()"
-      class="btn-pagar"
-    >
-      {{
-        procesando()
-          ? 'Procesando Pago...'
-          : 'Pagar y Descargar Entrada (PDF)'
-      }}
+    <button type="submit" [disabled]="procesando()" class="btn-pagar">
+      {{ procesando() ? 'Procesando Pago...' : 'Pagar y Descargar Entrada (PDF)' }}
     </button>
-
   </form>
-
 </div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal"
+      [class.modal-error]="modalTipo === 'error'"
+      [class.modal-exito]="modalTipo === 'exito'"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
+
+      <div class="modal-icon">
+        {{ modalTipo === 'error' ? '!' : '✓' }}
+      </div>
+
+      <div class="modal-contenido">
+        <span class="modal-kicker">
+          {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+        </span>
+
+        <h2>{{ modalTitulo }}</h2>
+
+        <p>{{ modalMensaje }}</p>
+      </div>
+
+      <button type="button" class="modal-boton" (click)="cerrarModal()">
+        {{ modalTipo === 'exito' ? 'Continuar' : 'Entendido' }}
+      </button>
+    </div>
+  </div>
+}
