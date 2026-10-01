@@ -1,0 +1,263 @@
+<div class="admin-container">
+  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+
+  <header class="section-header">
+    <span class="admin-kicker"> ADMINISTRACIÓN </span>
+
+    <h1>Candy Bar</h1>
+
+    <p>Gestioná categorías y productos disponibles para la compra.</p>
+  </header>
+
+  @if (mensaje(); as mensajeActual) {
+    <div class="mensaje" [class.mensaje-error]="tipoMensaje() === 'error'">
+      {{ mensajeActual }}
+    </div>
+  }
+
+  <div class="admin-grid">
+    <section class="card">
+      <div class="section-heading">
+        <span class="section-number"> 01 </span>
+
+        <div>
+          <h2>Categorías</h2>
+          <p>Organizá los productos del Candy.</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="crearCategoria()" class="admin-form">
+        <label> Nueva categoría </label>
+
+        <div class="fila-formulario">
+          <input
+            type="text"
+            [(ngModel)]="nombreNuevaCategoria"
+            name="nombreNuevaCategoria"
+            placeholder="Ej. Pochoclos"
+            class="input-field"
+          />
+
+          <button type="submit" class="btn-guardar">Crear</button>
+        </div>
+      </form>
+
+      <div class="lista-categorias">
+        @for (categoria of categorias(); track categoria.id) {
+          <div class="categoria-item">
+            @if (categoriaEditandoId === categoria.id) {
+              <input
+                type="text"
+                [(ngModel)]="nombreCategoriaEditando"
+                [name]="'categoria-' + categoria.id"
+                class="input-field"
+              />
+
+              <div class="acciones">
+                <button type="button" class="btn-guardar" (click)="guardarCategoria()">
+                  Guardar
+                </button>
+
+                <button type="button" class="btn-secundario" (click)="cancelarEditarCategoria()">
+                  Cancelar
+                </button>
+              </div>
+            } @else {
+              <span>
+                {{ categoria.nombre }}
+              </span>
+
+              <button
+                type="button"
+                class="btn-secundario"
+                (click)="comenzarEditarCategoria(categoria)"
+              >
+                Editar
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-heading">
+        <span class="section-number"> 02 </span>
+
+        <div>
+          <h2>Nuevo producto</h2>
+          <p>Agregá productos al Candy Bar.</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="crearProducto()" class="admin-form">
+        <label> Nombre </label>
+
+        <input
+          type="text"
+          [(ngModel)]="nuevoProducto.nombre"
+          name="nuevoProductoNombre"
+          class="input-field"
+          placeholder="Ej. Pochoclos grandes"
+        />
+
+        <label> Descripción </label>
+
+        <textarea
+          [(ngModel)]="nuevoProducto.descripcion"
+          name="nuevoProductoDescripcion"
+          class="input-field textarea"
+          placeholder="Descripción del producto"
+        ></textarea>
+
+        <label> Precio </label>
+
+        <input
+          type="number"
+          [(ngModel)]="nuevoProducto.precio"
+          name="nuevoProductoPrecio"
+          min="1"
+          class="input-field"
+        />
+
+        <label> Categoría </label>
+
+        <select
+          [(ngModel)]="nuevoProducto.categoriaId"
+          name="nuevoProductoCategoria"
+          class="input-field"
+        >
+          @for (categoria of categorias(); track categoria.id) {
+            <option [value]="categoria.id">
+              {{ categoria.nombre }}
+            </option>
+          }
+        </select>
+
+        <label> Imagen </label>
+
+        <input
+          type="url"
+          [(ngModel)]="nuevoProducto.imagenUrl"
+          name="nuevoProductoImagen"
+          class="input-field"
+          placeholder="https://..."
+        />
+
+        <button type="submit" class="btn-guardar">Crear producto</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="card productos-card">
+    <div class="section-heading">
+      <span class="section-number"> 03 </span>
+
+      <div>
+        <h2>Productos existentes</h2>
+        <p>Modificá precios, categorías y disponibilidad.</p>
+      </div>
+    </div>
+
+    <div class="productos-admin">
+      @for (producto of productos(); track producto.id) {
+        <article class="producto-admin" [class.producto-inactivo]="!producto.activo">
+          @if (productoEditandoId === producto.id) {
+            <div class="edicion-producto">
+              <input
+                type="text"
+                [(ngModel)]="producto.nombre"
+                [name]="'nombre-' + producto.id"
+                class="input-field"
+              />
+
+              <textarea
+                [(ngModel)]="producto.descripcion"
+                [name]="'descripcion-' + producto.id"
+                class="input-field textarea"
+              ></textarea>
+
+              <input
+                type="number"
+                [(ngModel)]="producto.precio"
+                [name]="'precio-' + producto.id"
+                min="1"
+                class="input-field"
+              />
+
+              <select
+                [(ngModel)]="producto.categoriaId"
+                [name]="'categoria-' + producto.id"
+                class="input-field"
+              >
+                @for (categoria of categorias(); track categoria.id) {
+                  <option [value]="categoria.id">
+                    {{ categoria.nombre }}
+                  </option>
+                }
+              </select>
+
+              <input
+                type="url"
+                [(ngModel)]="producto.imagenUrl"
+                [name]="'imagen-' + producto.id"
+                class="input-field"
+                placeholder="https://..."
+              />
+
+              <div class="acciones">
+                <button type="button" class="btn-guardar" (click)="guardarProducto(producto)">
+                  Guardar
+                </button>
+
+                <button type="button" class="btn-secundario" (click)="cancelarEditarProducto()">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="producto-info">
+              @if (producto.imagenUrl) {
+                <img [src]="producto.imagenUrl" [alt]="producto.nombre" class="producto-imagen" />
+              }
+
+              <div>
+                <span class="producto-categoria">
+                  {{ obtenerNombreCategoria(producto.categoriaId) }}
+                </span>
+
+                <h3>
+                  {{ producto.nombre }}
+                </h3>
+
+                <p>
+                  {{ producto.descripcion || 'Sin descripción.' }}
+                </p>
+
+                <strong> ${{ producto.precio }} </strong>
+              </div>
+            </div>
+
+            <div class="producto-acciones">
+              <span class="estado" [class.estado-inactivo]="!producto.activo">
+                {{ producto.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+
+              <button
+                type="button"
+                class="btn-secundario"
+                (click)="comenzarEditarProducto(producto)"
+              >
+                Editar
+              </button>
+
+              <button type="button" class="btn-secundario" (click)="cambiarEstado(producto)">
+                {{ producto.activo ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  </section>
+</div>

@@ -62,6 +62,18 @@ export const routes: Routes = [
             (m) => m.DescuentosAdminComponent,
           ),
       },
+      {
+        path: 'candy',
+        loadComponent: () =>
+          import('./features/admin/candy/candy-admin.component').then((m) => m.CandyAdminComponent),
+      },
+      {
+        path: 'recompensas',
+        loadComponent: () =>
+          import('./features/admin/recompensas/recompensas-admin.component').then(
+            (m) => m.RecompensasAdminComponent,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'cartelera' },

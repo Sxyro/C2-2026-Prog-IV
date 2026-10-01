@@ -1,0 +1,283 @@
+<div class="recompensas-container">
+  <header class="recompensas-header">
+    <div>
+      <span class="admin-kicker">FIDELIZACIÓN</span>
+
+      <h1>Recompensas</h1>
+
+      <p>Configurá los beneficios que los usuarios pueden obtener con sus puntos.</p>
+    </div>
+  </header>
+
+  <section class="formulario-card">
+    <div class="seccion-titulo">
+      <div>
+        <span class="admin-kicker">
+          {{ editandoId ? 'EDITAR RECOMPENSA' : 'NUEVA RECOMPENSA' }}
+        </span>
+
+        <h2>
+          {{ editandoId ? 'Modificar recompensa' : 'Crear recompensa' }}
+        </h2>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="campo campo-completo">
+        <label for="nombre">Nombre</label>
+
+        <input id="nombre" type="text" [(ngModel)]="nombre" placeholder="Ej. Entrada gratis" />
+      </div>
+
+      <div class="campo campo-completo">
+        <label for="descripcion">Descripción</label>
+
+        <textarea
+          id="descripcion"
+          [(ngModel)]="descripcion"
+          rows="3"
+          placeholder="Describí brevemente la recompensa"
+        ></textarea>
+      </div>
+
+      <div class="campo">
+        <label>Tipo de recompensa</label>
+
+        <div class="tipo-selector">
+          <button
+            type="button"
+            [class.tipo-seleccionado]="tipo === 'entrada'"
+            (click)="seleccionarTipo('entrada')"
+          >
+            🎟️ Entrada
+          </button>
+
+          <button
+            type="button"
+            [class.tipo-seleccionado]="tipo === 'producto'"
+            (click)="seleccionarTipo('producto')"
+          >
+            🍿 Producto Candy
+          </button>
+        </div>
+      </div>
+
+      @if (tipo === 'producto') {
+        <div class="campo">
+          <label for="producto">Producto Candy</label>
+
+          <select id="producto" [(ngModel)]="productoId">
+            <option [ngValue]="null">Seleccioná un producto</option>
+
+            @for (producto of productos; track producto.id) {
+              @if (producto.activo) {
+                <option [ngValue]="producto.id">
+                  {{ producto.nombre }}
+                </option>
+              }
+            }
+          </select>
+        </div>
+      }
+
+      <div class="campo">
+        <label for="puntos">Puntos requeridos</label>
+
+        <input id="puntos" type="number" min="1" [(ngModel)]="puntosRequeridos" />
+
+        <small> Cantidad de puntos necesarios para realizar el canje. </small>
+      </div>
+    </div>
+
+    <div class="formulario-acciones">
+      @if (editandoId) {
+        <button
+          type="button"
+          class="btn-secundario"
+          (click)="cancelarEdicion()"
+          [disabled]="guardando"
+        >
+          Cancelar
+        </button>
+      }
+
+      <button
+        type="button"
+        class="btn-principal"
+        (click)="guardarRecompensa()"
+        [disabled]="guardando"
+      >
+        {{ guardando ? 'Guardando...' : editandoId ? 'Guardar cambios' : 'Crear recompensa' }}
+      </button>
+    </div>
+  </section>
+
+  <section class="lista-section">
+    <div class="lista-header">
+      <div>
+        <span class="admin-kicker">CONFIGURADAS</span>
+
+        <h2>Recompensas disponibles</h2>
+      </div>
+
+      <span class="contador">
+        {{ recompensas.length }}
+        {{ recompensas.length === 1 ? 'recompensa' : 'recompensas' }}
+      </span>
+    </div>
+
+    @if (cargando) {
+      <div class="estado">
+        <span>⏳</span>
+        <p>Cargando recompensas...</p>
+      </div>
+    } @else if (recompensas.length === 0) {
+      <div class="estado estado-vacio">
+        <span>🎁</span>
+
+        <h3>No hay recompensas configuradas</h3>
+
+        <p>Creá la primera recompensa para comenzar a utilizar el sistema de fidelización.</p>
+      </div>
+    } @else {
+      <div class="recompensas-lista">
+        @for (recompensa of recompensas; track recompensa.id) {
+          <article class="recompensa-card" [class.recompensa-inactiva]="!recompensa.activa">
+            <div class="recompensa-icono">
+              {{ recompensa.tipo === 'entrada' ? '🎟️' : '🍿' }}
+            </div>
+
+            <div class="recompensa-info">
+              <div class="recompensa-titulo">
+                <h3>{{ recompensa.nombre }}</h3>
+
+                <span
+                  class="estado-badge"
+                  [class.estado-activo]="recompensa.activa"
+                  [class.estado-inactivo]="!recompensa.activa"
+                >
+                  {{ recompensa.activa ? 'ACTIVA' : 'INACTIVA' }}
+                </span>
+              </div>
+
+              @if (recompensa.descripcion) {
+                <p>{{ recompensa.descripcion }}</p>
+              }
+
+              <div class="recompensa-detalles">
+                <span>
+                  {{ recompensa.tipo === 'entrada' ? 'Entrada gratis' : 'Producto Candy' }}
+                </span>
+
+                @if (recompensa.tipo === 'producto') {
+                  <span>
+                    {{ obtenerNombreProducto(recompensa.productoId) }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="recompensa-puntos">
+              <strong>
+                {{ recompensa.puntosRequeridos | number }}
+              </strong>
+
+              <span>puntos</span>
+            </div>
+
+            <div class="recompensa-acciones">
+              <button type="button" class="btn-editar" (click)="editarRecompensa(recompensa)">
+                Editar
+              </button>
+
+              <button
+                type="button"
+                class="btn-estado"
+                [class.btn-activar]="!recompensa.activa"
+                [class.btn-desactivar]="recompensa.activa"
+                (click)="cambiarEstado(recompensa)"
+              >
+                {{ recompensa.activa ? 'Desactivar' : 'Activar' }}
+              </button>
+
+              <button type="button" class="btn-eliminar" (click)="confirmarEliminar(recompensa)">
+                Eliminar
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</div>
+
+@if (mostrarModal) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal-card"
+      [class.modal-error]="tipoModal === 'error'"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="modal-icono" [class.modal-icono-error]="tipoModal === 'error'">
+        {{ tipoModal === 'exito' ? '✓' : '!' }}
+      </div>
+
+      <div class="modal-contenido">
+        <h2>{{ tituloModal }}</h2>
+
+        <p>{{ mensajeModal }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="btn-modal"
+        [class.btn-modal-error]="tipoModal === 'error'"
+        (click)="cerrarModal()"
+      >
+        Aceptar
+      </button>
+    </div>
+  </div>
+}
+
+@if (mostrarModalEliminar && recompensaAEliminar) {
+  <div class="modal-overlay" (click)="cerrarModalEliminar()">
+    <div class="modal-card modal-confirmacion" (click)="$event.stopPropagation()">
+      <div class="modal-icono modal-icono-eliminar">🗑️</div>
+
+      <div class="modal-contenido">
+        <h2>Eliminar recompensa</h2>
+
+        <p>
+          ¿Seguro que querés eliminar
+          <strong>
+            {{ recompensaAEliminar.nombre }}
+          </strong>
+          ?
+        </p>
+
+        <span class="modal-advertencia"> Esta acción no se puede deshacer. </span>
+      </div>
+
+      <div class="modal-acciones">
+        <button
+          type="button"
+          class="btn-modal-secundario"
+          (click)="cerrarModalEliminar()"
+          [disabled]="eliminando"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="btn-modal-eliminar"
+          (click)="eliminarRecompensa()"
+          [disabled]="eliminando"
+        >
+          {{ eliminando ? 'Eliminando...' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
