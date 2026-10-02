@@ -5,4 +5,5 @@ export interface Butaca {
   bloque: 1 | 2 | 3;
   ocupada: boolean;
   accesible: boolean;
+  vip: boolean;
 }

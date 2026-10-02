@@ -1,15 +1,27 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, effect } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { PeliculasService } from '../../../core/services/peliculas.service';
+
 import { FuncionesService } from '../../../core/services/funciones.service';
+
 import { SalasService } from '../../../core/services/salas.service';
+
 import { UsuariosService } from '../../../core/services/usuarios.service';
+
 import { ReservasService } from '../../../core/services/reservas.service';
+
 import { ConfiguracionService } from '../../../core/services/configuracion.service';
+
 import { Pelicula } from '../../../core/models/pelicula.model';
-import { Funcion } from '../../../core/models/funcion.model';
+
+import { Funcion, RECARGO_BUTACA_VIP } from '../../../core/models/funcion.model';
+
 import { Butaca } from '../../../core/models/butaca.model';
+
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface FilaMapa {
@@ -51,22 +63,36 @@ export class ReservaComponent implements OnInit, OnDestroy {
   public usuarioActual = this.usuariosService.obtenerUsuarioActual();
 
   public modalAbierto = false;
+
   public modalTitulo = '';
+
   public modalMensaje = '';
+
   public modalTipo: 'error' | 'exito' = 'error';
 
   public modalConfirmacion = false;
 
   public accionConfirmacion: (() => void) | null = null;
 
-  public subtotal = computed(() => {
+  public precioButaca(butaca: Butaca): number {
     const funcion = this.funcionSeleccionada();
 
     if (!funcion) {
       return 0;
     }
 
-    return this.butacasSeleccionadas().length * funcion.precioEntrada;
+    return funcion.precioEntrada + (butaca.vip ? RECARGO_BUTACA_VIP : 0);
+  }
+
+  public cantidadButacasVip = computed(() => {
+    return this.butacasSeleccionadas().filter((butaca) => butaca.vip).length;
+  });
+
+  public subtotal = computed(() => {
+    return this.butacasSeleccionadas().reduce(
+      (total, butaca) => total + this.precioButaca(butaca),
+      0,
+    );
   });
 
   public tieneDescuento = computed(() => {
@@ -385,7 +411,6 @@ export class ReservaComponent implements OnInit, OnDestroy {
 
       this.accionConfirmacion = () => {
         this.cerrarModal();
-
         this.router.navigate(['/login']);
       };
 
@@ -479,19 +504,14 @@ export class ReservaComponent implements OnInit, OnDestroy {
 
   abrirModal(titulo: string, mensaje: string, tipo: 'error' | 'exito' = 'error'): void {
     this.modalTitulo = titulo;
-
     this.modalMensaje = mensaje;
-
     this.modalTipo = tipo;
-
     this.modalAbierto = true;
   }
 
   cerrarModal(): void {
     this.modalAbierto = false;
-
     this.modalConfirmacion = false;
-
     this.accionConfirmacion = null;
   }
 

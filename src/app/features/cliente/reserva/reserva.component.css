@@ -1,10 +1,14 @@
 .reserva-container {
-  width: min(1200px, calc(100% - 32px));
-  margin: var(--space-4) auto;
+  width: min(1300px, calc(100vw - 32px));
+  margin: var(--space-4) 0;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
   padding: var(--space-5);
   background-color: var(--bg-elevada);
   border-radius: var(--radio);
   border: 1px solid var(--borde);
+  box-sizing: border-box;
 }
 
 .pelicula-header {
@@ -72,7 +76,8 @@
   cursor: pointer;
   transition:
     background-color 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .funciones-list button:hover {
@@ -87,7 +92,8 @@
 }
 
 .pantalla-cine {
-  max-width: 900px;
+  width: 88%;
+  max-width: 1100px;
   margin: var(--space-4) auto var(--space-5);
   padding: 10px;
   background: linear-gradient(180deg, #e5e5e5, #777b81);
@@ -102,48 +108,56 @@
 }
 
 .mapa-sala {
+  --butaca: 30px;
+  --gap-butaca: 5px;
+  --gap-fila: 16px;
+
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding: var(--space-3) 0;
+  gap: 6px;
   width: 100%;
+  padding: var(--space-3) 0;
+  overflow: visible;
 }
 
 .fila {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-}
-
-.fila-accesible {
-  margin: 14px 0;
-  padding: 12px 0;
-  border-top: 1px solid var(--borde);
-  border-bottom: 1px solid var(--borde);
-  background: rgba(36, 52, 71, 0.08);
+  gap: var(--gap-fila);
+  width: 100%;
+  position: relative;
 }
 
 .letra-fila {
-  width: 24px;
+  width: 28px;
   text-align: center;
   font-weight: 600;
   color: var(--muted);
   flex-shrink: 0;
 }
 
-.fila-accesible .letra-fila {
-  color: #7f9bb5;
-}
-
 .bloque {
   display: flex;
-  gap: 5px;
+  gap: var(--gap-butaca);
+}
+
+/* Ocupa el mismo ancho total que las otras filas (así las letras J no se mueven)
+   y el padding mete las butacas desde la columna 2 hasta la 27 */
+.bloques-j {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  width: calc(28 * var(--butaca) + 25 * var(--gap-butaca) + 2 * var(--gap-fila));
+  padding: 0 calc(var(--butaca) + var(--gap-butaca));
 }
 
 .butaca {
-  width: 30px;
-  height: 30px;
+  width: var(--butaca);
+  height: var(--butaca);
+  padding: 0;
+  flex-shrink: 0;
   font-size: 0.72rem;
   background-color: var(--bg-elevada-2);
   border: 1px solid var(--borde);
@@ -153,7 +167,8 @@
   transition:
     transform 0.12s ease,
     background-color 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .butaca:hover:not(:disabled) {
@@ -174,6 +189,20 @@
   color: #3f4247;
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.fila-accesible {
+  margin: 14px 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--borde);
+  border-bottom: 1px solid var(--borde);
+  background: rgba(36, 52, 71, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fila-accesible .letra-fila {
+  color: #7f9bb5;
 }
 
 .fila-accesible .butaca.accesible {
@@ -198,6 +227,61 @@
   background-color: #151d25;
   border-color: #263442;
   color: #5d6b78;
+  opacity: 0.7;
+}
+
+/* ZONA VIP */
+.zona-vip {
+  margin: 24px 0;
+  padding: 14px 12px;
+  background: rgba(111, 82, 25, 0.13);
+  border: none;
+  border-top: 1px solid #665329;
+  border-bottom: 1px solid #665329;
+  border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.zona-vip .fila-vip {
+  margin: 0;
+  padding: 5px 0;
+  border: none;
+  background: transparent;
+}
+
+.zona-vip .fila-vip + .fila-vip {
+  margin-top: 4px;
+}
+
+.zona-vip .letra-fila {
+  color: #d5ad5c;
+  font-weight: 700;
+}
+
+.zona-vip .butaca.vip {
+  background-color: #40351f;
+  border-color: #8d6c32;
+  color: #d5ad5c;
+  font-weight: 700;
+}
+
+.zona-vip .butaca.vip:hover:not(:disabled) {
+  background-color: #514329;
+  border-color: #b18a3c;
+  color: #f0cf7a;
+}
+
+.zona-vip .butaca.vip.seleccionada {
+  background-color: var(--imperial);
+  border-color: #d5ad5c;
+  color: #ffffff;
+}
+
+.zona-vip .butaca.vip.ocupada {
+  background-color: #15100a;
+  border-color: #30291d;
+  color: #514a3c;
   opacity: 0.7;
 }
 
@@ -231,6 +315,11 @@
   border-color: #3d5a73;
 }
 
+.sample.vip {
+  background-color: #40351f;
+  border-color: #8d6c32;
+}
+
 .sample.seleccionada {
   background-color: var(--imperial);
   border-color: var(--imperial);
@@ -247,6 +336,12 @@
   color: #7f9bb5;
 }
 
+.icono-vip {
+  margin-left: 5px;
+  font-size: 0.9rem;
+  color: #d5ad5c;
+}
+
 .resumen-reserva {
   background: var(--bg-elevada-2);
   padding: var(--space-4);
@@ -255,13 +350,26 @@
   text-align: right;
 }
 
+.resumen-reserva p {
+  margin-bottom: var(--space-2);
+}
+
 .descuento-tag {
   color: var(--exito);
   font-weight: 600;
 }
 
+.vip-info {
+  color: #d5ad5c !important;
+  font-weight: 600;
+}
+
 .total {
   font-size: 1.1rem;
+}
+
+.total strong {
+  color: var(--papel);
 }
 
 .btn-confirmar {
@@ -428,30 +536,55 @@
   color: var(--papel);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1350px) {
   .reserva-container {
-    width: min(100% - 24px, 1000px);
+    width: calc(100vw - 20px);
+    left: 50%;
+    transform: translateX(-50%);
     padding: var(--space-4);
   }
 
-  .fila {
-    gap: 10px;
-  }
-
-  .bloque {
-    gap: 4px;
+  .mapa-sala {
+    --butaca: 26px;
+    --gap-butaca: 4px;
+    --gap-fila: 9px;
   }
 
   .butaca {
-    width: 27px;
-    height: 27px;
-    font-size: 0.68rem;
+    font-size: 0.62rem;
+  }
+
+  .zona-vip {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  .mapa-sala {
+    --butaca: 23px;
+    --gap-butaca: 3px;
+    --gap-fila: 7px;
+  }
+
+  .butaca {
+    font-size: 0.56rem;
+  }
+
+  .letra-fila {
+    width: 20px;
+    font-size: 0.72rem;
+  }
+
+  .zona-vip {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 }
 
 @media (max-width: 800px) {
   .reserva-container {
-    width: calc(100% - 16px);
+    width: calc(100vw - 16px);
     padding: var(--space-3);
   }
 
@@ -465,18 +598,24 @@
   }
 
   .mapa-sala {
-    overflow-x: auto;
-    padding-bottom: var(--space-3);
-  }
-
-  .fila {
-    justify-content: flex-start;
-    min-width: max-content;
+    --butaca: 20px;
+    --gap-butaca: 2px;
+    --gap-fila: 4px;
+    overflow: hidden;
   }
 
   .butaca {
-    width: 28px;
-    height: 28px;
+    font-size: 0.48rem;
+  }
+
+  .letra-fila {
+    width: 17px;
+    font-size: 0.62rem;
+  }
+
+  .zona-vip {
+    padding-left: 5px;
+    padding-right: 5px;
   }
 
   .leyenda {
@@ -490,5 +629,38 @@
 
   .modal-acciones {
     flex-direction: column-reverse;
+  }
+}
+
+@media (max-width: 600px) {
+  .mapa-sala {
+    --butaca: 17px;
+    --gap-butaca: 1px;
+    --gap-fila: 3px;
+  }
+
+  .butaca {
+    font-size: 0.42rem;
+  }
+
+  .letra-fila {
+    width: 14px;
+    font-size: 0.55rem;
+  }
+
+  .zona-vip {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+
+  .fila-accesible {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .pantalla-cine {
+    width: 94%;
+    font-size: 0.72rem;
+    letter-spacing: 3px;
   }
 }
