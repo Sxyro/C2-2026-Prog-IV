@@ -3,8 +3,8 @@ import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
-import { SupabaseService } from '../../../core/services/supabase.service';
-import { UsuariosService } from '../../../core/services/usuarios.service';
+import { SupabaseService } from '../../../../core/services/supabase.service';
+import { UsuariosService } from '../../../../core/services/usuarios.service';
 
 interface MovimientoPuntos {
   id: string;

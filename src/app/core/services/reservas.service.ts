@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+
 import { SupabaseService } from './supabase.service';
+
 import { ReservaUsuario } from '../models/reserva.model';
 
 export interface ButacaSeleccionada {
@@ -90,14 +92,13 @@ export class ReservasService {
       funcion_id: funcionId,
       usuario_id: usuarioId,
       email_comprador: emailComprador,
-      total: total,
+      total,
     };
 
     const { error: errorReserva } = await this.supabase.from('reservas').insert([reservaRow]);
 
     if (errorReserva) {
       console.error('Error al crear reserva:', errorReserva.message);
-
       return {
         exito: false,
         mensaje: errorReserva.message,
@@ -126,7 +127,6 @@ export class ReservasService {
       }
 
       console.error('Error al vincular butacas:', errorButacas.message);
-
       return {
         exito: false,
         mensaje: 'No se pudieron reservar los asientos elegidos.',
@@ -136,6 +136,45 @@ export class ReservasService {
     return {
       exito: true,
       reservaId,
+    };
+  }
+
+  async aplicarCreditoAReserva(
+    reservaId: string,
+    creditoUsado: number,
+  ): Promise<{
+    exito: boolean;
+    creditoUsado?: number;
+    creditoRestante?: number;
+    totalFinal?: number;
+    mensaje?: string;
+  }> {
+    if (creditoUsado <= 0) {
+      return {
+        exito: true,
+        creditoUsado: 0,
+      };
+    }
+
+    const { data, error } = await this.supabase.rpc('aplicar_credito_a_reserva', {
+      p_reserva_id: reservaId,
+      p_credito_usado: creditoUsado,
+    });
+
+    if (error) {
+      console.error('Error al aplicar crédito:', error.message);
+      return {
+        exito: false,
+        mensaje: error.message,
+      };
+    }
+
+    return {
+      exito: data?.exito === true,
+      creditoUsado: Number(data?.credito_usado || 0),
+      creditoRestante: Number(data?.credito_restante || 0),
+      totalFinal: Number(data?.total_final || 0),
+      mensaje: data?.exito ? undefined : 'No se pudo aplicar el crédito.',
     };
   }
 
@@ -196,7 +235,6 @@ export class ReservasService {
 
     if (error) {
       console.error('Error al cancelar reserva:', error.message);
-
       return {
         exito: false,
         mensaje: error.message,

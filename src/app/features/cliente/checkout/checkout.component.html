@@ -3,21 +3,9 @@
 
   <div class="resumen-box">
     <h3>{{ datosReserva?.pelicula?.nombre }}</h3>
-
-    <p>
-      <strong>Sala:</strong>
-      {{ datosReserva?.funcion?.salaId }}
-    </p>
-
-    <p>
-      <strong>Asientos:</strong>
-      {{ cantidadAsientos }}
-    </p>
-
-    <p>
-      <strong>Entradas:</strong>
-      ${{ datosReserva?.total }}
-    </p>
+    <p><strong>Sala:</strong> {{ datosReserva?.funcion?.salaId }}</p>
+    <p><strong>Asientos:</strong> {{ cantidadAsientos }}</p>
+    <p><strong>Entradas:</strong> ${{ datosReserva?.total }}</p>
   </div>
 
   @if (combos().length > 0) {
@@ -27,7 +15,6 @@
         <h3>🎟️ Combos especiales</h3>
         <p>Disfrutá tu entrada junto con pochoclos y bebida a un precio especial.</p>
       </div>
-
       <div class="combos-lista">
         @for (combo of combos(); track combo.id) {
           <article
@@ -64,9 +51,7 @@
                 −
               </button>
 
-              <span>
-                {{ obtenerCantidadCombo(combo.id) }}
-              </span>
+              <span>{{ obtenerCantidadCombo(combo.id) }}</span>
 
               <button type="button" (click)="agregarCombo(combo)">+</button>
             </div>
@@ -82,14 +67,13 @@
             <div class="combo-resumen-linea">
               <span> {{ item.cantidad }} × {{ item.combo.nombre }} </span>
 
-              <strong> ${{ item.subtotal }} </strong>
+              <strong>${{ item.subtotal }}</strong>
             </div>
           }
 
           <div class="combo-subtotal">
             <span>Subtotal Combos</span>
-
-            <strong> ${{ subtotalCombos() }} </strong>
+            <strong>${{ subtotalCombos() }}</strong>
           </div>
         </div>
       }
@@ -99,7 +83,6 @@
   <section class="candy-section">
     <div class="candy-header">
       <h3>🍿 Agregá Candy a tu compra</h3>
-
       <p>Podés comprar comida y bebidas junto con tus entradas.</p>
     </div>
 
@@ -119,17 +102,13 @@
       @for (producto of productosFiltrados(); track producto.id) {
         <article class="producto-candy">
           <div class="producto-candy-info">
-            <h4>
-              {{ producto.nombre }}
-            </h4>
+            <h4>{{ producto.nombre }}</h4>
 
             @if (producto.descripcion) {
-              <p>
-                {{ producto.descripcion }}
-              </p>
+              <p>{{ producto.descripcion }}</p>
             }
 
-            <strong> ${{ producto.precio }} </strong>
+            <strong>${{ producto.precio }}</strong>
           </div>
 
           <div class="cantidad-candy">
@@ -141,9 +120,7 @@
               −
             </button>
 
-            <span>
-              {{ obtenerCantidad(producto.id) }}
-            </span>
+            <span>{{ obtenerCantidad(producto.id) }}</span>
 
             <button type="button" (click)="agregarProducto(producto)">+</button>
           </div>
@@ -157,23 +134,53 @@
 
         @for (item of productosSeleccionados(); track item.producto.id) {
           <div class="candy-resumen-linea">
-            <span>
-              {{ item.cantidad }} ×
-              {{ item.producto.nombre }}
-            </span>
+            <span> {{ item.cantidad }} × {{ item.producto.nombre }} </span>
 
-            <strong> ${{ item.subtotal }} </strong>
+            <strong>${{ item.subtotal }}</strong>
           </div>
         }
 
         <div class="candy-subtotal">
-          <span> Subtotal Candy </span>
-
-          <strong> ${{ subtotalCandy() }} </strong>
+          <span>Subtotal Candy</span>
+          <strong>${{ subtotalCandy() }}</strong>
         </div>
       </div>
     }
   </section>
+
+  @if (creditoDisponible() > 0) {
+    <section class="credito-section">
+      <div class="credito-info">
+        <div>
+          <span class="credito-kicker">CRÉDITO DISPONIBLE</span>
+
+          <h3>Usá tu crédito en esta compra</h3>
+
+          <p>
+            Tenés
+            <strong>${{ creditoDisponible() }}</strong>
+            disponibles para utilizar.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="credito-boton"
+          [class.credito-activo]="usarCredito()"
+          (click)="alternarCredito()"
+        >
+          {{ usarCredito() ? 'No usar crédito' : 'Usar crédito' }}
+        </button>
+      </div>
+
+      @if (usarCredito()) {
+        <div class="credito-detalle">
+          <span>Crédito utilizado</span>
+          <strong>-${{ creditoAplicado() }}</strong>
+        </div>
+      }
+    </section>
+  }
 
   <div class="total-final">
     <div>
@@ -198,6 +205,13 @@
       <strong>${{ subtotalCandy() }}</strong>
     </div>
 
+    @if (creditoAplicado() > 0) {
+      <div class="credito-descuento-linea">
+        <span>Crédito utilizado</span>
+        <strong>-${{ creditoAplicado() }}</strong>
+      </div>
+    }
+
     <div class="total-principal">
       <span>Total a pagar</span>
       <strong>${{ totalFinal() }}</strong>
@@ -205,7 +219,7 @@
   </div>
 
   <form (ngSubmit)="procesarPago()" class="checkout-form">
-    <label> Email para recibir la entrada: </label>
+    <label>Email para recibir la entrada:</label>
 
     <input
       type="email"

@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { UsuariosService } from '../../../core/services/usuarios.service';
-import { ReservasService } from '../../../core/services/reservas.service';
-import { ReservaUsuario } from '../../../core/models/reserva.model';
+import { UsuariosService } from '../../../../core/services/usuarios.service';
+import { ReservasService } from '../../../../core/services/reservas.service';
+import { ReservaUsuario } from '../../../../core/models/reserva.model';
 
 @Component({
   selector: 'app-mis-peliculas',

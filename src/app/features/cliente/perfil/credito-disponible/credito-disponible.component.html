@@ -1,0 +1,125 @@
+<section class="credito-page">
+  <div class="credito-container">
+    <header class="credito-header">
+      <div>
+        <span class="credito-kicker">CINE IMPERIAL</span>
+        <h1>Crédito disponible</h1>
+
+        <p>Consultá tu saldo y el historial de movimientos de crédito.</p>
+      </div>
+
+      <a routerLink="/perfil" class="btn-volver">← Mi cuenta</a>
+    </header>
+
+    @if (cargando()) {
+      <div class="credito-cargando">
+        <span></span>
+        <p>Cargando tu crédito...</p>
+      </div>
+    } @else {
+      <div class="credito-resumen">
+        <article class="saldo-card">
+          <div class="saldo-card-top">
+            <span class="credito-kicker">SALDO DISPONIBLE</span>
+            <span class="saldo-icono">$</span>
+          </div>
+
+          <div class="saldo-valor">
+            ${{ formatearDinero(usuarioActual()?.creditoDisponible || 0) }}
+          </div>
+
+          <p>Crédito disponible para utilizar en futuras compras de entradas y productos.</p>
+        </article>
+
+        <div class="resumen-movimientos">
+          <article class="resumen-card">
+            <span class="resumen-icono resumen-positivo">+</span>
+
+            <div>
+              <span>Crédito obtenido</span>
+              <strong>${{ formatearDinero(totalCreditoObtenido) }}</strong>
+            </div>
+          </article>
+
+          <article class="resumen-card">
+            <span class="resumen-icono resumen-negativo">−</span>
+
+            <div>
+              <span>Crédito utilizado</span>
+              <strong>${{ formatearDinero(totalCreditoUsado) }}</strong>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <section class="informacion-credito">
+        <div class="informacion-icono">i</div>
+
+        <div>
+          <strong>¿Cómo funciona el crédito?</strong>
+
+          <p>
+            Cuando cancelás una reserva con al menos 2 horas de anticipación, el importe
+            correspondiente se acredita automáticamente en tu cuenta.
+          </p>
+
+          <p>Podés utilizar ese crédito para pagar futuras compras dentro del cine.</p>
+        </div>
+      </section>
+
+      <section class="seccion-credito">
+        <div class="seccion-titulo">
+          <div>
+            <span class="credito-kicker">MOVIMIENTOS</span>
+
+            <h2>Historial de crédito</h2>
+          </div>
+
+          <strong class="saldo-mini">
+            ${{ formatearDinero(usuarioActual()?.creditoDisponible || 0) }}
+          </strong>
+        </div>
+
+        @if (movimientos.length === 0) {
+          <div class="sin-movimientos">
+            <span>$</span>
+
+            <h3>Todavía no tenés movimientos</h3>
+
+            <p>El crédito obtenido por futuras cancelaciones aparecerá acá.</p>
+          </div>
+        } @else {
+          <div class="movimientos">
+            @for (movimiento of movimientos; track movimiento.id) {
+              <div class="movimiento">
+                <div class="movimiento-icono" [class]="obtenerClaseMovimiento(movimiento.tipo)">
+                  {{ movimiento.tipo === 'credito' ? '+' : '−' }}
+                </div>
+
+                <div class="movimiento-info">
+                  <strong>
+                    {{ movimiento.descripcion }}
+                  </strong>
+
+                  <span>
+                    {{ movimiento.pelicula_nombre }}
+                    ·
+                    {{ formatearFecha(movimiento.created_at) }}
+                    ·
+                    {{ formatearHora(movimiento.created_at) }}
+                  </span>
+                </div>
+
+                <strong class="movimiento-monto" [class]="obtenerClaseMovimiento(movimiento.tipo)">
+                  {{ movimiento.tipo === 'credito' ? '+' : '−' }}${{
+                    formatearDinero(movimiento.monto)
+                  }}
+                </strong>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+</section>

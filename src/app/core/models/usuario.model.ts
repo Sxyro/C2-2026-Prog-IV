@@ -11,5 +11,6 @@ export interface Usuario {
   colorOjos: string;
   diasVacaciones: number;
   tieneDescuentoPrimeraCompra: boolean;
+  creditoDisponible: number;
   rol: RolUsuario;
 }

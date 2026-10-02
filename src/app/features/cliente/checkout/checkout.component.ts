@@ -46,10 +46,10 @@ export class CheckoutComponent implements OnInit {
   public categoriasCandy = signal<CategoriaCandy[]>([]);
   public productosCandy = signal<ProductoCandy[]>([]);
   public combos = signal<Combo[]>([]);
-
   public categoriaSeleccionada = signal<string>('');
   public cantidadesCandy = signal<Record<string, number>>({});
   public cantidadesCombos = signal<Record<string, number>>({});
+  public usarCredito = signal(false);
 
   public modalAbierto = false;
   public modalTitulo = '';
@@ -116,21 +116,39 @@ export class CheckoutComponent implements OnInit {
 
     const cantidadEntradas = this.datosReserva.butacas.length;
     const entradasCubiertas = Math.min(this.entradasCubiertasPorCombos(), cantidadEntradas);
-
     const precioPromedio = this.datosReserva.total / cantidadEntradas;
 
     return precioPromedio * entradasCubiertas;
   });
 
-  public totalFinal = computed(() => {
+  public subtotalAntesCredito = computed(() => {
     const totalEntradas = this.datosReserva?.total || 0;
     const descuentoCombos = this.precioEntradasCubiertas();
 
     return totalEntradas - descuentoCombos + this.subtotalCombos() + this.subtotalCandy();
   });
 
+  public creditoDisponible = computed(() => {
+    const usuario = this.usuariosService.obtenerUsuarioActual()();
+    return usuario?.creditoDisponible || 0;
+  });
+
+  public creditoAplicado = computed(() => {
+    if (!this.usarCredito()) {
+      return 0;
+    }
+
+    return Math.min(this.creditoDisponible(), this.subtotalAntesCredito());
+  });
+
+  public totalFinal = computed(() => {
+    return Math.max(0, this.subtotalAntesCredito() - this.creditoAplicado());
+  });
+
   get cantidadAsientos(): string {
-    if (!this.datosReserva) return '';
+    if (!this.datosReserva) {
+      return '';
+    }
 
     return this.datosReserva.butacas.map((butaca) => `${butaca.fila}-${butaca.columna}`).join(', ');
   }
@@ -184,9 +202,7 @@ export class CheckoutComponent implements OnInit {
 
   agregarProducto(producto: ProductoCandy): void {
     const cantidades = { ...this.cantidadesCandy() };
-
     cantidades[producto.id] = (cantidades[producto.id] || 0) + 1;
-
     this.cantidadesCandy.set(cantidades);
   }
 
@@ -237,8 +253,23 @@ export class CheckoutComponent implements OnInit {
     this.cantidadesCombos.set(cantidades);
   }
 
+  alternarCredito(): void {
+    if (this.creditoDisponible() <= 0) {
+      this.abrirModal(
+        'Sin crédito disponible',
+        'No tenés crédito disponible para utilizar en esta compra.',
+        'error',
+      );
+      return;
+    }
+
+    this.usarCredito.update((valor) => !valor);
+  }
+
   async procesarPago(): Promise<void> {
-    if (!this.datosReserva) return;
+    if (!this.datosReserva) {
+      return;
+    }
 
     if (!this.emailComprador.trim()) {
       this.abrirModal(
@@ -254,15 +285,16 @@ export class CheckoutComponent implements OnInit {
     try {
       const usuario = this.usuariosService.obtenerUsuarioActual()();
       const usuarioId = usuario ? usuario.id : null;
-
       const productos = this.productosSeleccionados();
       const combos = this.combosSeleccionados();
+      const totalAntesCredito = this.subtotalAntesCredito();
+      const creditoAUsar = this.creditoAplicado();
 
       const resultadoReserva = await this.reservasService.crearReserva(
         this.datosReserva.funcion.id,
         usuarioId,
         this.emailComprador,
-        this.totalFinal(),
+        totalAntesCredito,
         this.datosReserva.butacas,
       );
 
@@ -306,12 +338,35 @@ export class CheckoutComponent implements OnInit {
         }
       }
 
+      let totalPagado = totalAntesCredito;
+
+      if (creditoAUsar > 0) {
+        const resultadoCredito = await this.reservasService.aplicarCreditoAReserva(
+          reservaId,
+          creditoAUsar,
+        );
+
+        if (!resultadoCredito.exito) {
+          this.abrirModal(
+            'No se pudo aplicar el crédito',
+            resultadoCredito.mensaje ||
+              'La reserva fue creada, pero no se pudo utilizar el crédito disponible. No se generó el comprobante.',
+            'error',
+          );
+          return;
+        }
+
+        totalPagado = resultadoCredito.totalFinal ?? totalAntesCredito;
+
+        this.usuariosService.actualizarCreditoLocal(resultadoCredito.creditoRestante ?? 0);
+      }
+
       await this.pdfService.generarEntradaPdf({
         reservaId,
         pelicula: this.datosReserva.pelicula,
         funcion: this.datosReserva.funcion,
         butacas: this.datosReserva.butacas,
-        total: this.totalFinal(),
+        total: totalPagado,
         emailComprador: this.emailComprador,
         productosCandy: productos,
       });
@@ -327,7 +382,6 @@ export class CheckoutComponent implements OnInit {
       );
     } catch (error) {
       console.error('Error al generar la entrada:', error);
-
       this.abrirModal(
         'Error al procesar el pago',
         'Ocurrió un error al procesar el pago o generar la entrada.',
@@ -347,7 +401,6 @@ export class CheckoutComponent implements OnInit {
 
   cerrarModal(): void {
     const eraExito = this.modalTipo === 'exito';
-
     this.modalAbierto = false;
 
     if (eraExito) {

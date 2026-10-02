@@ -6,7 +6,6 @@
         <h1>Mi cuenta</h1>
         <p>Gestioná tu información, tus puntos y tu actividad.</p>
       </div>
-
       <div class="perfil-identidad">
         <div class="perfil-avatar">
           {{ usuarioActual()?.nombre?.charAt(0)?.toUpperCase() }}
@@ -44,38 +43,38 @@
         <article class="tarjeta-menu">
           <span class="tarjeta-kicker">MI ACTIVIDAD</span>
 
-          <a routerLink="/mis-peliculas" class="opcion-menu">
+          <a routerLink="/perfil/mis-peliculas" class="opcion-menu">
             <span class="opcion-icono">🎬</span>
 
             <span>
               <strong>Mis películas</strong>
-              <small> Consultá todo lo que viste y tus calificaciones. </small>
+              <small>Consultá todo lo que viste y tus calificaciones.</small>
             </span>
 
             <span class="opcion-flecha">›</span>
           </a>
 
-          <a routerLink="/recompensas" class="opcion-menu">
+          <a routerLink="/perfil/recompensas" class="opcion-menu">
             <span class="opcion-icono">🎁</span>
 
             <span>
               <strong>Recompensas</strong>
-              <small> Canjeá tus puntos por entradas y productos. </small>
+              <small>Canjeá tus puntos por entradas y productos.</small>
             </span>
 
             <span class="opcion-flecha">›</span>
           </a>
 
-          <div class="opcion-menu opcion-deshabilitada">
+          <a routerLink="/perfil/credito-disponible" class="opcion-menu">
             <span class="opcion-icono">💳</span>
 
             <span>
               <strong>Crédito disponible</strong>
-              <small> Crédito obtenido por cancelaciones. </small>
+              <small>Consultá tu saldo y movimientos de crédito.</small>
             </span>
 
-            <span class="opcion-etiqueta">PRÓXIMAMENTE</span>
-          </div>
+            <span class="opcion-flecha">›</span>
+          </a>
         </article>
       </div>
 
@@ -90,51 +89,37 @@
         <div class="datos-grid">
           <div class="dato">
             <span>Nombre</span>
-            <strong>
-              {{ usuarioActual()?.nombre }}
-            </strong>
+            <strong>{{ usuarioActual()?.nombre }}</strong>
           </div>
 
           <div class="dato">
             <span>Apellido</span>
-            <strong>
-              {{ usuarioActual()?.apellido }}
-            </strong>
+            <strong>{{ usuarioActual()?.apellido }}</strong>
           </div>
 
           <div class="dato dato-completo">
             <span>Email</span>
-            <strong>
-              {{ usuarioActual()?.email }}
-            </strong>
+            <strong>{{ usuarioActual()?.email }}</strong>
           </div>
 
           <div class="dato">
             <span>Fecha de nacimiento</span>
-            <strong>
-              {{ usuarioActual()?.fechaNacimiento | date: 'dd/MM/yyyy' }}
-            </strong>
+            <strong>{{ usuarioActual()?.fechaNacimiento | date: 'dd/MM/yyyy' }}</strong>
           </div>
 
           <div class="dato">
             <span>Tipo de sangre</span>
-            <strong>
-              {{ usuarioActual()?.tipoSangre }}
-            </strong>
+            <strong>{{ usuarioActual()?.tipoSangre }}</strong>
           </div>
 
           <div class="dato">
             <span>Color de ojos</span>
-            <strong>
-              {{ usuarioActual()?.colorOjos }}
-            </strong>
+            <strong>{{ usuarioActual()?.colorOjos }}</strong>
           </div>
 
           <div class="dato">
             <span>Días de vacaciones</span>
-            <strong>
-              {{ usuarioActual()?.diasVacaciones }}
-            </strong>
+            <strong>{{ usuarioActual()?.diasVacaciones }}</strong>
           </div>
         </div>
       </section>
@@ -146,7 +131,7 @@
             <h2>Historial de puntos</h2>
           </div>
 
-          <strong class="saldo-mini"> {{ puntos | number }} pts </strong>
+          <strong class="saldo-mini">{{ puntos | number }} pts</strong>
         </div>
 
         @if (movimientos.length === 0) {
@@ -164,9 +149,7 @@
                 </div>
 
                 <div class="movimiento-info">
-                  <strong>
-                    {{ movimiento.descripcion }}
-                  </strong>
+                  <strong>{{ movimiento.descripcion }}</strong>
 
                   <span>
                     {{ formatearFecha(movimiento.created_at) }}
@@ -176,8 +159,7 @@
                 </div>
 
                 <strong class="movimiento-puntos" [class]="obtenerClaseMovimiento(movimiento.tipo)">
-                  {{ obtenerSignoMovimiento(movimiento.tipo) }}{{ movimiento.puntos }}
-                  pts
+                  {{ obtenerSignoMovimiento(movimiento.tipo) }}{{ movimiento.puntos }} pts
                 </strong>
               </div>
             }

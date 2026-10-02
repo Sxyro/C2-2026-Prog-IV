@@ -1,34 +1,65 @@
 import { Routes } from '@angular/router';
+
 import { CarteleraComponent } from './features/cliente/cartelera/cartelera.component';
 import { RegistroComponent } from './features/cliente/registro/registro.component';
 import { ReservaComponent } from './features/cliente/reserva/reserva.component';
 import { LoginComponent } from './features/cliente/login/login.component';
-import { soloAdminGuard } from './core/guards/admin.guard';
-import { PerfilComponent } from './features/cliente/perfil/perfil.component';
-import { adminGuard } from './core/guards/admin.guard';
+
+import { soloAdminGuard, adminGuard } from './core/guards/admin.guard';
+
+import { PerfilComponent } from './features/cliente/perfil/mi-perfil-info/perfil.component';
+import { MisPeliculasComponent } from './features/cliente/perfil/mis-peliculas/mis-peliculas.component';
+import { RecompensasComponent } from './features/cliente/perfil/recompensas/recompensas.component';
+import { CreditoDisponibleComponent } from './features/cliente/perfil/credito-disponible/credito-disponible.component';
+
 import { EscanearComponent } from './features/empleado/escanear.component';
-import { MisPeliculasComponent } from './features/cliente/mis-peliculas/mis-peliculas.component';
-import { RecompensasComponent } from './features/cliente/recompensas/recompensas.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'cartelera', pathMatch: 'full' },
+
   { path: 'cartelera', component: CarteleraComponent },
+
   { path: 'login', component: LoginComponent },
+
   { path: 'registro', component: RegistroComponent },
-  { path: 'perfil', component: PerfilComponent },
-  { path: 'mis-peliculas', component: MisPeliculasComponent },
-  { path: 'recompensas', component: RecompensasComponent },
-  { path: 'reserva/:idPelicula', component: ReservaComponent },
+
+  {
+    path: 'perfil',
+    component: PerfilComponent,
+  },
+
+  {
+    path: 'perfil/mis-peliculas',
+    component: MisPeliculasComponent,
+  },
+
+  {
+    path: 'perfil/recompensas',
+    component: RecompensasComponent,
+  },
+
+  {
+    path: 'perfil/credito-disponible',
+    component: CreditoDisponibleComponent,
+  },
+
+  {
+    path: 'reserva/:idPelicula',
+    component: ReservaComponent,
+  },
+
   {
     path: 'checkout',
     loadComponent: () =>
       import('./features/cliente/checkout/checkout.component').then((m) => m.CheckoutComponent),
   },
+
   {
     path: 'escanear',
     component: EscanearComponent,
     canActivate: [adminGuard],
   },
+
   {
     path: 'admin',
     canActivate: [soloAdminGuard],
@@ -80,5 +111,6 @@ export const routes: Routes = [
       },
     ],
   },
+
   { path: '**', redirectTo: 'cartelera' },
 ];

@@ -17,9 +17,7 @@ export interface UsuarioAdministrable {
 })
 export class UsuariosService {
   private supabase = inject(SupabaseService).client;
-
   private usuarioActual = signal<Usuario | null>(null);
-
   private sesionListaPromise: Promise<void>;
 
   constructor() {
@@ -47,7 +45,6 @@ export class UsuariosService {
 
   private async restaurarSesion(): Promise<void> {
     const { data } = await this.supabase.auth.getSession();
-
     const userId = data.session?.user.id;
 
     if (userId) {
@@ -64,7 +61,6 @@ export class UsuariosService {
     }
 
     const usuario = this.mapearUsuario(data[0]);
-
     this.usuarioActual.set(usuario);
   }
 
@@ -80,12 +76,16 @@ export class UsuariosService {
       colorOjos: data.color_ojos,
       diasVacaciones: data.dias_vacaciones,
       tieneDescuentoPrimeraCompra: data.tiene_descuento_primera_compra,
+      creditoDisponible: Number(data.credito_disponible || 0),
       rol: data.rol as RolUsuario,
     };
   }
 
   async registrarUsuario(
-    datos: Omit<Usuario, 'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'rol'> & {
+    datos: Omit<
+      Usuario,
+      'id' | 'authUserId' | 'tieneDescuentoPrimeraCompra' | 'creditoDisponible' | 'rol'
+    > & {
       password: string;
     },
   ): Promise<{ exito: boolean; usuario?: Usuario; mensaje?: string }> {
@@ -147,6 +147,7 @@ export class UsuariosService {
       colorOjos: nuevoUsuario.color_ojos,
       diasVacaciones: nuevoUsuario.dias_vacaciones,
       tieneDescuentoPrimeraCompra: nuevoUsuario.tiene_descuento_primera_compra,
+      creditoDisponible: 0,
       rol: nuevoUsuario.rol,
     };
 
@@ -192,7 +193,6 @@ export class UsuariosService {
 
   async cerrarSesion(): Promise<void> {
     await this.supabase.auth.signOut();
-
     this.usuarioActual.set(null);
   }
 
@@ -219,6 +219,19 @@ export class UsuariosService {
     this.usuarioActual.set({
       ...usuario,
       tieneDescuentoPrimeraCompra: false,
+    });
+  }
+
+  actualizarCreditoLocal(creditoDisponible: number): void {
+    const usuario = this.usuarioActual();
+
+    if (!usuario) {
+      return;
+    }
+
+    this.usuarioActual.set({
+      ...usuario,
+      creditoDisponible,
     });
   }
 
