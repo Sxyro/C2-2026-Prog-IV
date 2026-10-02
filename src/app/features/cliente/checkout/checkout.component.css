@@ -20,6 +20,158 @@
   font-size: 0.92rem;
 }
 
+.combos-section {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: linear-gradient(145deg, var(--bg-elevada-2), var(--bg-elevada));
+  border: 1px solid var(--imperial);
+  border-radius: var(--radio);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.combos-header {
+  margin-bottom: var(--space-4);
+}
+
+.combos-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--imperial);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.combos-header h3 {
+  margin-bottom: 6px;
+}
+
+.combos-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.combos-lista {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.combo-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-elevada);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.combo-card:hover {
+  border-color: var(--borde-claro);
+  transform: translateY(-1px);
+}
+
+.combo-card.combo-seleccionado {
+  border-color: var(--imperial);
+  box-shadow: 0 0 0 1px var(--imperial);
+}
+
+.combo-imagen {
+  width: 105px;
+  height: 105px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radio-chico);
+  border: 1px solid var(--borde);
+}
+
+.combo-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.combo-etiqueta {
+  margin-bottom: 4px;
+  color: var(--imperial);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.combo-info h4 {
+  margin-bottom: 5px;
+  color: var(--papel);
+}
+
+.combo-info p {
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.combo-entradas {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.combo-precio {
+  color: var(--imperial-brillante);
+  font-size: 1.05rem;
+}
+
+.combo-cantidad {
+  flex-shrink: 0;
+}
+
+.combos-resumen {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: var(--bg-elevada);
+  border-radius: var(--radio-chico);
+  border-left: 3px solid var(--imperial);
+}
+
+.combos-resumen h4 {
+  margin-bottom: var(--space-3);
+}
+
+.combo-resumen-linea {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 7px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.combo-resumen-linea strong {
+  color: var(--papel);
+}
+
+.combo-subtotal {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--borde);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+}
+
+.combo-subtotal strong {
+  color: var(--imperial-brillante);
+}
+
 .candy-section {
   margin-top: var(--space-5);
 }
@@ -265,6 +417,15 @@
     padding: var(--space-4);
   }
 
+  .combo-card {
+    align-items: flex-start;
+  }
+
+  .combo-imagen {
+    width: 82px;
+    height: 82px;
+  }
+
   .producto-candy {
     align-items: flex-start;
   }
@@ -393,4 +554,12 @@
     width: min(440px, calc(100% - 20px));
     padding: 28px 22px;
   }
+}
+
+.combo-descuento-linea {
+  color: #4ade80;
+}
+
+.combo-descuento-linea strong {
+  color: #4ade80;
 }

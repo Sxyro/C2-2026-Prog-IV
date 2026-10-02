@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { ReservaUsuario } from '../models/reserva.model';
 
 export interface ButacaSeleccionada {
   id: string;
@@ -21,7 +22,6 @@ export class ReservasService {
 
     if (error) {
       console.error('Error al cargar butacas ocupadas:', error.message);
-
       return [];
     }
 
@@ -136,6 +136,77 @@ export class ReservasService {
     return {
       exito: true,
       reservaId,
+    };
+  }
+
+  async obtenerMisReservas(): Promise<ReservaUsuario[]> {
+    const { data, error } = await this.supabase.rpc('obtener_mis_reservas');
+
+    if (error) {
+      console.error('Error al obtener mis reservas:', error.message);
+      return [];
+    }
+
+    return (data || []).map((reserva: any) => ({
+      reservaId: reserva.reserva_id,
+      peliculaId: reserva.pelicula_id,
+      peliculaNombre: reserva.pelicula_nombre,
+      peliculaPortadaUrl: reserva.pelicula_portada_url,
+      peliculaFormato: reserva.pelicula_formato,
+      peliculaIdioma: reserva.pelicula_idioma,
+      peliculaClasificacion: reserva.pelicula_clasificacion,
+      funcionId: reserva.funcion_id,
+      salaId: reserva.sala_id,
+      salaNombre: reserva.sala_nombre,
+      fechaHoraInicio: reserva.fecha_hora_inicio,
+      fechaHoraFin: reserva.fecha_hora_fin,
+      precioEntrada: Number(reserva.precio_entrada),
+      total: Number(reserva.total),
+      createdAt: reserva.created_at,
+      entradaValidada: reserva.entrada_validada,
+      entradaValidadaAt: reserva.entrada_validada_at,
+      cancelada: reserva.cancelada,
+      canceladaAt: reserva.cancelada_at,
+      creditoDevuelto: Number(reserva.credito_devuelto || 0),
+      butacas: (reserva.butacas || []).map((butaca: any) => ({
+        id: butaca.id,
+        fila: butaca.fila,
+        columna: Number(butaca.columna),
+      })),
+      productosCandy: (reserva.productos_candy || []).map((producto: any) => ({
+        id: producto.id,
+        productoId: producto.producto_id,
+        nombre: producto.nombre,
+        cantidad: Number(producto.cantidad),
+        precioUnitario: Number(producto.precio_unitario),
+        subtotal: Number(producto.subtotal),
+        entregado: producto.entregado,
+      })),
+    }));
+  }
+
+  async cancelarReserva(reservaId: string): Promise<{
+    exito: boolean;
+    credito?: number;
+    mensaje?: string;
+  }> {
+    const { data, error } = await this.supabase.rpc('cancelar_reserva', {
+      p_reserva_id: reservaId,
+    });
+
+    if (error) {
+      console.error('Error al cancelar reserva:', error.message);
+
+      return {
+        exito: false,
+        mensaje: error.message,
+      };
+    }
+
+    return {
+      exito: data?.exito === true,
+      credito: Number(data?.credito || 0),
+      mensaje: data?.exito ? 'Reserva cancelada correctamente.' : 'No se pudo cancelar la reserva.',
     };
   }
 }

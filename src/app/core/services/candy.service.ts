@@ -4,6 +4,8 @@ import {
   CategoriaCandy,
   ProductoCandy,
   ProductoCandySeleccionado,
+  ComboProducto,
+  ComboProductoDetalle,
 } from '../models/producto-candy.model';
 
 @Injectable({
@@ -20,7 +22,6 @@ export class CandyService {
 
     if (error) {
       console.error('Error al cargar categorías Candy:', error.message);
-
       return [];
     }
 
@@ -39,7 +40,6 @@ export class CandyService {
 
     if (error) {
       console.error('Error al cargar productos Candy:', error.message);
-
       return [];
     }
 
@@ -47,11 +47,13 @@ export class CandyService {
   }
 
   async obtenerTodosLosProductos(): Promise<ProductoCandy[]> {
-    const { data, error } = await this.supabase.from('productos_candy').select('*').order('nombre');
+    const { data, error } = await this.supabase
+      .from('productos_candy')
+      .select('*')
+      .order('nombre');
 
     if (error) {
       console.error('Error al cargar todos los productos Candy:', error.message);
-
       return [];
     }
 
@@ -67,10 +69,13 @@ export class CandyService {
       categoriaId: row.categoria_id,
       imagenUrl: row.imagen_url,
       activo: row.activo,
+      cantidadEntradas: Number(row.cantidad_entradas || 0),
     }));
   }
 
-  async crearCategoria(nombre: string): Promise<{
+  async crearCategoria(
+    nombre: string,
+  ): Promise<{
     exito: boolean;
     mensaje: string;
   }> {
@@ -153,7 +158,9 @@ export class CandyService {
     };
   }
 
-  async crearProducto(producto: Omit<ProductoCandy, 'id'>): Promise<{
+  async crearProducto(
+    producto: Omit<ProductoCandy, 'id'>,
+  ): Promise<{
     exito: boolean;
     mensaje: string;
   }> {
@@ -166,6 +173,7 @@ export class CandyService {
         categoria_id: producto.categoriaId,
         imagen_url: producto.imagenUrl?.trim() || null,
         activo: producto.activo,
+        cantidad_entradas: producto.cantidadEntradas || 0,
       },
     ]);
 
@@ -182,7 +190,9 @@ export class CandyService {
     };
   }
 
-  async actualizarProducto(producto: ProductoCandy): Promise<{
+  async actualizarProducto(
+    producto: ProductoCandy,
+  ): Promise<{
     exito: boolean;
     mensaje: string;
   }> {
@@ -195,6 +205,7 @@ export class CandyService {
         categoria_id: producto.categoriaId,
         imagen_url: producto.imagenUrl?.trim() || null,
         activo: producto.activo,
+        cantidad_entradas: producto.cantidadEntradas || 0,
       })
       .eq('id', producto.id);
 
@@ -238,6 +249,114 @@ export class CandyService {
     };
   }
 
+  async obtenerComposicionCombo(
+    comboId: string,
+  ): Promise<ComboProductoDetalle[]> {
+    const { data, error } = await this.supabase
+      .from('combo_productos')
+      .select(`
+        producto_id,
+        cantidad,
+        productos_candy (
+          nombre,
+          precio
+        )
+      `)
+      .eq('combo_id', comboId);
+
+    if (error) {
+      console.error('Error al cargar composición del combo:', error.message);
+      return [];
+    }
+
+    return (data || []).map((row: any) => ({
+      productoId: row.producto_id,
+      nombre: row.productos_candy?.nombre || 'Producto',
+      cantidad: Number(row.cantidad),
+      precio: Number(row.productos_candy?.precio || 0),
+    }));
+  }
+
+  async obtenerTodosLosProductosDeCombo(
+    comboId: string,
+  ): Promise<ComboProducto[]> {
+    const { data, error } = await this.supabase
+      .from('combo_productos')
+      .select('*')
+      .eq('combo_id', comboId);
+
+    if (error) {
+      console.error('Error al cargar productos del combo:', error.message);
+      return [];
+    }
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      comboId: row.combo_id,
+      productoId: row.producto_id,
+      cantidad: Number(row.cantidad),
+    }));
+  }
+
+  async guardarComposicionCombo(
+    comboId: string,
+    productos: {
+      productoId: string;
+      cantidad: number;
+    }[],
+  ): Promise<{
+    exito: boolean;
+    mensaje: string;
+  }> {
+    const productosValidos = productos.filter(
+      (producto) =>
+        producto.productoId !== comboId &&
+        producto.cantidad > 0,
+    );
+
+    const { error: errorEliminar } = await this.supabase
+      .from('combo_productos')
+      .delete()
+      .eq('combo_id', comboId);
+
+    if (errorEliminar) {
+      return {
+        exito: false,
+        mensaje: errorEliminar.message,
+      };
+    }
+
+    if (productosValidos.length === 0) {
+      return {
+        exito: true,
+        mensaje: 'Composición del combo actualizada.',
+      };
+    }
+
+    const filas = productosValidos.map((producto) => ({
+      id: crypto.randomUUID(),
+      combo_id: comboId,
+      producto_id: producto.productoId,
+      cantidad: producto.cantidad,
+    }));
+
+    const { error: errorInsertar } = await this.supabase
+      .from('combo_productos')
+      .insert(filas);
+
+    if (errorInsertar) {
+      return {
+        exito: false,
+        mensaje: errorInsertar.message,
+      };
+    }
+
+    return {
+      exito: true,
+      mensaje: 'Composición del combo actualizada.',
+    };
+  }
+
   async agregarProductosAReserva(
     reservaId: string,
     productos: ProductoCandySeleccionado[],
@@ -249,14 +368,16 @@ export class CandyService {
       subtotal: item.subtotal,
     }));
 
-    const { error } = await this.supabase.rpc('agregar_productos_candy_reserva', {
-      p_reserva_id: reservaId,
-      p_productos: productosData,
-    });
+    const { error } = await this.supabase.rpc(
+      'agregar_productos_candy_reserva',
+      {
+        p_reserva_id: reservaId,
+        p_productos: productosData,
+      },
+    );
 
     if (error) {
       console.error('Error al guardar productos Candy:', error.message);
-
       return false;
     }
 

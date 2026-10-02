@@ -6,6 +6,7 @@ import { PdfService } from '../../../core/services/pdf.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
 import { ReservasService } from '../../../core/services/reservas.service';
 import { CandyService } from '../../../core/services/candy.service';
+import { ComboService } from '../../../core/services/combo.service';
 import { Pelicula } from '../../../core/models/pelicula.model';
 import { Funcion } from '../../../core/models/funcion.model';
 import { Butaca } from '../../../core/models/butaca.model';
@@ -14,6 +15,7 @@ import {
   ProductoCandy,
   ProductoCandySeleccionado,
 } from '../../../core/models/producto-candy.model';
+import { Combo, ComboSeleccionado } from '../../../core/models/combo.model';
 
 interface DatosReserva {
   pelicula: Pelicula;
@@ -34,6 +36,7 @@ export class CheckoutComponent implements OnInit {
   private usuariosService = inject(UsuariosService);
   private reservasService = inject(ReservasService);
   private candyService = inject(CandyService);
+  private comboService = inject(ComboService);
   private router = inject(Router);
 
   public datosReserva: DatosReserva | null = null;
@@ -42,8 +45,11 @@ export class CheckoutComponent implements OnInit {
 
   public categoriasCandy = signal<CategoriaCandy[]>([]);
   public productosCandy = signal<ProductoCandy[]>([]);
+  public combos = signal<Combo[]>([]);
+
   public categoriaSeleccionada = signal<string>('');
   public cantidadesCandy = signal<Record<string, number>>({});
+  public cantidadesCombos = signal<Record<string, number>>({});
 
   public modalAbierto = false;
   public modalTitulo = '';
@@ -74,12 +80,53 @@ export class CheckoutComponent implements OnInit {
       .filter((item) => item.cantidad > 0);
   });
 
+  public combosSeleccionados = computed<ComboSeleccionado[]>(() => {
+    return this.combos()
+      .map((combo) => {
+        const cantidad = this.cantidadesCombos()[combo.id] || 0;
+
+        return {
+          combo,
+          cantidad,
+          subtotal: combo.precio * cantidad,
+        };
+      })
+      .filter((item) => item.cantidad > 0);
+  });
+
   public subtotalCandy = computed(() => {
     return this.productosSeleccionados().reduce((total, item) => total + item.subtotal, 0);
   });
 
+  public subtotalCombos = computed(() => {
+    return this.combosSeleccionados().reduce((total, item) => total + item.subtotal, 0);
+  });
+
+  public entradasCubiertasPorCombos = computed(() => {
+    return this.combosSeleccionados().reduce(
+      (total, item) => total + item.combo.cantidadEntradas * item.cantidad,
+      0,
+    );
+  });
+
+  public precioEntradasCubiertas = computed(() => {
+    if (!this.datosReserva || this.datosReserva.butacas.length === 0) {
+      return 0;
+    }
+
+    const cantidadEntradas = this.datosReserva.butacas.length;
+    const entradasCubiertas = Math.min(this.entradasCubiertasPorCombos(), cantidadEntradas);
+
+    const precioPromedio = this.datosReserva.total / cantidadEntradas;
+
+    return precioPromedio * entradasCubiertas;
+  });
+
   public totalFinal = computed(() => {
-    return (this.datosReserva?.total || 0) + this.subtotalCandy();
+    const totalEntradas = this.datosReserva?.total || 0;
+    const descuentoCombos = this.precioEntradasCubiertas();
+
+    return totalEntradas - descuentoCombos + this.subtotalCombos() + this.subtotalCandy();
   });
 
   get cantidadAsientos(): string {
@@ -108,13 +155,15 @@ export class CheckoutComponent implements OnInit {
   }
 
   async cargarCandy(): Promise<void> {
-    const [categorias, productos] = await Promise.all([
+    const [categorias, productos, combos] = await Promise.all([
       this.candyService.obtenerCategorias(),
       this.candyService.obtenerProductos(),
+      this.comboService.obtenerCombos(),
     ]);
 
     this.categoriasCandy.set(categorias);
     this.productosCandy.set(productos);
+    this.combos.set(combos);
 
     if (categorias.length > 0) {
       this.categoriaSeleccionada.set(categorias[0].id);
@@ -129,10 +178,12 @@ export class CheckoutComponent implements OnInit {
     return this.cantidadesCandy()[productoId] || 0;
   }
 
+  obtenerCantidadCombo(comboId: string): number {
+    return this.cantidadesCombos()[comboId] || 0;
+  }
+
   agregarProducto(producto: ProductoCandy): void {
-    const cantidades = {
-      ...this.cantidadesCandy(),
-    };
+    const cantidades = { ...this.cantidadesCandy() };
 
     cantidades[producto.id] = (cantidades[producto.id] || 0) + 1;
 
@@ -140,10 +191,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   quitarProducto(producto: ProductoCandy): void {
-    const cantidades = {
-      ...this.cantidadesCandy(),
-    };
-
+    const cantidades = { ...this.cantidadesCandy() };
     const cantidadActual = cantidades[producto.id] || 0;
 
     if (cantidadActual <= 1) {
@@ -153,6 +201,40 @@ export class CheckoutComponent implements OnInit {
     }
 
     this.cantidadesCandy.set(cantidades);
+  }
+
+  agregarCombo(combo: Combo): void {
+    const cantidades = { ...this.cantidadesCombos() };
+    const cantidadActual = cantidades[combo.id] || 0;
+    const entradasActuales = this.entradasCubiertasPorCombos();
+    const entradasDisponibles = this.datosReserva?.butacas.length || 0;
+
+    if (entradasActuales + combo.cantidadEntradas > entradasDisponibles) {
+      this.abrirModal(
+        'Combo no disponible',
+        `Este combo incluye ${combo.cantidadEntradas} ${
+          combo.cantidadEntradas === 1 ? 'entrada' : 'entradas'
+        } y no hay suficientes entradas sin cubrir en esta compra.`,
+        'error',
+      );
+      return;
+    }
+
+    cantidades[combo.id] = cantidadActual + 1;
+    this.cantidadesCombos.set(cantidades);
+  }
+
+  quitarCombo(combo: Combo): void {
+    const cantidades = { ...this.cantidadesCombos() };
+    const cantidadActual = cantidades[combo.id] || 0;
+
+    if (cantidadActual <= 1) {
+      delete cantidades[combo.id];
+    } else {
+      cantidades[combo.id] = cantidadActual - 1;
+    }
+
+    this.cantidadesCombos.set(cantidades);
   }
 
   async procesarPago(): Promise<void> {
@@ -171,10 +253,10 @@ export class CheckoutComponent implements OnInit {
 
     try {
       const usuario = this.usuariosService.obtenerUsuarioActual()();
-
       const usuarioId = usuario ? usuario.id : null;
 
       const productos = this.productosSeleccionados();
+      const combos = this.combosSeleccionados();
 
       const resultadoReserva = await this.reservasService.crearReserva(
         this.datosReserva.funcion.id,
@@ -194,6 +276,19 @@ export class CheckoutComponent implements OnInit {
       }
 
       const reservaId = resultadoReserva.reservaId!;
+
+      if (combos.length > 0) {
+        const combosGuardados = await this.comboService.agregarCombosAReserva(reservaId, combos);
+
+        if (!combosGuardados) {
+          this.abrirModal(
+            'Reserva creada con inconvenientes',
+            'La reserva fue creada, pero ocurrió un error al guardar los combos.',
+            'error',
+          );
+          return;
+        }
+      }
 
       if (productos.length > 0) {
         const candyGuardado = await this.candyService.agregarProductosAReserva(

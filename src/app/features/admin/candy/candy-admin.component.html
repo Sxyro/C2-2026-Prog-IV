@@ -1,12 +1,10 @@
 <div class="admin-container">
-  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+  <a routerLink="/admin" class="back-link">← Volver al panel</a>
 
   <header class="section-header">
-    <span class="admin-kicker"> ADMINISTRACIÓN </span>
-
+    <span class="admin-kicker">ADMINISTRACIÓN</span>
     <h1>Candy Bar</h1>
-
-    <p>Gestioná categorías y productos disponibles para la compra.</p>
+    <p>Gestioná categorías, productos y combos disponibles para la compra.</p>
   </header>
 
   @if (mensaje(); as mensajeActual) {
@@ -18,7 +16,7 @@
   <div class="admin-grid">
     <section class="card">
       <div class="section-heading">
-        <span class="section-number"> 01 </span>
+        <span class="section-number">01</span>
 
         <div>
           <h2>Categorías</h2>
@@ -27,7 +25,7 @@
       </div>
 
       <form (ngSubmit)="crearCategoria()" class="admin-form">
-        <label> Nueva categoría </label>
+        <label>Nueva categoría</label>
 
         <div class="fila-formulario">
           <input
@@ -63,9 +61,7 @@
                 </button>
               </div>
             } @else {
-              <span>
-                {{ categoria.nombre }}
-              </span>
+              <span>{{ categoria.nombre }}</span>
 
               <button
                 type="button"
@@ -82,7 +78,7 @@
 
     <section class="card">
       <div class="section-heading">
-        <span class="section-number"> 02 </span>
+        <span class="section-number">02</span>
 
         <div>
           <h2>Nuevo producto</h2>
@@ -91,7 +87,7 @@
       </div>
 
       <form (ngSubmit)="crearProducto()" class="admin-form">
-        <label> Nombre </label>
+        <label>Nombre</label>
 
         <input
           type="text"
@@ -101,7 +97,7 @@
           placeholder="Ej. Pochoclos grandes"
         />
 
-        <label> Descripción </label>
+        <label>Descripción</label>
 
         <textarea
           [(ngModel)]="nuevoProducto.descripcion"
@@ -110,7 +106,7 @@
           placeholder="Descripción del producto"
         ></textarea>
 
-        <label> Precio </label>
+        <label>Precio</label>
 
         <input
           type="number"
@@ -120,7 +116,7 @@
           class="input-field"
         />
 
-        <label> Categoría </label>
+        <label>Categoría</label>
 
         <select
           [(ngModel)]="nuevoProducto.categoriaId"
@@ -134,7 +130,7 @@
           }
         </select>
 
-        <label> Imagen </label>
+        <label>Imagen</label>
 
         <input
           type="url"
@@ -151,7 +147,7 @@
 
   <section class="card productos-card">
     <div class="section-heading">
-      <span class="section-number"> 03 </span>
+      <span class="section-number">03</span>
 
       <div>
         <h2>Productos existentes</h2>
@@ -226,15 +222,11 @@
                   {{ obtenerNombreCategoria(producto.categoriaId) }}
                 </span>
 
-                <h3>
-                  {{ producto.nombre }}
-                </h3>
+                <h3>{{ producto.nombre }}</h3>
 
-                <p>
-                  {{ producto.descripcion || 'Sin descripción.' }}
-                </p>
+                <p>{{ producto.descripcion || 'Sin descripción.' }}</p>
 
-                <strong> ${{ producto.precio }} </strong>
+                <strong>${{ producto.precio }}</strong>
               </div>
             </div>
 
@@ -260,4 +252,288 @@
       }
     </div>
   </section>
+
+  <section class="card productos-card">
+    <div class="section-heading">
+      <span class="section-number">04</span>
+
+      <div>
+        <h2>Combos especiales</h2>
+        <p>Configurá combos con entradas y productos del Candy Bar.</p>
+      </div>
+    </div>
+
+    <form (ngSubmit)="crearCombo()" class="combo-form">
+      <div class="combo-form-grid">
+        <div class="admin-form">
+          <label>Nombre del combo</label>
+
+          <input
+            type="text"
+            [(ngModel)]="nuevoCombo.nombre"
+            name="nuevoComboNombre"
+            class="input-field"
+            placeholder="Ej. Combo Imperial"
+          />
+
+          <label>Descripción</label>
+
+          <textarea
+            [(ngModel)]="nuevoCombo.descripcion"
+            name="nuevoComboDescripcion"
+            class="input-field textarea"
+            placeholder="Incluye entrada, pochoclos y bebida"
+          ></textarea>
+
+          <label>Precio del combo</label>
+
+          <input
+            type="number"
+            [(ngModel)]="nuevoCombo.precio"
+            name="nuevoComboPrecio"
+            min="1"
+            class="input-field"
+          />
+
+          <label>Cantidad de entradas</label>
+
+          <input
+            type="number"
+            [(ngModel)]="nuevoCombo.cantidadEntradas"
+            name="nuevoComboEntradas"
+            min="1"
+            class="input-field"
+          />
+
+          <div class="combo-imagen-upload">
+            <label for="comboImagen">Imagen del combo</label>
+
+            <input
+              id="comboImagen"
+              type="file"
+              accept="image/*"
+              (change)="seleccionarImagenCombo($event)"
+              class="input-file"
+            />
+
+            @if (archivoCombo) {
+              <div class="archivo-seleccionado">
+                <span>✓</span>
+
+                <div>
+                  <strong>{{ archivoCombo.name }}</strong>
+
+                  <small> {{ (archivoCombo.size / 1024 / 1024).toFixed(2) }} MB </small>
+                </div>
+              </div>
+            }
+
+            @if (vistaPreviaCombo) {
+              <div class="combo-imagen-preview">
+                <img [src]="vistaPreviaCombo" alt="Vista previa del combo" />
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="combo-productos-selector">
+          <h3>Productos incluidos</h3>
+
+          <p>Seleccioná los productos Candy y sus cantidades.</p>
+
+          <div class="combo-productos-lista">
+            @for (producto of productos(); track producto.id) {
+              @if (producto.activo) {
+                <div class="combo-producto-selector">
+                  <div>
+                    <strong>{{ producto.nombre }}</strong>
+                    <span>${{ producto.precio }}</span>
+                  </div>
+
+                  <input
+                    type="number"
+                    min="0"
+                    [value]="obtenerCantidadCombo(producto.id)"
+                    (input)="cambiarCantidadCombo(producto.id, +$any($event.target).value)"
+                    [name]="'combo-producto-' + producto.id"
+                    class="cantidad-input"
+                  />
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-guardar btn-combo" [disabled]="subiendoCombo">
+        {{ subiendoCombo ? 'Subiendo imagen...' : 'Crear combo' }}
+      </button>
+    </form>
+  </section>
+
+  <section class="card productos-card">
+    <div class="section-heading">
+      <span class="section-number">05</span>
+
+      <div>
+        <h2>Combos existentes</h2>
+        <p>Modificá precio, composición y disponibilidad.</p>
+      </div>
+    </div>
+
+    <div class="combos-admin">
+      @for (combo of combos(); track combo.id) {
+        <article class="combo-admin" [class.combo-inactivo]="!combo.activo">
+          @if (comboEditandoId === combo.id) {
+            <div class="combo-edicion">
+              <input
+                type="text"
+                [(ngModel)]="combo.nombre"
+                [name]="'combo-nombre-' + combo.id"
+                class="input-field"
+              />
+
+              <textarea
+                [(ngModel)]="combo.descripcion"
+                [name]="'combo-descripcion-' + combo.id"
+                class="input-field textarea"
+              ></textarea>
+
+              <div class="combo-edicion-grid">
+                <div>
+                  <label>Precio</label>
+
+                  <input
+                    type="number"
+                    [(ngModel)]="combo.precio"
+                    [name]="'combo-precio-' + combo.id"
+                    min="1"
+                    class="input-field"
+                  />
+                </div>
+
+                <div>
+                  <label>Entradas</label>
+
+                  <input
+                    type="number"
+                    [(ngModel)]="combo.cantidadEntradas"
+                    [name]="'combo-entradas-' + combo.id"
+                    min="1"
+                    class="input-field"
+                  />
+                </div>
+              </div>
+
+              <input
+                type="url"
+                [(ngModel)]="combo.imagenUrl"
+                [name]="'combo-imagen-' + combo.id"
+                class="input-field"
+                placeholder="https://..."
+              />
+
+              <div class="combo-productos-lista">
+                @for (producto of productos(); track producto.id) {
+                  @if (producto.activo) {
+                    <div class="combo-producto-selector">
+                      <div>
+                        <strong>{{ producto.nombre }}</strong>
+                        <span>${{ producto.precio }}</span>
+                      </div>
+
+                      <input
+                        type="number"
+                        min="0"
+                        [value]="obtenerCantidadCombo(producto.id)"
+                        (input)="cambiarCantidadCombo(producto.id, +$any($event.target).value)"
+                        [name]="'editar-combo-producto-' + producto.id"
+                        class="cantidad-input"
+                      />
+                    </div>
+                  }
+                }
+              </div>
+
+              <div class="acciones">
+                <button type="button" class="btn-guardar" (click)="guardarCombo(combo)">
+                  Guardar
+                </button>
+
+                <button type="button" class="btn-secundario" (click)="cancelarEditarCombo()">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="combo-info">
+              @if (combo.imagenUrl) {
+                <img [src]="combo.imagenUrl" [alt]="combo.nombre" class="combo-imagen" />
+              }
+
+              <div>
+                <span class="combo-etiqueta">COMBO ESPECIAL</span>
+
+                <h3>{{ combo.nombre }}</h3>
+
+                <p>
+                  {{ combo.descripcion || 'Sin descripción.' }}
+                </p>
+
+                <div class="combo-datos">
+                  <span>{{ combo.cantidadEntradas }} entrada(s)</span>
+                  <strong>${{ combo.precio }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="producto-acciones">
+              <span class="estado" [class.estado-inactivo]="!combo.activo">
+                {{ combo.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+
+              <button type="button" class="btn-secundario" (click)="comenzarEditarCombo(combo)">
+                Editar
+              </button>
+
+              <button type="button" class="btn-secundario" (click)="cambiarEstadoCombo(combo)">
+                {{ combo.activo ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  </section>
 </div>
+
+@if (modalAbierto) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal"
+      [class.modal-error]="modalTipo === 'error'"
+      [class.modal-exito]="modalTipo === 'exito'"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
+
+      <div class="modal-icon">
+        {{ modalTipo === 'error' ? '!' : '✓' }}
+      </div>
+
+      <div class="modal-contenido">
+        <span class="modal-kicker">
+          {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+        </span>
+
+        <h2>{{ modalTitulo }}</h2>
+
+        <p>{{ modalMensaje }}</p>
+      </div>
+
+      <button type="button" class="modal-boton" (click)="cerrarModal()">
+        {{ modalTipo === 'exito' ? 'Continuar' : 'Entendido' }}
+      </button>
+    </div>
+  </div>
+}

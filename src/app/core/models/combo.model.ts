@@ -1,23 +1,12 @@
-export interface ProductoCandy {
+export interface Combo {
   id: string;
   nombre: string;
   descripcion: string | null;
   precio: number;
-  categoriaId: string;
+  cantidadEntradas: number;
   imagenUrl: string | null;
   activo: boolean;
-  cantidadEntradas: number;
-}
-
-export interface CategoriaCandy {
-  id: string;
-  nombre: string;
-}
-
-export interface ProductoCandySeleccionado {
-  producto: ProductoCandy;
-  cantidad: number;
-  subtotal: number;
+  createdAt?: string;
 }
 
 export interface ComboProducto {
@@ -32,4 +21,14 @@ export interface ComboProductoDetalle {
   nombre: string;
   cantidad: number;
   precio: number;
+}
+
+export interface ComboCompleto extends Combo {
+  productos: ComboProductoDetalle[];
+}
+
+export interface ComboSeleccionado {
+  combo: Combo;
+  cantidad: number;
+  subtotal: number;
 }

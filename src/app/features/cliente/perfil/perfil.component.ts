@@ -1,16 +1,10 @@
-import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { UsuariosService } from '../../../core/services/usuarios.service';
-
-import {
-  PuntosService,
-  RecompensaPuntos,
-  CanjePuntos,
-} from '../../../core/services/puntos.service';
 
 interface MovimientoPuntos {
   id: string;
@@ -32,7 +26,6 @@ interface MovimientoPuntos {
 export class PerfilComponent implements OnInit {
   private supabase = inject(SupabaseService).client;
   private usuariosService = inject(UsuariosService);
-  private puntosService = inject(PuntosService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -41,20 +34,7 @@ export class PerfilComponent implements OnInit {
   public puntos = 0;
   public movimientos: MovimientoPuntos[] = [];
 
-  public recompensas: RecompensaPuntos[] = [];
-  public historialCanjes: CanjePuntos[] = [];
-
   public cargando = signal(true);
-  public cargandoRecompensas = signal(false);
-
-  public mostrarRecompensas = false;
-  public canjeandoId: string | null = null;
-
-  public mensajeRecompensa = '';
-  public tipoMensajeRecompensa: 'exito' | 'error' = 'exito';
-
-  public mostrarModalCanje = false;
-  public recompensaPendiente: RecompensaPuntos | null = null;
 
   async ngOnInit(): Promise<void> {
     await this.usuariosService.esperarSesionLista();
@@ -110,141 +90,6 @@ export class PerfilComponent implements OnInit {
     }
   }
 
-  async abrirRecompensas(): Promise<void> {
-    this.mostrarRecompensas = !this.mostrarRecompensas;
-
-    if (!this.mostrarRecompensas) {
-      this.cdr.detectChanges();
-      return;
-    }
-
-    if (this.recompensas.length === 0) {
-      this.cargandoRecompensas.set(true);
-      this.cdr.detectChanges();
-
-      try {
-        const usuario = this.usuarioActual();
-
-        this.recompensas = await this.puntosService.obtenerRecompensas();
-
-        if (usuario) {
-          this.historialCanjes = await this.puntosService.obtenerHistorialCanjes(usuario.id);
-        }
-      } catch (error) {
-        console.error('Error al cargar recompensas:', error);
-
-        this.recompensas = [];
-        this.historialCanjes = [];
-      } finally {
-        this.cargandoRecompensas.set(false);
-        this.cdr.detectChanges();
-      }
-    }
-
-    setTimeout(() => {
-      document.getElementById('seccion-recompensas')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }, 100);
-  }
-
-  async canjearRecompensa(recompensa: RecompensaPuntos): Promise<void> {
-    if (this.canjeandoId) {
-      return;
-    }
-
-    if (this.puntos < recompensa.puntosRequeridos) {
-      this.mostrarMensajeRecompensa(
-        `Necesitás ${recompensa.puntosRequeridos.toLocaleString(
-          'es-AR',
-        )} puntos para canjear esta recompensa.`,
-        false,
-      );
-
-      return;
-    }
-
-    this.recompensaPendiente = recompensa;
-    this.mostrarModalCanje = true;
-
-    this.cdr.detectChanges();
-  }
-
-  cerrarModalCanje(): void {
-    if (this.canjeandoId) {
-      return;
-    }
-
-    this.mostrarModalCanje = false;
-    this.recompensaPendiente = null;
-
-    this.cdr.detectChanges();
-  }
-
-  async confirmarCanje(): Promise<void> {
-    if (!this.recompensaPendiente || this.canjeandoId) {
-      return;
-    }
-
-    const recompensa = this.recompensaPendiente;
-
-    this.canjeandoId = recompensa.id;
-    this.mostrarModalCanje = false;
-    this.mensajeRecompensa = '';
-
-    this.cdr.detectChanges();
-
-    try {
-      const resultado = await this.puntosService.canjearRecompensa(recompensa.id);
-
-      if (!resultado.exito) {
-        this.mostrarMensajeRecompensa(resultado.mensaje, false);
-
-        this.canjeandoId = null;
-        this.recompensaPendiente = null;
-
-        this.cdr.detectChanges();
-
-        return;
-      }
-
-      if (resultado.puntosRestantes !== undefined) {
-        this.puntos = resultado.puntosRestantes;
-      }
-
-      this.canjeandoId = null;
-      this.recompensaPendiente = null;
-
-      this.mostrarMensajeRecompensa(resultado.mensaje, true);
-
-      this.cdr.detectChanges();
-
-      const usuario = this.usuarioActual();
-
-      if (usuario) {
-        this.historialCanjes = await this.puntosService.obtenerHistorialCanjes(usuario.id);
-
-        const movimientosResultado = await this.supabase.rpc('obtener_mis_movimientos');
-
-        if (!movimientosResultado.error) {
-          this.movimientos = (movimientosResultado.data || []) as MovimientoPuntos[];
-        }
-      }
-
-      this.cdr.detectChanges();
-    } catch (error) {
-      console.error('Error al canjear recompensa:', error);
-
-      this.canjeandoId = null;
-      this.recompensaPendiente = null;
-
-      this.mostrarMensajeRecompensa('No se pudo realizar el canje.', false);
-
-      this.cdr.detectChanges();
-    }
-  }
-
   obtenerNombreCompleto(): string {
     const usuario = this.usuarioActual();
 
@@ -284,18 +129,5 @@ export class PerfilComponent implements OnInit {
 
   obtenerSignoMovimiento(tipo: string): string {
     return tipo === 'ganancia' ? '+' : '';
-  }
-
-  mostrarMensajeRecompensa(mensaje: string, exito: boolean): void {
-    this.mensajeRecompensa = mensaje;
-    this.tipoMensajeRecompensa = exito ? 'exito' : 'error';
-
-    this.cdr.detectChanges();
-
-    setTimeout(() => {
-      this.mensajeRecompensa = '';
-
-      this.cdr.detectChanges();
-    }, 4000);
   }
 }

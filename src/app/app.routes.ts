@@ -7,6 +7,8 @@ import { soloAdminGuard } from './core/guards/admin.guard';
 import { PerfilComponent } from './features/cliente/perfil/perfil.component';
 import { adminGuard } from './core/guards/admin.guard';
 import { EscanearComponent } from './features/empleado/escanear.component';
+import { MisPeliculasComponent } from './features/cliente/mis-peliculas/mis-peliculas.component';
+import { RecompensasComponent } from './features/cliente/recompensas/recompensas.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'cartelera', pathMatch: 'full' },
@@ -14,6 +16,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro', component: RegistroComponent },
   { path: 'perfil', component: PerfilComponent },
+  { path: 'mis-peliculas', component: MisPeliculasComponent },
+  { path: 'recompensas', component: RecompensasComponent },
   { path: 'reserva/:idPelicula', component: ReservaComponent },
   {
     path: 'checkout',

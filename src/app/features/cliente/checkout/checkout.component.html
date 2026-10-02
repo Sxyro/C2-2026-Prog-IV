@@ -20,6 +20,82 @@
     </p>
   </div>
 
+  @if (combos().length > 0) {
+    <section class="combos-section">
+      <div class="combos-header">
+        <span class="combos-kicker">CINE IMPERIAL</span>
+        <h3>🎟️ Combos especiales</h3>
+        <p>Disfrutá tu entrada junto con pochoclos y bebida a un precio especial.</p>
+      </div>
+
+      <div class="combos-lista">
+        @for (combo of combos(); track combo.id) {
+          <article
+            class="combo-card"
+            [class.combo-seleccionado]="obtenerCantidadCombo(combo.id) > 0"
+          >
+            @if (combo.imagenUrl) {
+              <img [src]="combo.imagenUrl" [alt]="combo.nombre" class="combo-imagen" />
+            }
+
+            <div class="combo-info">
+              <span class="combo-etiqueta">COMBO</span>
+
+              <h4>{{ combo.nombre }}</h4>
+
+              @if (combo.descripcion) {
+                <p>{{ combo.descripcion }}</p>
+              }
+
+              <span class="combo-entradas">
+                🎟️ Incluye {{ combo.cantidadEntradas }}
+                {{ combo.cantidadEntradas === 1 ? 'entrada' : 'entradas' }}
+              </span>
+
+              <strong class="combo-precio"> ${{ combo.precio }} </strong>
+            </div>
+
+            <div class="cantidad-candy combo-cantidad">
+              <button
+                type="button"
+                (click)="quitarCombo(combo)"
+                [disabled]="obtenerCantidadCombo(combo.id) === 0"
+              >
+                −
+              </button>
+
+              <span>
+                {{ obtenerCantidadCombo(combo.id) }}
+              </span>
+
+              <button type="button" (click)="agregarCombo(combo)">+</button>
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (combosSeleccionados().length > 0) {
+        <div class="combos-resumen">
+          <h4>🎟️ Combos seleccionados</h4>
+
+          @for (item of combosSeleccionados(); track item.combo.id) {
+            <div class="combo-resumen-linea">
+              <span> {{ item.cantidad }} × {{ item.combo.nombre }} </span>
+
+              <strong> ${{ item.subtotal }} </strong>
+            </div>
+          }
+
+          <div class="combo-subtotal">
+            <span>Subtotal Combos</span>
+
+            <strong> ${{ subtotalCombos() }} </strong>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
   <section class="candy-section">
     <div class="candy-header">
       <h3>🍿 Agregá Candy a tu compra</h3>
@@ -103,6 +179,18 @@
     <div>
       <span>Entradas</span>
       <strong>${{ datosReserva?.total }}</strong>
+    </div>
+
+    @if (precioEntradasCubiertas() > 0) {
+      <div class="combo-descuento-linea">
+        <span>Entrada cubierta por combo</span>
+        <strong>-${{ precioEntradasCubiertas() }}</strong>
+      </div>
+    }
+
+    <div>
+      <span>Combos</span>
+      <strong>${{ subtotalCombos() }}</strong>
     </div>
 
     <div>

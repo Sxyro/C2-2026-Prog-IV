@@ -1,0 +1,233 @@
+<section class="mis-peliculas-page">
+  <div class="mis-peliculas-container">
+    <header class="pagina-header">
+      <div>
+        <span class="pagina-kicker">CINE IMPERIAL</span>
+        <h1>Mis películas</h1>
+        <p>Consultá tus entradas, funciones, butacas y compras de Candy.</p>
+      </div>
+
+      <a routerLink="/perfil" class="btn-volver"> ← Mi cuenta </a>
+    </header>
+
+    @if (cargando()) {
+      <div class="estado-cargando">
+        <span class="spinner"></span>
+        <p>Cargando tus películas...</p>
+      </div>
+    } @else if (mensajeError) {
+      <div class="estado-vacio">
+        <span class="estado-icono">!</span>
+        <h2>Ocurrió un problema</h2>
+        <p>{{ mensajeError }}</p>
+
+        <button type="button" class="btn-principal" (click)="recargar()">Reintentar</button>
+      </div>
+    } @else if (reservas.length === 0) {
+      <div class="estado-vacio">
+        <span class="estado-icono">🎬</span>
+
+        <h2>Todavía no tenés películas</h2>
+
+        <p>Cuando compres una entrada, tu película aparecerá automáticamente en esta sección.</p>
+
+        <a routerLink="/cartelera" class="btn-principal"> Ver cartelera </a>
+      </div>
+    } @else {
+      <div class="resumen">
+        <div>
+          <span class="resumen-kicker">TU HISTORIAL</span>
+
+          <strong>
+            {{ reservas.length }}
+            {{ reservas.length === 1 ? 'compra' : 'compras' }}
+          </strong>
+        </div>
+
+        <span>Ordenadas por fecha de función</span>
+      </div>
+
+      <div class="reservas-lista">
+        @for (reserva of reservas; track reserva.reservaId) {
+          <article class="reserva-card">
+            <div class="pelicula-portada">
+              <img [src]="reserva.peliculaPortadaUrl" [alt]="reserva.peliculaNombre" />
+
+              <span class="estado" [class]="obtenerClaseEstado(reserva)">
+                {{ obtenerEstado(reserva) }}
+              </span>
+            </div>
+
+            <div class="reserva-contenido">
+              <div class="reserva-cabecera">
+                <div>
+                  <span class="reserva-kicker">
+                    {{ reserva.peliculaFormato }}
+                    ·
+                    {{ reserva.peliculaIdioma }}
+                  </span>
+
+                  <h2>{{ reserva.peliculaNombre }}</h2>
+                </div>
+
+                <span class="clasificacion">
+                  {{ reserva.peliculaClasificacion }}
+                </span>
+              </div>
+
+              <div class="datos-funcion">
+                <div class="dato">
+                  <span>Función</span>
+
+                  <strong>
+                    {{ formatearFecha(reserva.fechaHoraInicio) }}
+                    ·
+                    {{ formatearHora(reserva.fechaHoraInicio) }}
+                  </strong>
+                </div>
+
+                <div class="dato">
+                  <span>Sala</span>
+
+                  <strong>{{ reserva.salaNombre }}</strong>
+                </div>
+
+                <div class="dato">
+                  <span>Butacas</span>
+
+                  <strong>
+                    {{ reserva.butacas.length > 0 ? obtenerButacas(reserva) : 'Liberadas' }}
+                  </strong>
+                </div>
+
+                <div class="dato">
+                  <span>Compra</span>
+
+                  <strong>
+                    {{ formatearFecha(reserva.createdAt) }}
+                  </strong>
+                </div>
+              </div>
+
+              @if (reserva.cancelada) {
+                <div class="cancelacion-resumen">
+                  <strong>Reserva cancelada</strong>
+
+                  <span>
+                    Crédito devuelto:
+                    <b>${{ formatearPrecio(reserva.creditoDevuelto) }}</b>
+                  </span>
+
+                  @if (reserva.canceladaAt) {
+                    <small>Cancelada el {{ formatearFecha(reserva.canceladaAt) }}</small>
+                  }
+                </div>
+              }
+
+              @if (tieneCandy(reserva)) {
+                <div class="candy-resumen">
+                  <div class="candy-titulo">
+                    <span>🍿</span>
+                    <strong>Candy</strong>
+                  </div>
+
+                  <div class="candy-productos">
+                    @for (producto of reserva.productosCandy; track producto.id) {
+                      <span>
+                        {{ producto.cantidad }}×
+                        {{ producto.nombre }}
+                      </span>
+                    }
+                  </div>
+
+                  <span class="candy-cantidad">
+                    {{ obtenerCantidadCandy(reserva) }}
+                    {{ obtenerCantidadCandy(reserva) === 1 ? 'producto' : 'productos' }}
+                  </span>
+                </div>
+              }
+
+              <div class="reserva-pie">
+                <div>
+                  <span>Total</span>
+
+                  <strong>${{ formatearPrecio(reserva.total) }}</strong>
+                </div>
+
+                <div class="codigo">
+                  <span>Código</span>
+
+                  <strong>
+                    {{ reserva.reservaId.slice(0, 8).toUpperCase() }}
+                  </strong>
+                </div>
+              </div>
+
+              @if (puedeCancelar(reserva)) {
+                <div class="cancelacion-accion">
+                  <button
+                    type="button"
+                    class="btn-cancelar"
+                    [disabled]="cancelando() === reserva.reservaId"
+                    (click)="cancelarReserva(reserva)"
+                  >
+                    @if (cancelando() === reserva.reservaId) {
+                      Cancelando...
+                    } @else {
+                      Cancelar reserva
+                    }
+                  </button>
+
+                  <span>Disponible hasta 2 horas antes de la función.</span>
+                </div>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+@if (modalAbierto) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div
+      class="modal"
+      [class.modal-error]="modalTipo === 'error'"
+      [class.modal-exito]="modalTipo === 'exito'"
+      (click)="$event.stopPropagation()"
+    >
+      <button type="button" class="modal-cerrar" (click)="cerrarModal()">×</button>
+
+      <div class="modal-icon">
+        {{ modalTipo === 'error' ? '!' : '✓' }}
+      </div>
+
+      <div class="modal-contenido">
+        <span class="modal-kicker">
+          {{ modalTipo === 'error' ? 'ATENCIÓN' : 'CINE IMPERIAL' }}
+        </span>
+
+        <h2>{{ modalTitulo }}</h2>
+
+        <p>{{ modalMensaje }}</p>
+      </div>
+
+      @if (modalConfirmacion) {
+        <div class="modal-acciones">
+          <button type="button" class="modal-boton-secundario" (click)="cerrarModal()">
+            Volver
+          </button>
+
+          <button type="button" class="modal-boton" (click)="ejecutarConfirmacion()">
+            Confirmar cancelación
+          </button>
+        </div>
+      } @else {
+        <button type="button" class="modal-boton" (click)="cerrarModal()">
+          {{ modalTipo === 'exito' ? 'Continuar' : 'Entendido' }}
+        </button>
+      }
+    </div>
+  </div>
+}

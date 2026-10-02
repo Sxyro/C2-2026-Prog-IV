@@ -1,0 +1,193 @@
+<section class="recompensas-page">
+  <div class="recompensas-container">
+    <header class="recompensas-header">
+      <div>
+        <span class="recompensas-kicker">CINE IMPERIAL</span>
+
+        <h1>Recompensas</h1>
+
+        <p>Canjeá tus puntos por beneficios y productos.</p>
+      </div>
+
+      <a routerLink="/perfil" class="btn-volver"> ← Mi cuenta </a>
+    </header>
+
+    @if (cargando()) {
+      <div class="estado-cargando">
+        <span></span>
+        <p>Cargando recompensas...</p>
+      </div>
+    } @else {
+      <section class="saldo-recompensas">
+        <div>
+          <span>MI SALDO</span>
+
+          <strong>
+            {{ puntos | number }}
+          </strong>
+
+          <small>puntos disponibles</small>
+        </div>
+
+        <div class="saldo-icono">★</div>
+      </section>
+
+      @if (mensajeRecompensa) {
+        <div
+          class="mensaje-recompensa"
+          [class.mensaje-recompensa-exito]="tipoMensajeRecompensa === 'exito'"
+          [class.mensaje-recompensa-error]="tipoMensajeRecompensa === 'error'"
+        >
+          {{ mensajeRecompensa }}
+        </div>
+      }
+
+      <section class="seccion-recompensas">
+        <div class="seccion-titulo">
+          <div>
+            <span class="recompensas-kicker">BENEFICIOS</span>
+            <h2>Recompensas disponibles</h2>
+          </div>
+        </div>
+
+        @if (recompensas.length === 0) {
+          <div class="estado-vacio">
+            <span>🎁</span>
+
+            <h3>No hay recompensas disponibles</h3>
+
+            <p>El administrador todavía no configuró recompensas activas.</p>
+          </div>
+        } @else {
+          <div class="recompensas-lista">
+            @for (recompensa of recompensas; track recompensa.id) {
+              <article class="recompensa-card">
+                <div class="recompensa-icono">
+                  {{ recompensa.tipo === 'entrada' ? '🎟️' : '🍿' }}
+                </div>
+
+                <div class="recompensa-info">
+                  <span class="recompensa-tipo">
+                    {{ recompensa.tipo === 'entrada' ? 'Entrada gratis' : 'Producto Candy' }}
+                  </span>
+
+                  <h3>
+                    {{ recompensa.nombre }}
+                  </h3>
+
+                  @if (recompensa.descripcion) {
+                    <p>
+                      {{ recompensa.descripcion }}
+                    </p>
+                  }
+                </div>
+
+                <div class="recompensa-costo">
+                  <strong>
+                    {{ recompensa.puntosRequeridos | number }}
+                  </strong>
+
+                  <span>puntos</span>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn-canjear"
+                  [disabled]="canjeandoId === recompensa.id || puntos < recompensa.puntosRequeridos"
+                  (click)="canjearRecompensa(recompensa)"
+                >
+                  @if (canjeandoId === recompensa.id) {
+                    Canjeando...
+                  } @else if (puntos < recompensa.puntosRequeridos) {
+                    Puntos insuficientes
+                  } @else {
+                    Canjear
+                  }
+                </button>
+              </article>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="seccion-recompensas">
+        <div class="seccion-titulo">
+          <div>
+            <span class="recompensas-kicker"> HISTORIAL </span>
+
+            <h2>Mis canjes</h2>
+          </div>
+        </div>
+
+        @if (historialCanjes.length === 0) {
+          <div class="estado-vacio">
+            <span>🎁</span>
+
+            <h3>Todavía no tenés canjes</h3>
+
+            <p>Cuando canjees una recompensa aparecerá acá.</p>
+          </div>
+        } @else {
+          <div class="movimientos">
+            @for (canje of historialCanjes; track canje.id) {
+              <div class="movimiento">
+                <div class="movimiento-icono">−</div>
+
+                <div class="movimiento-info">
+                  <strong> Canje de recompensa </strong>
+
+                  <span>
+                    {{ formatearFecha(canje.createdAt) }}
+                    ·
+                    {{ formatearHora(canje.createdAt) }}
+                  </span>
+                </div>
+
+                <strong class="movimiento-puntos"> −{{ canje.puntosUtilizados }} pts </strong>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+
+  @if (mostrarModalCanje && recompensaPendiente) {
+    <div class="modal-overlay" (click)="cerrarModalCanje()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-icono">🎁</div>
+
+        <div class="modal-contenido">
+          <h2>Confirmar canje</h2>
+
+          <p>
+            ¿Querés canjear
+            <strong>
+              {{ recompensaPendiente.nombre }}
+            </strong>
+            por
+            <strong>
+              {{ recompensaPendiente.puntosRequeridos | number }}
+            </strong>
+            puntos?
+          </p>
+
+          <span class="modal-saldo">
+            Saldo actual:
+            {{ puntos | number }} puntos
+          </span>
+        </div>
+
+        <div class="modal-acciones">
+          <button type="button" class="btn-modal-secundario" (click)="cerrarModalCanje()">
+            Cancelar
+          </button>
+
+          <button type="button" class="btn-modal" (click)="confirmarCanje()">
+            Confirmar canje
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

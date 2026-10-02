@@ -39,10 +39,6 @@
           <h2>Puntos acumulados</h2>
 
           <p>Ganás 1 punto por cada peso gastado en tus compras.</p>
-
-          <button type="button" class="btn-principal" (click)="abrirRecompensas()">
-            {{ mostrarRecompensas ? 'Ocultar recompensas' : 'Ver recompensas' }}
-          </button>
         </article>
 
         <article class="tarjeta-menu">
@@ -59,7 +55,7 @@
             <span class="opcion-flecha">›</span>
           </a>
 
-          <button type="button" class="opcion-menu opcion-menu-boton" (click)="abrirRecompensas()">
+          <a routerLink="/recompensas" class="opcion-menu">
             <span class="opcion-icono">🎁</span>
 
             <span>
@@ -68,7 +64,7 @@
             </span>
 
             <span class="opcion-flecha">›</span>
-          </button>
+          </a>
 
           <div class="opcion-menu opcion-deshabilitada">
             <span class="opcion-icono">💳</span>
@@ -188,169 +184,6 @@
           </div>
         }
       </section>
-
-      @if (mostrarRecompensas) {
-        <section id="seccion-recompensas" class="seccion-perfil">
-          <div class="seccion-titulo">
-            <div>
-              <span class="perfil-kicker">FIDELIZACIÓN</span>
-              <h2>Recompensas</h2>
-            </div>
-
-            <strong class="saldo-mini"> {{ puntos | number }} pts </strong>
-          </div>
-
-          @if (mensajeRecompensa) {
-            <div
-              class="mensaje-recompensa"
-              [class.mensaje-recompensa-exito]="tipoMensajeRecompensa === 'exito'"
-              [class.mensaje-recompensa-error]="tipoMensajeRecompensa === 'error'"
-            >
-              {{ mensajeRecompensa }}
-            </div>
-          }
-
-          @if (cargandoRecompensas()) {
-            <div class="sin-movimientos">
-              <span>🎁</span>
-              <p>Cargando recompensas...</p>
-            </div>
-          } @else if (recompensas.length === 0) {
-            <div class="sin-movimientos">
-              <span>🎁</span>
-              <h3>No hay recompensas disponibles</h3>
-              <p>El administrador todavía no configuró recompensas activas.</p>
-            </div>
-          } @else {
-            <div class="recompensas-usuario">
-              @for (recompensa of recompensas; track recompensa.id) {
-                <article class="recompensa-usuario">
-                  <div class="recompensa-usuario-icono">
-                    {{ recompensa.tipo === 'entrada' ? '🎟️' : '🍿' }}
-                  </div>
-
-                  <div class="recompensa-usuario-info">
-                    <h3>
-                      {{ recompensa.nombre }}
-                    </h3>
-
-                    @if (recompensa.descripcion) {
-                      <p>
-                        {{ recompensa.descripcion }}
-                      </p>
-                    }
-
-                    <span>
-                      {{ recompensa.tipo === 'entrada' ? 'Entrada gratis' : 'Producto Candy' }}
-                    </span>
-                  </div>
-
-                  <div class="recompensa-usuario-puntos">
-                    <strong>
-                      {{ recompensa.puntosRequeridos | number }}
-                    </strong>
-
-                    <span>puntos</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    class="btn-canjear"
-                    [disabled]="
-                      canjeandoId === recompensa.id || puntos < recompensa.puntosRequeridos
-                    "
-                    (click)="canjearRecompensa(recompensa)"
-                  >
-                    @if (canjeandoId === recompensa.id) {
-                      Canjeando...
-                    } @else if (puntos < recompensa.puntosRequeridos) {
-                      Puntos insuficientes
-                    } @else {
-                      Canjear
-                    }
-                  </button>
-                </article>
-              }
-            </div>
-          }
-        </section>
-
-        <section class="seccion-perfil">
-          <div class="seccion-titulo">
-            <div>
-              <span class="perfil-kicker">FIDELIZACIÓN</span>
-              <h2>Historial de canjes</h2>
-            </div>
-          </div>
-
-          @if (historialCanjes.length === 0) {
-            <div class="sin-movimientos">
-              <span>🎁</span>
-              <h3>Todavía no tenés canjes</h3>
-              <p>Cuando canjees una recompensa aparecerá acá.</p>
-            </div>
-          } @else {
-            <div class="movimientos">
-              @for (canje of historialCanjes; track canje.id) {
-                <div class="movimiento">
-                  <div class="movimiento-icono movimiento-canje">−</div>
-
-                  <div class="movimiento-info">
-                    <strong>Canje de recompensa</strong>
-
-                    <span>
-                      {{ formatearFecha(canje.createdAt) }}
-                      ·
-                      {{ formatearHora(canje.createdAt) }}
-                    </span>
-                  </div>
-
-                  <strong class="movimiento-puntos movimiento-canje">
-                    −{{ canje.puntosUtilizados }} pts
-                  </strong>
-                </div>
-              }
-            </div>
-          }
-        </section>
-      }
     }
   </div>
-
-  @if (mostrarModalCanje && recompensaPendiente) {
-    <div class="modal-overlay" (click)="cerrarModalCanje()">
-      <div class="modal-card" (click)="$event.stopPropagation()">
-        <div class="modal-icono">🎁</div>
-
-        <div class="modal-contenido">
-          <h2>Confirmar canje</h2>
-
-          <p>
-            ¿Querés canjear
-            <strong>{{ recompensaPendiente.nombre }}</strong>
-            por
-            <strong>
-              {{ recompensaPendiente.puntosRequeridos | number }}
-            </strong>
-            puntos?
-          </p>
-
-          <span class="modal-saldo">
-            Saldo actual:
-            {{ puntos | number }} puntos
-          </span>
-        </div>
-
-        <div class="modal-acciones">
-          <button type="button" class="btn-modal-secundario" (click)="cerrarModalCanje()">
-            Cancelar
-          </button>
-
-          <button type="button" class="btn-modal" (click)="confirmarCanje()">
-            Confirmar canje
-          </button>
-        </div>
-      </div>
-    </div>
-  }
 </section>
