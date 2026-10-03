@@ -203,12 +203,13 @@ export class ReportesAdminComponent implements OnInit {
     return `${dia}/${mes}/${anio}`;
   }
 
-  formatearFecha(fecha: Date): string {
-    const anio = fecha.getFullYear();
-    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    const dia = String(fecha.getDate()).padStart(2, '0');
+  formatearFecha(fecha: Date | string): string {
+    const fechaConvertida = typeof fecha === 'string' ? new Date(fecha) : fecha;
 
-    return `${anio}-${mes}-${dia}`;
+    return fechaConvertida.toLocaleString('es-AR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    });
   }
 
   mesAnterior(): void {
