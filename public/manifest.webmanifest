@@ -1,6 +1,6 @@
 {
-  "name": "cine-app",
-  "short_name": "cine-app",
+  "name": "Cine Imperial",
+  "short_name": "Cine Imperial",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
