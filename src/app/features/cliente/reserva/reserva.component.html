@@ -21,6 +21,20 @@
       </div>
     </div>
 
+    @if (estaEnPreventa()) {
+      <div class="preventa-reserva">
+        <span class="preventa-reserva-kicker">PREVENTA</span>
+
+        <strong> Precio especial de preventa activo </strong>
+
+        <span> ${{ precioEntradaAplicado() }} por entrada </span>
+
+        <small>
+          Precio normal de la función: ${{ funcionSeleccionada()?.precioEntrada || 0 }}
+        </small>
+      </div>
+    }
+
     <div class="seccion-funciones">
       <h3>Seleccioná la Función</h3>
 

@@ -1,0 +1,421 @@
+<div class="reportes-container">
+  <a routerLink="/admin" class="back-link">
+    <span class="back-arrow">←</span>
+    Volver al panel
+  </a>
+
+  <header class="reportes-header">
+    <span class="reportes-kicker">ADMINISTRACIÓN</span>
+
+    <div class="header-row">
+      <div>
+        <h1>Reportes y estadísticas</h1>
+        <p>Consultá la actividad, las ventas y el rendimiento del complejo cinematográfico.</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-exportar" type="button" (click)="exportarPdf()">↓ PDF</button>
+
+        <button class="btn-exportar" type="button" (click)="exportarExcel()">↓ Excel</button>
+
+        <button class="btn-recargar" type="button" (click)="cargarReportes()">↻ Actualizar</button>
+      </div>
+    </div>
+  </header>
+
+  <div *ngIf="cargando" class="estado-carga">
+    <span class="spinner"></span>
+    <p>Cargando reportes...</p>
+  </div>
+
+  <ng-container *ngIf="!cargando">
+    <section class="seccion-reportes">
+      <div class="seccion-titulo">
+        <span class="seccion-linea"></span>
+        <h2>Resumen financiero</h2>
+      </div>
+
+      <div class="metricas-grid">
+        <article class="metrica-card">
+          <span class="metrica-icono">💰</span>
+
+          <div>
+            <span class="metrica-label">Facturación</span>
+            <strong>{{ formatearDinero(resumen?.facturacion || 0) }}</strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">🎟️</span>
+
+          <div>
+            <span class="metrica-label">Entradas vendidas</span>
+            <strong>{{ resumen?.entradasVendidas || 0 }}</strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">🧾</span>
+
+          <div>
+            <span class="metrica-label">Reservas</span>
+            <strong>{{ resumen?.reservasTotales || 0 }}</strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">🍿</span>
+
+          <div>
+            <span class="metrica-label">Ventas Candy</span>
+            <strong>{{ formatearDinero(resumen?.ventasCandy || 0) }}</strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">↩️</span>
+
+          <div>
+            <span class="metrica-label">Cancelaciones</span>
+            <strong>{{ resumen?.reservasCanceladas || 0 }}</strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">💳</span>
+
+          <div>
+            <span class="metrica-label">Crédito generado</span>
+            <strong>{{ formatearDinero(resumen?.creditoGenerado || 0) }}</strong>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="seccion-reportes">
+      <div class="seccion-titulo">
+        <span class="seccion-linea"></span>
+        <h2>Películas más vistas</h2>
+      </div>
+
+      <div class="graficos-grid">
+        <article class="grafico-card">
+          <div class="grafico-header">
+            <div>
+              <h3>Últimos 7 días</h3>
+              <p>Entradas vendidas por película</p>
+            </div>
+
+            <span class="grafico-icono">📈</span>
+          </div>
+
+          <div *ngIf="peliculasSemanales.length; else sinDatosSemana" class="ranking">
+            <div class="ranking-item" *ngFor="let pelicula of peliculasSemanales; let i = index">
+              <div class="ranking-top">
+                <span class="ranking-pos">{{ i + 1 }}</span>
+
+                <span class="ranking-nombre">
+                  {{ pelicula.peliculaNombre }}
+                </span>
+
+                <strong>{{ pelicula.cantidadEntradas }}</strong>
+              </div>
+
+              <div class="barra-fondo">
+                <div
+                  class="barra"
+                  [style.width.%]="obtenerPorcentaje(pelicula.cantidadEntradas, peliculasSemanales)"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #sinDatosSemana>
+            <div class="sin-datos">No hay ventas registradas en los últimos 7 días.</div>
+          </ng-template>
+        </article>
+
+        <article class="grafico-card">
+          <div class="grafico-header">
+            <div>
+              <h3>Últimos 30 días</h3>
+              <p>Entradas vendidas por película</p>
+            </div>
+
+            <span class="grafico-icono">📊</span>
+          </div>
+
+          <div *ngIf="peliculasMensuales.length; else sinDatosMes" class="ranking">
+            <div class="ranking-item" *ngFor="let pelicula of peliculasMensuales; let i = index">
+              <div class="ranking-top">
+                <span class="ranking-pos">{{ i + 1 }}</span>
+
+                <span class="ranking-nombre">
+                  {{ pelicula.peliculaNombre }}
+                </span>
+
+                <strong>{{ pelicula.cantidadEntradas }}</strong>
+              </div>
+
+              <div class="barra-fondo">
+                <div
+                  class="barra"
+                  [style.width.%]="obtenerPorcentaje(pelicula.cantidadEntradas, peliculasMensuales)"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #sinDatosMes>
+            <div class="sin-datos">No hay ventas registradas en los últimos 30 días.</div>
+          </ng-template>
+        </article>
+      </div>
+    </section>
+
+    <section class="seccion-reportes">
+      <div class="seccion-titulo">
+        <span class="seccion-linea"></span>
+        <h2>Candy Bar</h2>
+      </div>
+
+      <article class="grafico-card candy-card">
+        <div class="grafico-header">
+          <div>
+            <h3>Productos más vendidos</h3>
+            <p>Ranking según cantidad de unidades vendidas</p>
+          </div>
+
+          <span class="grafico-icono">🍿</span>
+        </div>
+
+        <div *ngIf="candyMasVendido.length; else sinCandy" class="ranking">
+          <div class="ranking-item" *ngFor="let producto of candyMasVendido; let i = index">
+            <div class="ranking-top">
+              <span class="ranking-pos">{{ i + 1 }}</span>
+
+              <div class="producto-info">
+                <span class="ranking-nombre">
+                  {{ producto.productoNombre }}
+                </span>
+
+                <small> {{ formatearDinero(producto.facturacion) }} facturados </small>
+              </div>
+
+              <strong>{{ producto.cantidadVendida }}</strong>
+            </div>
+
+            <div class="barra-fondo">
+              <div
+                class="barra"
+                [style.width.%]="obtenerPorcentajeCandy(producto.cantidadVendida)"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #sinCandy>
+          <div class="sin-datos">No hay ventas de Candy registradas.</div>
+        </ng-template>
+      </article>
+    </section>
+
+    <section class="seccion-reportes">
+      <div class="seccion-titulo">
+        <span class="seccion-linea"></span>
+        <h2>Reporte diario</h2>
+      </div>
+
+      <div class="filtro-fecha">
+        <div class="fecha-selector">
+          <label>Fecha del reporte</label>
+
+          <div class="custom-picker">
+            <button type="button" class="picker-button" (click)="abrirCalendario()">
+              <span class="picker-icon">▣</span>
+
+              <span>
+                {{ obtenerFechaFormateada() }}
+              </span>
+
+              <span class="picker-arrow">⌄</span>
+            </button>
+
+            @if (calendarioAbierto) {
+              <div class="calendar-popup">
+                <div class="calendar-header">
+                  <button type="button" class="calendar-nav" (click)="mesAnterior()">‹</button>
+
+                  <button type="button" class="calendar-month" (click)="abrirSelectorAnio()">
+                    {{ obtenerNombreMes() }}
+                    {{ anioCalendario }}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="calendar-nav"
+                    [disabled]="esMesActual()"
+                    (click)="mesSiguiente()"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                @if (selectorAnioAbierto) {
+                  <div class="year-picker">
+                    <div class="year-picker-header">
+                      <span>Seleccioná un año</span>
+                    </div>
+
+                    <div class="year-grid">
+                      @for (anio of aniosDisponibles; track anio) {
+                        <button
+                          type="button"
+                          class="year-option"
+                          [class.selected]="anio === anioCalendario"
+                          (click)="seleccionarAnio(anio)"
+                        >
+                          {{ anio }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="calendar-weekdays">
+                    @for (dia of obtenerDiasSemana(); track dia) {
+                      <span>{{ dia }}</span>
+                    }
+                  </div>
+
+                  <div class="calendar-grid">
+                    @for (dia of obtenerDiasCalendario(); track dia.fecha.getTime()) {
+                      <button
+                        type="button"
+                        class="calendar-day"
+                        [class.other-month]="!dia.esDelMesActual"
+                        [class.today]="dia.esHoy"
+                        [class.selected]="dia.esSeleccionado"
+                        [class.disabled]="dia.esFuturo"
+                        [disabled]="dia.esFuturo"
+                        (click)="seleccionarFecha(dia)"
+                      >
+                        {{ dia.numero }}
+                      </button>
+                    }
+                  </div>
+
+                  <div class="calendar-footer">
+                    <button type="button" (click)="volverAlMesActual()">Ir a hoy</button>
+
+                    <button type="button" (click)="abrirSelectorAnio()">Elegir año</button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="metricas-grid reporte-diario">
+        <article class="metrica-card">
+          <span class="metrica-icono">💰</span>
+
+          <div>
+            <span class="metrica-label">Facturación</span>
+            <strong>
+              {{ formatearDinero(reporteDiario?.facturacion || 0) }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">🎟️</span>
+
+          <div>
+            <span class="metrica-label">Entradas</span>
+            <strong>
+              {{ reporteDiario?.entradasVendidas || 0 }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">🧾</span>
+
+          <div>
+            <span class="metrica-label">Reservas</span>
+            <strong>
+              {{ reporteDiario?.reservas || 0 }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">🍿</span>
+
+          <div>
+            <span class="metrica-label">Candy</span>
+            <strong>
+              {{ formatearDinero(reporteDiario?.ventasCandy || 0) }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">↩️</span>
+
+          <div>
+            <span class="metrica-label">Cancelaciones</span>
+            <strong>
+              {{ reporteDiario?.cancelaciones || 0 }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="metrica-card">
+          <span class="metrica-icono">💳</span>
+
+          <div>
+            <span class="metrica-label">Crédito generado</span>
+            <strong>
+              {{ formatearDinero(reporteDiario?.creditoGenerado || 0) }}
+            </strong>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="seccion-reportes">
+      <div class="seccion-titulo">
+        <span class="seccion-linea"></span>
+        <h2>Actividad del sistema</h2>
+      </div>
+
+      <article class="log-card">
+        <div *ngIf="logActividad.length; else sinActividad" class="log-lista">
+          <div class="log-item" *ngFor="let log of logActividad">
+            <div class="log-icono">
+              <span *ngIf="log.accion === 'CREAR_FUNCION'">🎟️</span>
+              <span *ngIf="log.accion === 'MODIFICAR_PRECIO'">💰</span>
+              <span *ngIf="log.accion === 'VALIDAR_QR'">✓</span>
+            </div>
+
+            <div class="log-contenido">
+              <strong>{{ log.accion }}</strong>
+
+              <p>{{ log.descripcion }}</p>
+
+              <small> 👤 {{ log.usuarioNombre }} · {{ log.usuarioEmail }} </small>
+
+              <small> 🕐 {{ formatearFecha(log.fechaHora) }} </small>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #sinActividad>
+          <div class="sin-datos">Todavía no hay actividad registrada.</div>
+        </ng-template>
+      </article>
+    </section>
+  </ng-container>
+</div>

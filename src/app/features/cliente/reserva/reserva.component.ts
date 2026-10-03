@@ -1,27 +1,15 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, effect } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { PeliculasService } from '../../../core/services/peliculas.service';
-
 import { FuncionesService } from '../../../core/services/funciones.service';
-
 import { SalasService } from '../../../core/services/salas.service';
-
 import { UsuariosService } from '../../../core/services/usuarios.service';
-
 import { ReservasService } from '../../../core/services/reservas.service';
-
 import { ConfiguracionService } from '../../../core/services/configuracion.service';
-
 import { Pelicula } from '../../../core/models/pelicula.model';
-
 import { Funcion, RECARGO_BUTACA_VIP } from '../../../core/models/funcion.model';
-
 import { Butaca } from '../../../core/models/butaca.model';
-
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface FilaMapa {
@@ -51,37 +39,55 @@ export class ReservaComponent implements OnInit, OnDestroy {
   public configuracion = this.configuracionService.obtenerConfiguracion();
 
   public pelicula = signal<Pelicula | null>(null);
-
   public funcionesDisponibles = signal<Funcion[]>([]);
-
   public funcionSeleccionada = signal<Funcion | null>(null);
-
   public mapaFilas = signal<FilaMapa[]>([]);
-
   public butacasSeleccionadas = signal<Butaca[]>([]);
-
   public usuarioActual = this.usuariosService.obtenerUsuarioActual();
 
   public modalAbierto = false;
-
   public modalTitulo = '';
-
   public modalMensaje = '';
-
   public modalTipo: 'error' | 'exito' = 'error';
-
   public modalConfirmacion = false;
-
   public accionConfirmacion: (() => void) | null = null;
 
-  public precioButaca(butaca: Butaca): number {
+  public estaEnPreventa = computed(() => {
+    const pelicula = this.pelicula();
+
+    if (!pelicula?.fechaEstreno) {
+      return false;
+    }
+
+    const ahora = Date.now();
+    const estreno = new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime();
+    const inicioPreventa = estreno - 7 * 24 * 60 * 60 * 1000;
+
+    return ahora >= inicioPreventa && ahora < estreno;
+  });
+
+  public precioEntradaAplicado = computed(() => {
     const funcion = this.funcionSeleccionada();
+    const pelicula = this.pelicula();
 
     if (!funcion) {
       return 0;
     }
 
-    return funcion.precioEntrada + (butaca.vip ? RECARGO_BUTACA_VIP : 0);
+    if (
+      this.estaEnPreventa() &&
+      pelicula?.precioPreventa !== null &&
+      pelicula?.precioPreventa !== undefined &&
+      pelicula.precioPreventa > 0
+    ) {
+      return pelicula.precioPreventa;
+    }
+
+    return funcion.precioEntrada;
+  });
+
+  public precioButaca(butaca: Butaca): number {
+    return this.precioEntradaAplicado() + (butaca.vip ? RECARGO_BUTACA_VIP : 0);
   }
 
   public cantidadButacasVip = computed(() => {
@@ -109,13 +115,11 @@ export class ReservaComponent implements OnInit, OnDestroy {
     }
 
     const fechaNacimiento = new Date(usuario.fechaNacimiento);
-
     const hoy = new Date();
 
     let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
 
     const mesActual = hoy.getMonth();
-
     const mesNacimiento = fechaNacimiento.getMonth();
 
     if (
@@ -133,13 +137,11 @@ export class ReservaComponent implements OnInit, OnDestroy {
 
     if (this.esMayorDe50()) {
       const porcentajeMayores50 = this.configuracion().porcentajeDescuentoMayores50;
-
       total = total * (1 - porcentajeMayores50 / 100);
     }
 
     if (this.tieneDescuento()) {
       const porcentajePrimeraCompra = this.configuracion().porcentajeDescuentoPrimeraCompra;
-
       total = total * (1 - porcentajePrimeraCompra / 100);
     }
 
@@ -154,26 +156,61 @@ export class ReservaComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const peliculas = this.peliculasService.obtenerPeliculas()();
+      const peliculaActual = this.pelicula();
 
-      const peliculaEncontrada = peliculas.find((p) => p.id === idParam);
-
-      if (peliculaEncontrada && !this.pelicula()) {
-        this.pelicula.set(peliculaEncontrada);
+      if (!peliculaActual) {
+        void this.cargarPelicula(idParam);
+        return;
       }
 
-      if (peliculaEncontrada) {
-        const todasLasFunciones = this.funcionesService.obtenerFunciones()();
+      const todasLasFunciones = this.funcionesService.obtenerFunciones()();
 
-        const funciones = todasLasFunciones.filter((f) => f.peliculaId === peliculaEncontrada.id);
+      const funciones = todasLasFunciones.filter(
+        (funcion) => funcion.peliculaId === peliculaActual.id,
+      );
 
-        this.funcionesDisponibles.set(funciones);
+      this.funcionesDisponibles.set(funciones);
 
-        if (funciones.length > 0 && !this.funcionSeleccionada()) {
-          this.seleccionarFuncion(funciones[0]);
-        }
+      if (funciones.length > 0 && !this.funcionSeleccionada()) {
+        void this.seleccionarFuncion(funciones[0]);
       }
     });
+  }
+
+  async cargarPelicula(peliculaId: string): Promise<void> {
+    const pelicula = await this.peliculasService.obtenerPeliculaPorId(peliculaId);
+
+    if (!pelicula) {
+      this.abrirModal(
+        'Película no disponible',
+        'La película no está disponible para la compra en este momento.',
+        'error',
+      );
+
+      return;
+    }
+
+    if (!pelicula.fechaEstreno) {
+      this.pelicula.set(pelicula);
+      return;
+    }
+
+    const estreno = new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime();
+    const inicioPreventa = estreno - 7 * 24 * 60 * 60 * 1000;
+
+    if (Date.now() < inicioPreventa) {
+      this.abrirModal(
+        'Preventa todavía no disponible',
+        `La preventa comienza el ${this.formatearFecha(new Date(inicioPreventa).toISOString())}.`,
+        'error',
+      );
+
+      return;
+    }
+
+    this.pelicula.set(pelicula);
+
+    await this.funcionesService.cargarFunciones();
   }
 
   ngOnInit(): void {}
@@ -206,7 +243,6 @@ export class ReservaComponent implements OnInit, OnDestroy {
     await this.desuscribirseButacas();
 
     this.funcionSeleccionada.set(funcion);
-
     this.butacasSeleccionadas.set([]);
 
     await this.generarMapaButacas(funcion);
@@ -241,9 +277,7 @@ export class ReservaComponent implements OnInit, OnDestroy {
     }
 
     const todasLasButacas = this.salasService.generarMapaButacas(sala.filas);
-
     const filas: FilaMapa[] = [];
-
     const letras = [...new Set(todasLasButacas.map((butaca) => butaca.fila))];
 
     for (const letra of letras) {
@@ -303,7 +337,6 @@ export class ReservaComponent implements OnInit, OnDestroy {
           this.mapaFilas.set(nuevasFilas);
 
           const seleccionadas = this.butacasSeleccionadas();
-
           const estabaSeleccionada = seleccionadas.some((butaca) => butaca.id === butacaId);
 
           if (estabaSeleccionada) {
@@ -352,7 +385,6 @@ export class ReservaComponent implements OnInit, OnDestroy {
     }
 
     const actuales = this.butacasSeleccionadas();
-
     const index = actuales.findIndex((b) => b.id === butaca.id);
 
     if (index >= 0) {
@@ -368,13 +400,11 @@ export class ReservaComponent implements OnInit, OnDestroy {
 
   private calcularEdad(fechaNacimiento: string, fechaReferencia: string): number {
     const nacimiento = new Date(fechaNacimiento);
-
     const referencia = new Date(fechaReferencia);
 
     let edad = referencia.getFullYear() - nacimiento.getFullYear();
 
     const mesReferencia = referencia.getMonth();
-
     const mesNacimiento = nacimiento.getMonth();
 
     if (
@@ -389,7 +419,6 @@ export class ReservaComponent implements OnInit, OnDestroy {
 
   private verificarRestriccionEdad(): boolean {
     const pelicula = this.pelicula();
-
     const funcion = this.funcionSeleccionada();
 
     if (!pelicula || !funcion) {
@@ -478,6 +507,20 @@ export class ReservaComponent implements OnInit, OnDestroy {
       this.abrirModal(
         'Seleccioná una butaca',
         'Por favor, seleccioná al menos una butaca antes de continuar.',
+        'error',
+      );
+
+      return;
+    }
+
+    if (!this.pelicula()) {
+      return;
+    }
+
+    if (this.funcionesDisponibles().length === 0) {
+      this.abrirModal(
+        'Entradas no disponibles',
+        'Todavía no hay funciones disponibles para esta película.',
         'error',
       );
 

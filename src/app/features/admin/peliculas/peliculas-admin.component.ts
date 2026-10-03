@@ -32,6 +32,9 @@ export class PeliculasAdminComponent implements OnInit {
     formato: '2D',
     idioma: 'Subtitulada',
     clasificacionEdad: 'ATP',
+    publicada: true,
+    fechaEstreno: '',
+    precioPreventa: null,
   };
 
   public archivoPortada: File | null = null;
@@ -60,7 +63,9 @@ export class PeliculasAdminComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const archivo = input.files?.[0];
 
-    if (!archivo) return;
+    if (!archivo) {
+      return;
+    }
 
     if (!archivo.type.startsWith('image/')) {
       this.abrirModal(
@@ -92,6 +97,15 @@ export class PeliculasAdminComponent implements OnInit {
       return;
     }
 
+    if (!this.nuevaPelicula.fechaEstreno) {
+      this.abrirModal(
+        'Falta la fecha de estreno',
+        'Ingresá la fecha en la que se estrenará la película.',
+        'error',
+      );
+      return;
+    }
+
     if (this.generosSeleccionados.length === 0) {
       this.abrirModal(
         'Falta seleccionar género',
@@ -106,6 +120,24 @@ export class PeliculasAdminComponent implements OnInit {
       return;
     }
 
+    const fechaEstreno = new Date(`${this.nuevaPelicula.fechaEstreno}T00:00:00`);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const esFutura = fechaEstreno.getTime() > hoy.getTime();
+
+    if (
+      esFutura &&
+      (!this.nuevaPelicula.precioPreventa || this.nuevaPelicula.precioPreventa <= 0)
+    ) {
+      this.abrirModal(
+        'Falta el precio de preventa',
+        'Para una película próxima ingresá el precio especial de preventa.',
+        'error',
+      );
+      return;
+    }
+
     const idsNumericos = this.peliculas()
       .map((p) => parseInt(p.id, 10))
       .filter((id) => !isNaN(id));
@@ -115,6 +147,7 @@ export class PeliculasAdminComponent implements OnInit {
     const peliculaACrear: Pelicula = {
       id: siguienteId,
       ...this.nuevaPelicula,
+      publicada: esFutura ? false : true,
     };
 
     this.subiendoPortada = true;
@@ -135,14 +168,14 @@ export class PeliculasAdminComponent implements OnInit {
 
     peliculaACrear.portadaUrl = portadaUrl;
 
-    const OK = await this.peliculasService.agregarPelicula(
+    const ok = await this.peliculasService.agregarPelicula(
       peliculaACrear,
       this.generosSeleccionados,
     );
 
     this.subiendoPortada = false;
 
-    if (!OK) {
+    if (!ok) {
       this.abrirModal(
         'Error al guardar',
         'Ocurrió un error al guardar la película en la base de datos.',
@@ -154,7 +187,9 @@ export class PeliculasAdminComponent implements OnInit {
 
     this.abrirModal(
       '¡Película agregada!',
-      'La película fue agregada correctamente al catálogo.',
+      esFutura
+        ? 'La película fue agregada a Próximamente y tendrá preventa desde 7 días antes del estreno.'
+        : 'La película fue agregada correctamente al catálogo.',
       'exito',
     );
 
@@ -166,6 +201,9 @@ export class PeliculasAdminComponent implements OnInit {
       formato: '2D',
       idioma: 'Subtitulada',
       clasificacionEdad: 'ATP',
+      publicada: true,
+      fechaEstreno: '',
+      precioPreventa: null,
     };
 
     this.generosSeleccionados = [];
@@ -204,6 +242,14 @@ export class PeliculasAdminComponent implements OnInit {
         : 'La película fue ocultada de la cartelera.',
       'exito',
     );
+  }
+
+  formatearFecha(fecha: string | null | undefined): string {
+    if (!fecha) {
+      return 'Sin fecha';
+    }
+
+    return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-AR');
   }
 
   abrirModal(titulo: string, mensaje: string, tipo: 'error' | 'exito' = 'error'): void {

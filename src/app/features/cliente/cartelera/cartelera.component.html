@@ -29,6 +29,104 @@
     </section>
   }
 
+  @if (alertasDisponibles().length > 0) {
+    <section class="alertas-disponibles">
+      <div class="alerta-icono">!</div>
+
+      <div class="alerta-contenido">
+        <strong>Ya podés comprar entradas</strong>
+
+        @for (alerta of alertasDisponibles(); track alerta.id) {
+          <p>{{ alerta.pelicula?.nombre }} ya tiene entradas disponibles.</p>
+        }
+      </div>
+    </section>
+  }
+
+  @if (proximamente().length > 0) {
+    <section class="proximamente-section">
+      <div class="proximamente-header">
+        <div>
+          <span class="proximamente-kicker">PRÓXIMAMENTE</span>
+          <h2>Próximos estrenos</h2>
+          <p>Prepará tu próxima visita al Cine Imperial.</p>
+        </div>
+      </div>
+
+      <div class="proximamente-grid">
+        @for (pelicula of proximamente(); track pelicula.id) {
+          <article class="proxima-card">
+            <img [src]="pelicula.portadaUrl" [alt]="pelicula.nombre" class="proxima-portada" />
+
+            <div class="proxima-info">
+              <span class="proxima-fecha"> Estreno {{ obtenerFechaEstreno(pelicula) }} </span>
+
+              <h3>{{ pelicula.nombre }}</h3>
+
+              <div class="badges">
+                <span class="badge">{{ pelicula.formato }}</span>
+                <span class="badge">{{ pelicula.idioma }}</span>
+                <span class="duracion">{{ pelicula.duracionMinutos }} min</span>
+              </div>
+
+              <p class="proxima-sinopsis">
+                {{ pelicula.sinopsis }}
+              </p>
+
+              @if (estaEnPreventa(pelicula)) {
+                <div class="preventa-info">
+                  <strong>PREVENTA ACTIVA</strong>
+
+                  @if (pelicula.precioPreventa) {
+                    <span> ${{ pelicula.precioPreventa }} por entrada </span>
+                  }
+
+                  <small> Desde {{ obtenerFechaPreventa(pelicula) }} </small>
+                </div>
+              } @else {
+                <div class="preventa-info preventa-proxima">
+                  <strong>PREVENTA</strong>
+
+                  <span> Disponible desde {{ obtenerFechaPreventa(pelicula) }} </span>
+                </div>
+              }
+
+              @if (puedeComprarEnPreventa(pelicula)) {
+                <button
+                  type="button"
+                  class="btn btn-marquesina proxima-boton"
+                  [routerLink]="['/reserva', pelicula.id]"
+                >
+                  Comprar en preventa
+                </button>
+              } @else {
+                @if (tieneAlerta(pelicula.id)) {
+                  <button
+                    type="button"
+                    class="btn-alerta btn-alerta-activa"
+                    (click)="desactivarAlerta(pelicula)"
+                  >
+                    ✓ Alerta activada
+                  </button>
+                } @else {
+                  <button type="button" class="btn-alerta" (click)="activarAlerta(pelicula)">
+                    Activar alerta
+                  </button>
+                }
+              }
+
+              @if (mensajesAlerta[pelicula.id]) {
+                <p class="mensaje-alerta">
+                  {{ mensajesAlerta[pelicula.id] }}
+                </p>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
   <div class="filtros-cartelera">
     <input type="text" placeholder="Buscar película..." [(ngModel)]="textoBusqueda" />
 

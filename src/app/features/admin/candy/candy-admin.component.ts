@@ -56,6 +56,10 @@ export class CandyAdminComponent implements OnInit {
   public vistaPreviaCombo: string | null = null;
   public subiendoCombo = false;
 
+  public archivoProducto: File | null = null;
+  public vistaPreviaProducto: string | null = null;
+  public subiendoProducto = false;
+
   public mensaje = signal<string | null>(null);
   public tipoMensaje = signal<'ok' | 'error'>('ok');
 
@@ -152,7 +156,35 @@ export class CandyAdminComponent implements OnInit {
       return;
     }
 
-    const resultado = await this.candyService.crearProducto(this.nuevoProducto);
+    if (!this.archivoProducto) {
+      this.abrirModal('Falta la imagen', 'Seleccioná una imagen para el producto.', 'error');
+      return;
+    }
+
+    const productoId = crypto.randomUUID();
+
+    this.subiendoProducto = true;
+
+    const imagenUrl = await this.peliculasService.subirPortada(this.archivoProducto, productoId);
+
+    if (!imagenUrl) {
+      this.subiendoProducto = false;
+
+      this.abrirModal(
+        'Error al subir la imagen',
+        'No se pudo subir la imagen del producto.',
+        'error',
+      );
+
+      return;
+    }
+
+    const resultado = await this.candyService.crearProducto({
+      ...this.nuevoProducto,
+      imagenUrl,
+    });
+
+    this.subiendoProducto = false;
 
     this.mostrarMensaje(resultado.mensaje, resultado.exito ? 'ok' : 'error');
 
@@ -169,6 +201,14 @@ export class CandyAdminComponent implements OnInit {
       activo: true,
       cantidadEntradas: 0,
     };
+
+    this.archivoProducto = null;
+
+    if (this.vistaPreviaProducto) {
+      URL.revokeObjectURL(this.vistaPreviaProducto);
+    }
+
+    this.vistaPreviaProducto = null;
 
     await this.cargarDatos();
   }
@@ -226,6 +266,34 @@ export class CandyAdminComponent implements OnInit {
     }
 
     this.cantidadesCombo.set(cantidades);
+  }
+
+  seleccionarImagenProducto(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+
+    if (!archivo) {
+      return;
+    }
+
+    if (!archivo.type.startsWith('image/')) {
+      this.abrirModal(
+        'Archivo no válido',
+        'Seleccioná un archivo de imagen válido para el producto.',
+        'error',
+      );
+
+      input.value = '';
+      return;
+    }
+
+    this.archivoProducto = archivo;
+
+    if (this.vistaPreviaProducto) {
+      URL.revokeObjectURL(this.vistaPreviaProducto);
+    }
+
+    this.vistaPreviaProducto = URL.createObjectURL(archivo);
   }
 
   seleccionarImagenCombo(event: Event): void {

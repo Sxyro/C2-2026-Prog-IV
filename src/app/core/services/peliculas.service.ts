@@ -18,6 +18,28 @@ export class PeliculasService {
     return this.peliculas.asReadonly();
   }
 
+  private mapearPelicula(row: any): Pelicula {
+    return {
+      id: row.id,
+      nombre: row.nombre,
+      sinopsis: row.sinopsis,
+      portadaUrl: row.portada_url,
+      duracionMinutos: row.duracion_minutos,
+      formato: row.formato,
+      idioma: row.idioma,
+      clasificacionEdad: row.clasificacion_edad,
+      publicada: row.publicada,
+      fechaEstreno: row.fecha_estreno ?? null,
+      precioPreventa:
+        row.precio_preventa === null || row.precio_preventa === undefined
+          ? null
+          : Number(row.precio_preventa),
+      generos: (row.pelicula_generos || [])
+        .map((relacion: any) => relacion.genero)
+        .filter((genero: any) => genero !== null),
+    };
+  }
+
   async cargarPeliculas(soloPublicadas: boolean = true): Promise<Pelicula[]> {
     let query = this.supabase.from('peliculas').select(`
       *,
@@ -40,23 +62,68 @@ export class PeliculasService {
       return [];
     }
 
-    const mapeadas: Pelicula[] = (data || []).map((row) => ({
-      id: row.id,
-      nombre: row.nombre,
-      sinopsis: row.sinopsis,
-      portadaUrl: row.portada_url,
-      duracionMinutos: row.duracion_minutos,
-      formato: row.formato,
-      idioma: row.idioma,
-      clasificacionEdad: row.clasificacion_edad,
-      publicada: row.publicada,
-      generos: (row.pelicula_generos || [])
-        .map((relacion: any) => relacion.genero)
-        .filter((genero: any) => genero !== null),
-    }));
+    const mapeadas = (data || []).map((row) => this.mapearPelicula(row));
 
     this.peliculas.set(mapeadas);
+
     return mapeadas;
+  }
+
+  async obtenerPeliculasProximamente(): Promise<Pelicula[]> {
+    const hoy = new Date().toISOString().split('T')[0];
+
+    const { data, error } = await this.supabase
+      .from('peliculas')
+      .select(
+        `
+        *,
+        pelicula_generos (
+          genero:generos (
+            id,
+            nombre
+          )
+        )
+      `,
+      )
+      .eq('publicada', false)
+      .gt('fecha_estreno', hoy)
+      .order('fecha_estreno', { ascending: true });
+
+    if (error) {
+      console.error('Error al cargar películas próximamente:', error.message);
+      return [];
+    }
+
+    return (data || []).map((row) => this.mapearPelicula(row));
+  }
+
+  async obtenerPeliculaPorId(peliculaId: string): Promise<Pelicula | null> {
+    const { data, error } = await this.supabase
+      .from('peliculas')
+      .select(
+        `
+        *,
+        pelicula_generos (
+          genero:generos (
+            id,
+            nombre
+          )
+        )
+      `,
+      )
+      .eq('id', peliculaId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error al cargar película:', error.message);
+      return null;
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return this.mapearPelicula(data);
   }
 
   async subirPortada(archivo: File, peliculaId: string): Promise<string | null> {
@@ -90,7 +157,9 @@ export class PeliculasService {
       formato: pelicula.formato,
       idioma: pelicula.idioma,
       clasificacion_edad: pelicula.clasificacionEdad,
-      publicada: true,
+      publicada: pelicula.publicada ?? true,
+      fecha_estreno: pelicula.fechaEstreno ?? null,
+      precio_preventa: pelicula.precioPreventa ?? null,
     };
 
     const { error: errorPelicula } = await this.supabase.from('peliculas').insert([row]);
@@ -120,6 +189,7 @@ export class PeliculasService {
     }
 
     await this.cargarPeliculas(false);
+
     return true;
   }
 
@@ -136,7 +206,8 @@ export class PeliculasService {
       return false;
     }
 
-    await this.cargarPeliculas();
+    await this.cargarPeliculas(false);
+
     return true;
   }
 }

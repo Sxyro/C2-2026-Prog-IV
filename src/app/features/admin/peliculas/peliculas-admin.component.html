@@ -1,5 +1,8 @@
 <div class="admin-container">
-  <a routerLink="/admin" class="back-link"> ← Volver al panel </a>
+  <a routerLink="/admin" class="back-link">
+    <span class="back-arrow">←</span>
+    Volver al panel
+  </a>
 
   <header class="section-header">
     <span class="admin-kicker">ADMINISTRACIÓN</span>
@@ -13,7 +16,7 @@
 
       <div>
         <h2>Cargar Nueva Película</h2>
-        <p>Agregá una película al catálogo del cine.</p>
+        <p>Agregá películas actuales o próximas al catálogo.</p>
       </div>
     </div>
 
@@ -29,16 +32,32 @@
         class="input-field"
       />
 
-      <label>Duración (en minutos):</label>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duración (en minutos):</label>
 
-      <input
-        type="number"
-        [(ngModel)]="nuevaPelicula.duracionMinutos"
-        name="duracionMinutos"
-        required
-        min="1"
-        class="input-field"
-      />
+          <input
+            type="number"
+            [(ngModel)]="nuevaPelicula.duracionMinutos"
+            name="duracionMinutos"
+            required
+            min="1"
+            class="input-field"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Fecha de estreno:</label>
+
+          <input
+            type="date"
+            [(ngModel)]="nuevaPelicula.fechaEstreno"
+            name="fechaEstreno"
+            required
+            class="input-field"
+          />
+        </div>
+      </div>
 
       <div class="form-row">
         <div class="form-group">
@@ -65,8 +84,7 @@
       <div class="classification-box">
         <div>
           <label>Clasificación por edad:</label>
-
-          <span class="field-help"> Determina quién puede comprar entradas. </span>
+          <span class="field-help">Determina quién puede comprar entradas.</span>
         </div>
 
         <select
@@ -80,6 +98,22 @@
             </option>
           }
         </select>
+      </div>
+
+      <div class="classification-box">
+        <div>
+          <label>Precio de preventa:</label>
+          <span class="field-help">Se utiliza durante los 7 días previos al estreno.</span>
+        </div>
+
+        <input
+          type="number"
+          [(ngModel)]="nuevaPelicula.precioPreventa"
+          name="precioPreventa"
+          min="0"
+          class="input-field classification-select"
+          placeholder="$"
+        />
       </div>
 
       <label>Géneros:</label>
@@ -115,7 +149,7 @@
 
             <div>
               <strong>{{ archivoPortada.name }}</strong>
-              <small> {{ (archivoPortada.size / 1024 / 1024).toFixed(2) }} MB </small>
+              <small>{{ (archivoPortada.size / 1024 / 1024).toFixed(2) }} MB</small>
             </div>
           </div>
         }
@@ -148,7 +182,7 @@
 
       <div>
         <h2>Catálogo de Películas</h2>
-        <p>Controlá la visibilidad de las películas publicadas.</p>
+        <p>Controlá fechas, preventa y visibilidad de las películas.</p>
       </div>
     </div>
 
@@ -157,6 +191,8 @@
         <thead>
           <tr>
             <th>Película</th>
+            <th>Estreno</th>
+            <th>Preventa</th>
             <th>Duración</th>
             <th>Formato</th>
             <th>Idioma</th>
@@ -172,6 +208,18 @@
               <strong>
                 {{ pelicula.nombre }}
               </strong>
+            </td>
+
+            <td>
+              {{ formatearFecha(pelicula.fechaEstreno) }}
+            </td>
+
+            <td>
+              @if (pelicula.precioPreventa) {
+                ${{ pelicula.precioPreventa }}
+              } @else {
+                —
+              }
             </td>
 
             <td>{{ pelicula.duracionMinutos }} min</td>
@@ -196,7 +244,7 @@
                 [class.published]="pelicula.publicada ?? true"
                 [class.hidden]="!(pelicula.publicada ?? true)"
               >
-                {{ (pelicula.publicada ?? true) ? 'Publicada' : 'Oculta' }}
+                {{ (pelicula.publicada ?? true) ? 'Publicada' : 'Próximamente' }}
               </span>
             </td>
 

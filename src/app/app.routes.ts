@@ -109,6 +109,13 @@ export const routes: Routes = [
             (m) => m.RecompensasAdminComponent,
           ),
       },
+      {
+        path: 'reportes',
+        loadComponent: () =>
+          import('./features/admin/reportes/reportes-admin.component').then(
+            (m) => m.ReportesAdminComponent,
+          ),
+      },
     ],
   },
 

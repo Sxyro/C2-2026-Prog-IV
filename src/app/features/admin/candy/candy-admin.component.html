@@ -1,5 +1,8 @@
 <div class="admin-container">
-  <a routerLink="/admin" class="back-link">← Volver al panel</a>
+  <a routerLink="/admin" class="back-link">
+    <span class="back-arrow">←</span>
+    Volver al panel
+  </a>
 
   <header class="section-header">
     <span class="admin-kicker">ADMINISTRACIÓN</span>
@@ -130,17 +133,34 @@
           }
         </select>
 
-        <label>Imagen</label>
+        <div class="producto-imagen-upload">
+          <label for="productoImagen">Imagen del producto:</label>
+          <input
+            id="productoImagen"
+            type="file"
+            accept="image/*"
+            (change)="seleccionarImagenProducto($event)"
+            class="input-file"
+          />
+          @if (archivoProducto) {
+            <div class="archivo-seleccionado">
+              <span>✓</span>
+              <div>
+                <strong>{{ archivoProducto.name }}</strong>
+                <small>{{ (archivoProducto.size / 1024 / 1024).toFixed(2) }} MB</small>
+              </div>
+            </div>
+          }
+          @if (vistaPreviaProducto) {
+            <div class="producto-imagen-preview">
+              <img [src]="vistaPreviaProducto" alt="Vista previa del producto" />
+            </div>
+          }
+        </div>
 
-        <input
-          type="url"
-          [(ngModel)]="nuevoProducto.imagenUrl"
-          name="nuevoProductoImagen"
-          class="input-field"
-          placeholder="https://..."
-        />
-
-        <button type="submit" class="btn-guardar">Crear producto</button>
+        <button type="submit" class="btn-guardar" [disabled]="subiendoProducto">
+          {{ subiendoProducto ? 'Subiendo imagen...' : 'Crear producto' }}
+        </button>
       </form>
     </section>
   </div>

@@ -1,4 +1,4 @@
-import { Genero } from "./genero.model";
+import { Genero } from './genero.model';
 
 export type FormatoPelicula = '2D' | '3D' | '4D' | '5D';
 
@@ -17,4 +17,6 @@ export interface Pelicula {
   idioma: IdiomaPelicula;
   clasificacionEdad: ClasificacionEdad;
   publicada?: boolean;
+  fechaEstreno?: string | null;
+  precioPreventa?: number | null;
 }

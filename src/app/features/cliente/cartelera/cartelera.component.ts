@@ -1,12 +1,16 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ResenasService } from '../../../core/services/resena.service';
 import { PeliculasService } from '../../../core/services/peliculas.service';
 import { EstadisticasService } from '../../../core/services/estadisticas.service';
+import { FuncionesService } from '../../../core/services/funciones.service';
+import { UsuariosService } from '../../../core/services/usuarios.service';
+import { AlertasPeliculasService } from '../../../core/services/alerta-peliculas.service';
 import { Resena } from '../../../core/models/resena.model';
 import { Pelicula } from '../../../core/models/pelicula.model';
+import { AlertaPelicula } from '../../../core/models/alerta-pelicula.model';
 
 @Component({
   selector: 'app-cartelera',
@@ -19,8 +23,16 @@ export class CarteleraComponent implements OnInit {
   private peliculasService = inject(PeliculasService);
   private resenasService = inject(ResenasService);
   private estadisticasService = inject(EstadisticasService);
+  private funcionesService = inject(FuncionesService);
+  private usuariosService = inject(UsuariosService);
+  private alertasService = inject(AlertasPeliculasService);
+  private router = inject(Router);
 
   public peliculas = this.peliculasService.obtenerPeliculas();
+  public proximamente = signal<Pelicula[]>([]);
+  public alertasDisponibles = signal<AlertaPelicula[]>([]);
+  public alertasActivadas = signal<Set<string>>(new Set());
+
   public textoBusqueda = '';
   public generoSeleccionado = '';
 
@@ -40,15 +52,143 @@ export class CarteleraComponent implements OnInit {
   public estrellasHover: Record<string, number> = {};
   public comentarioNuevaResena: Record<string, string> = {};
   public mensajeResena: Record<string, string> = {};
+  public mensajesAlerta: Record<string, string> = {};
 
   ngOnInit(): void {
-    this.cargarDatos();
+    void this.cargarDatos();
   }
 
   async cargarDatos(): Promise<void> {
-    await this.peliculasService.cargarPeliculas(true);
+    await Promise.all([
+      this.peliculasService.cargarPeliculas(true),
+      this.funcionesService.cargarFunciones(),
+    ]);
+
+    this.proximamente.set(await this.peliculasService.obtenerPeliculasProximamente());
+
     await this.cargarTop3();
     await this.cargarResenas();
+    await this.cargarAlertas();
+  }
+
+  async cargarAlertas(): Promise<void> {
+    await this.usuariosService.esperarSesionLista();
+
+    const usuario = this.usuariosService.obtenerUsuarioActual()();
+
+    if (!usuario) {
+      return;
+    }
+
+    const alertas = await this.alertasService.obtenerMisAlertas(usuario.id);
+
+    this.alertasActivadas.set(new Set(alertas.map((alerta) => alerta.peliculaId)));
+
+    const peliculaIdsConFunciones = this.funcionesService
+      .obtenerFunciones()()
+      .map((funcion) => funcion.peliculaId);
+
+    const disponibles = await this.alertasService.obtenerAlertasDisponibles(usuario.id, [
+      ...new Set(peliculaIdsConFunciones),
+    ]);
+
+    this.alertasDisponibles.set(disponibles);
+  }
+
+  async activarAlerta(pelicula: Pelicula): Promise<void> {
+    await this.usuariosService.esperarSesionLista();
+
+    const usuario = this.usuariosService.obtenerUsuarioActual()();
+
+    if (!usuario) {
+      await this.router.navigate(['/login']);
+      return;
+    }
+
+    const resultado = await this.alertasService.activarAlerta(usuario.id, pelicula.id);
+
+    this.mensajesAlerta[pelicula.id] = resultado.mensaje;
+
+    if (!resultado.exito) {
+      return;
+    }
+
+    this.alertasActivadas.update((actuales) => {
+      const nuevas = new Set(actuales);
+      nuevas.add(pelicula.id);
+      return nuevas;
+    });
+  }
+
+  async desactivarAlerta(pelicula: Pelicula): Promise<void> {
+    await this.usuariosService.esperarSesionLista();
+
+    const usuario = this.usuariosService.obtenerUsuarioActual()();
+
+    if (!usuario) {
+      return;
+    }
+
+    const resultado = await this.alertasService.desactivarAlerta(usuario.id, pelicula.id);
+
+    this.mensajesAlerta[pelicula.id] = resultado.mensaje;
+
+    if (!resultado.exito) {
+      return;
+    }
+
+    this.alertasActivadas.update((actuales) => {
+      const nuevas = new Set(actuales);
+      nuevas.delete(pelicula.id);
+      return nuevas;
+    });
+  }
+
+  tieneAlerta(peliculaId: string): boolean {
+    return this.alertasActivadas().has(peliculaId);
+  }
+
+  obtenerFuncionesPelicula(peliculaId: string) {
+    return this.funcionesService
+      .obtenerFunciones()()
+      .filter((funcion) => funcion.peliculaId === peliculaId);
+  }
+
+  estaEnPreventa(pelicula: Pelicula): boolean {
+    if (!pelicula.fechaEstreno) {
+      return false;
+    }
+
+    const inicioPreventa =
+      new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime() - 7 * 24 * 60 * 60 * 1000;
+
+    const estreno = new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime();
+    const ahora = Date.now();
+
+    return ahora >= inicioPreventa && ahora < estreno;
+  }
+
+  puedeComprarEnPreventa(pelicula: Pelicula): boolean {
+    return this.estaEnPreventa(pelicula) && this.obtenerFuncionesPelicula(pelicula.id).length > 0;
+  }
+
+  obtenerFechaPreventa(pelicula: Pelicula): string {
+    if (!pelicula.fechaEstreno) {
+      return '';
+    }
+
+    const fecha = new Date(`${pelicula.fechaEstreno}T00:00:00`);
+    fecha.setDate(fecha.getDate() - 7);
+
+    return fecha.toLocaleDateString('es-AR');
+  }
+
+  obtenerFechaEstreno(pelicula: Pelicula): string {
+    if (!pelicula.fechaEstreno) {
+      return 'Fecha no definida';
+    }
+
+    return new Date(`${pelicula.fechaEstreno}T00:00:00`).toLocaleDateString('es-AR');
   }
 
   async cargarResenas(): Promise<void> {
@@ -167,7 +307,6 @@ export class CarteleraComponent implements OnInit {
 
   async publicarResena(peliculaId: string): Promise<void> {
     const estrellas = this.estrellasNuevaResena[peliculaId] || 0;
-
     const comentario = this.comentarioNuevaResena[peliculaId] || '';
 
     if (estrellas === 0) {
@@ -206,7 +345,6 @@ export class CarteleraComponent implements OnInit {
       }));
     } else {
       const suma = nuevasResenas.reduce((total, resena) => total + resena.estrellas, 0);
-
       const promedio = Number((suma / nuevasResenas.length).toFixed(1));
 
       this.promedios.update((actuales) => ({
