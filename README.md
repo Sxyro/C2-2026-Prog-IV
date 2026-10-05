@@ -35,7 +35,7 @@ La aplicación permite consultar la cartelera, registrarse e iniciar sesión, se
 - Consulta de cartelera con destacados de las 3 películas más vendidas.
 - Búsqueda y filtrado de películas por género.
 - Consulta de información, calificaciones promedio y reseñas.
-- Selección de función y mapa interactivo de butacas (incluyendo filas J y K adaptadas para personas con discapacidad y filas VIP R, S y T).
+- Selección de función y mapa interactivo de butacas (incluyendo fila K adaptada para personas con discapacidad y filas VIP R, S y T).
 - Compra de entradas con opción de compra anónima o registrada.
 - Aplicación de descuentos (cupón de primera compra y descuento para mayores de 50 años).
 - Compra de productos de Candy Bar y combos destacados.
