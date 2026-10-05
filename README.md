@@ -1,84 +1,136 @@
-# Cine Imperial
+# 🎬 Cine Imperial
 
-Aplicación web de gestión y compra de entradas para un cine, desarrollada como trabajo práctico para la materia Programación IV.
+Aplicación web de gestión y compra de entradas para un cine, desarrollada como trabajo práctico para la materia **Programación IV**.
 
-La aplicación permite consultar la cartelera, registrarse e iniciar sesión, seleccionar funciones y butacas, realizar compras de entradas y productos de Candy, consultar el historial de compras y utilizar diferentes funcionalidades según el rol del usuario.
+La aplicación permite consultar la cartelera, registrarse e iniciar sesión, seleccionar funciones y butacas en tiempo real, realizar compras de entradas y productos de Candy, consultar el historial de compras y utilizar diferentes funcionalidades según el rol del usuario.
 
-## Aplicación desplegada
+## 🌐 Aplicación desplegada
 
 **URL:** https://cine-imperial.vercel.app
 
-## Repositorio
+## 📦 Repositorio
 
 **GitHub:** https://github.com/Sxyro/C2-2026-Prog-IV
 
-## Tecnologías utilizadas
+## 🛠️ Tecnologías utilizadas
 
-* Angular 22
-* TypeScript
-* Supabase
-* Supabase Authentication
-* Supabase Storage
-* PostgreSQL
-* Angular Router
-* Angular Service Worker / PWA
-* jsPDF
-* QRCode
-* ZXing
-* XLSX
-* RxJS
-* Vercel
+- Angular 18+ / 22
+- TypeScript
+- Supabase (Database, Auth, Storage)
+- PostgreSQL
+- Angular Router
+- Angular Service Worker / PWA
+- jsPDF
+- QRCode
+- ZXing
+- XLSX
+- RxJS
+- Vercel
 
-## Funcionalidades principales
+## ✨ Funcionalidades principales
 
-### Cliente
+### 👤 Cliente
 
-* Registro e inicio de sesión.
-* Consulta de cartelera.
-* Búsqueda y filtrado de películas.
-* Consulta de información y reseñas.
-* Selección de función y butacas.
-* Compra de entradas.
-* Compra de productos de Candy y combos.
-* Generación de entrada en PDF con código QR.
-* Consulta de próximas funciones y películas vistas.
-* Cancelación de reservas cuando corresponde.
-* Sistema de créditos por cancelaciones.
-* Sistema de puntos y recompensas.
-* Consulta del perfil y datos personales.
-* Avisos de películas próximas a estrenarse.
+- Registro e inicio de sesión con captura de datos de perfil.
+- Consulta de cartelera con destacados de las 3 películas más vendidas.
+- Búsqueda y filtrado de películas por género.
+- Consulta de información, calificaciones promedio y reseñas.
+- Selección de función y mapa interactivo de butacas (incluyendo filas J y K adaptadas para personas con discapacidad y filas VIP R, S y T).
+- Compra de entradas con opción de compra anónima o registrada.
+- Aplicación de descuentos (cupón de primera compra y descuento para mayores de 50 años).
+- Compra de productos de Candy Bar y combos destacados.
+- Generación de entrada en PDF con código QR unificado.
+- Consulta de próximas funciones, alertas de estreno y sección "Mis películas" (historial visual).
+- Cancelación de reservas (hasta 2 horas antes de la función) con acreditación de saldo/crédito en cuenta.
+- Sistema de puntos y recompensas (acumulación de 1 punto por peso gastado y canje por catálogo).
+- Perfil de usuario con consulta de saldo a favor e historial de canjes.
 
-### Administrador
+### 🛡️ Administrador
 
-* Gestión de películas.
-* Gestión de géneros.
-* Gestión de funciones y salas.
-* Gestión de usuarios.
-* Gestión de descuentos.
-* Gestión de productos y combos de Candy.
-* Gestión de recompensas.
-* Consulta de reportes.
-* Consulta de información estadística.
+- Gestión de películas (alta, modificación, género, clasificación por edad y preventa).
+- Gestión de funciones y salas con asignación automática y validación de tiempos de limpieza (mínimo 30 minutos entre funciones).
+- Gestión de usuarios y control de roles.
+- Configuración de porcentajes de descuentos y cupones.
+- Gestión de productos, categorías y combos de Candy.
+- Gestión del catálogo de recompensas por puntos.
+- Consulta y exportación de reportes de facturación a PDF y Excel.
+- Visualización de estadísticas gráficas (películas y productos más vendidos por semana/mes).
+- Registro e historial de actividad administrativa (`log_actividad`).
 
-### Empleado
+### 🎟️ Empleado
 
-* Validación de entradas mediante código QR.
-* Validación manual mediante código.
-* Validación de productos de Candy.
+- Escaneo y validación de entradas y productos de Candy mediante código QR.
+- Validación manual por código de ticket.
+- Invalidación automática de códigos para evitar un segundo uso.
 
-## Arquitectura del proyecto
+## 🏗️ Arquitectura del proyecto
 
-El proyecto está organizado utilizando la estructura de funcionalidades de Angular.
+El proyecto está organizado utilizando una arquitectura basada en funcionalidades (_feature-based_).
 
-Dentro de `src/app` se encuentran principalmente:
+Estructura dentro de `src/app`:
 
 ```text
 app/
 ├── core/
+│   ├── guards/
+│   │   └── admin.guard.ts
+│   ├── models/
+│   │   ├── alerta-pelicula.model.ts
+│   │   ├── butaca.model.ts
+│   │   ├── combo.model.ts
+│   │   ├── configuracion.model.ts
+│   │   ├── funcion.model.ts
+│   │   ├── genero.model.ts
+│   │   ├── pelicula.model.ts
+│   │   ├── producto-candy.model.ts
+│   │   ├── reportes.model.ts
+│   │   ├── resena.model.ts
+│   │   ├── reserva.model.ts
+│   │   ├── sala.model.ts
+│   │   └── usuario.model.ts
+│   └── services/
+│       ├── alerta-peliculas.service.ts
+│       ├── candy.service.ts
+│       ├── combo.service.ts
+│       ├── configuracion.service.ts
+│       ├── estadisticas.service.ts
+│       ├── exportacion-reportes.service.ts
+│       ├── funciones.service.ts
+│       ├── generos.service.ts
+│       ├── pdf.service.ts
+│       ├── peliculas.service.ts
+│       ├── puntos.service.ts
+│       ├── reportes.service.ts
+│       ├── resena.service.ts
+│       ├── reservas.service.ts
+│       ├── salas.service.ts
+│       ├── supabase.service.ts
+│       └── usuarios.service.ts
 ├── features/
 │   ├── admin/
+│   │   ├── candy/
+│   │   ├── descuentos/
+│   │   ├── funciones/
+│   │   ├── panel-admin/
+│   │   ├── peliculas/
+│   │   ├── recompensas/
+│   │   ├── reportes/
+│   │   └── usuarios/
 │   ├── cliente/
+│   │   ├── cartelera/
+│   │   ├── checkout/
+│   │   ├── login/
+│   │   ├── perfil/
+│   │   │   ├── credito-disponible/
+│   │   │   ├── mi-perfil-info/
+│   │   │   ├── mis-peliculas/
+│   │   │   └── recompensas/
+│   │   ├── registro/
+│   │   └── reserva/
 │   └── empleado/
+│       ├── escanear.component.css
+│       ├── escanear.component.html
+│       └── escanear.component.ts
 ├── app.config.ts
 ├── app.routes.ts
 ├── app.html
@@ -87,91 +139,93 @@ app/
 
 ### `core`
 
-Contiene elementos centrales y compartidos de la aplicación, como servicios, modelos, guards y lógica utilizada por diferentes funcionalidades.
+Centraliza la lógica de negocio reusable, la comunicación con la base de datos y la definición de tipos:
+
+- `guards/`: Reglas de navegación que protegen rutas sensibles (ej. `admin.guard.ts`).
+- `models/`: Interfaces y tipos TypeScript que mapean las entidades de la base de datos (películas, reservas, combos, usuarios, etc.).
+- `services/`: Servicios singleton encargados de interactuar con Supabase (`supabase.service.ts`), administrar la autenticación, coordinar reservas, procesar puntos, generar reportes y emitir archivos PDF.
 
 ### `features`
 
-Contiene las funcionalidades principales de la aplicación, organizadas según el rol y el dominio.
+Contiene las vistas y componentes de la aplicación, agrupados por dominio de uso:
 
-* `cliente/`: funcionalidades disponibles para los usuarios, como cartelera, registro, login, reservas, checkout y perfil.
-* `admin/`: funcionalidades de administración del sistema.
-* `empleado/`: funcionalidades relacionadas con la validación de entradas y productos mediante QR o código.
-
-Esta organización permite separar las distintas responsabilidades de la aplicación y facilita el mantenimiento del proyecto.
+- `cliente/`: Módulos de cara al usuario (cartelera, reservas, perfil, canjes, checkout).
+- `admin/`: Paneles de gestión, configuración del sistema, catálogo de productos y reportes.
+- `empleado/`: Interfaz para la verificación operativa de entradas y consumo de Candy.
 
 ### Rutas
 
-Las rutas principales se encuentran definidas en `app.routes.ts`.
+Las rutas se definen en `app.routes.ts` implementando carga diferida (_Lazy Loading_) para optimizar el rendimiento inicial. Las secciones administrativas y de escaneo están restringidas por los guards correspondientes.
 
-Las funcionalidades administrativas están agrupadas bajo `/admin` y protegidas mediante guards según el rol del usuario.
+## 🗄️ Base de datos y backend
 
-La ruta `/escanear` también cuenta con protección para impedir el acceso a usuarios que no tengan el rol correspondiente.
+Se utilizó **Supabase** como plataforma de backend. Permite administrar:
 
-Además, algunas funcionalidades administrativas utilizan carga diferida (`loadComponent`) para cargar los componentes cuando son necesarios.
+- **PostgreSQL relacional:** tablas normalizadas con claves foráneas e integridad referencial.
+- **Autenticación:** registro e inicio de sesión vinculados a la tabla `usuarios`.
+- **Storage:** almacenamiento de pósters e imágenes del Candy.
+- **Row Level Security (RLS):** seguridad a nivel de filas.
 
-## Base de datos y backend
+### Esquema de base de datos y tablas
 
-Se utilizó **Supabase** como backend de la aplicación.
+El modelo de datos cuenta con RLS activado en todas sus tablas para restringir accesos no autorizados:
 
-Supabase permite gestionar:
+- `alertas_peliculas`
+- `canjes_puntos`
+- `categorias_candy`
+- `combos`
+- `combo_productos`
+- `configuracion`
+- `funciones`
+- `generos`
+- `log_actividad`
+- `movimientos_puntos`
+- `peliculas`
+- `pelicula_generos`
+- `productos_candy`
+- `puntos_usuarios`
+- `recompensas_puntos`
+- `resenas`
+- `reservas`
+- `reserva_butacas`
+- `reserva_combos`
+- `reserva_productos_candy`
+- `salas`
+- `usuarios`
 
-* Base de datos PostgreSQL.
-* Autenticación de usuarios.
-* Almacenamiento de imágenes mediante Storage.
-* Políticas de seguridad mediante Row Level Security (RLS).
+## 🔒 Seguridad
 
-La información principal de la aplicación, como películas, funciones, salas, reservas, usuarios, reseñas, productos y recompensas, se almacena en la base de datos.
+La seguridad está implementada en dos capas:
 
-## Seguridad
+1. **Frontend (Angular):** Guards (`admin.guard.ts`) que verifican el estado de autenticación y el rol del usuario antes de resolver una ruta.
+2. **Backend (Supabase RLS):** políticas de Row Level Security aplicadas directamente en PostgreSQL, impidiendo que usuarios no autorizados puedan consultar o modificar datos fuera de sus permisos.
 
-La aplicación utiliza autenticación mediante Supabase y control de acceso según el rol del usuario.
+## 🧠 Decisiones técnicas
 
-Además de la protección de rutas mediante guards de Angular, se utilizan políticas **Row Level Security (RLS)** en Supabase para controlar las operaciones directamente sobre la base de datos.
+### Angular y arquitectura modular
 
-De esta forma, la seguridad no depende únicamente de la interfaz de la aplicación, sino que también se encuentra aplicada en el backend.
+Se eligió Angular por su solidez para manejar proyectos con múltiples roles. La separación clara entre `core` y `features` garantiza un código ordenado y fácil de mantener.
 
-## Decisiones técnicas
+### Supabase como BaaS
 
-### Angular
+Permite integrar base de datos relacional, almacenamiento de imágenes, autenticación de usuarios y reglas de seguridad en un solo ecosistema, sin la necesidad de desplegar un servidor Node.js independiente.
 
-Se utilizó Angular como framework principal debido a que permite organizar la aplicación mediante componentes, servicios, rutas y otras herramientas que facilitan la separación de responsabilidades.
+### Service Worker y PWA
 
-### Organización por funcionalidades
+Se integró `@angular/pwa` para habilitar características de Progressive Web App, mejorando la velocidad de carga mediante el almacenamiento en caché de activos estáticos.
 
-Se decidió organizar las funcionalidades dentro de `features`, separando cliente, administrador y empleado.
+### Generación de entradas y lecturas QR
 
-Esto permite mantener una estructura clara y facilita encontrar y modificar cada parte del sistema.
+Se optó por `jsPDF` y `QRCode` para construir comprobantes completos de manera local en el cliente. Para la validación operativa del lado del empleado, se usó `ZXing`, lo que permite escanear códigos directamente con la cámara del dispositivo o ingresar el código alternativo en caso de fallos de lectura.
 
-### Supabase
+### Reportes en Excel
 
-Se eligió Supabase para evitar implementar un backend independiente y contar con una solución integrada para base de datos, autenticación, almacenamiento y seguridad mediante RLS.
+Uso de `XLSX` para generar hojas de cálculo de facturación directamente desde el panel de administración.
 
-### Guards y roles
+## 🚀 Despliegue
 
-Se utilizaron guards para controlar el acceso a determinadas rutas según el rol del usuario.
-
-Esto permite evitar que un usuario acceda desde la interfaz a funcionalidades que corresponden exclusivamente al administrador o empleado.
-
-### PWA
-
-Se incorporó Angular Service Worker para que la aplicación pueda funcionar como Progressive Web App (PWA).
-
-### Generación de entradas y códigos QR
-
-Se utilizaron `jsPDF` para generar las entradas en formato PDF y `QRCode` para generar los códigos QR utilizados en la validación.
-
-Para la lectura de códigos QR se utilizó `ZXing`.
-
-### Reportes
-
-Se utilizó `XLSX` para permitir la generación de reportes en formato Excel.
-
-## Despliegue
-
-La aplicación se encuentra desplegada en **Vercel** y puede ser utilizada mediante la URL:
-
+La aplicación se encuentra desplegada en Vercel:
 https://cine-imperial.vercel.app
 
-El código fuente se encuentra disponible en GitHub:
-
+El código fuente está disponible en GitHub:
 https://github.com/Sxyro/C2-2026-Prog-IV
