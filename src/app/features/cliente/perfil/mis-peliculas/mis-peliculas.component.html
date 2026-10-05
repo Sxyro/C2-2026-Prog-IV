@@ -31,7 +31,7 @@
 
         <p>Cuando compres una entrada, tu película aparecerá automáticamente en esta sección.</p>
 
-        <a routerLink="/cartelera" class="btn-principal"> Ver cartelera </a>
+        <a routerLink="/cartelera" class="btn-principal">Ver cartelera</a>
       </div>
     } @else {
       <div class="resumen">
@@ -44,147 +44,395 @@
           </strong>
         </div>
 
-        <span>Ordenadas por fecha de función</span>
+        <span>Organizadas por estado y fecha de función</span>
       </div>
 
-      <div class="reservas-lista">
-        @for (reserva of reservas; track reserva.reservaId) {
-          <article class="reserva-card">
-            <div class="pelicula-portada">
-              <img [src]="reserva.peliculaPortadaUrl" [alt]="reserva.peliculaNombre" />
-
-              <span class="estado" [class]="obtenerClaseEstado(reserva)">
-                {{ obtenerEstado(reserva) }}
-              </span>
+      @if (obtenerReservasProximas().length > 0) {
+        <section class="grupo-reservas">
+          <div class="grupo-titulo">
+            <div>
+              <span class="resumen-kicker">PRÓXIMAMENTE</span>
+              <h2>Próximas funciones</h2>
             </div>
 
-            <div class="reserva-contenido">
-              <div class="reserva-cabecera">
-                <div>
-                  <span class="reserva-kicker">
-                    {{ reserva.peliculaFormato }}
-                    ·
-                    {{ reserva.peliculaIdioma }}
+            <span>{{ obtenerReservasProximas().length }}</span>
+          </div>
+
+          <div class="reservas-lista">
+            @for (reserva of obtenerReservasProximas(); track reserva.reservaId) {
+              <article class="reserva-card">
+                <div class="pelicula-portada">
+                  <img [src]="reserva.peliculaPortadaUrl" [alt]="reserva.peliculaNombre" />
+
+                  <span class="estado" [class]="obtenerClaseEstado(reserva)">
+                    {{ obtenerEstado(reserva) }}
                   </span>
-
-                  <h2>{{ reserva.peliculaNombre }}</h2>
                 </div>
 
-                <span class="clasificacion">
-                  {{ reserva.peliculaClasificacion }}
-                </span>
-              </div>
+                <div class="reserva-contenido">
+                  <div class="reserva-cabecera">
+                    <div>
+                      <span class="reserva-kicker">
+                        {{ reserva.peliculaFormato }}
+                        ·
+                        {{ reserva.peliculaIdioma }}
+                      </span>
 
-              <div class="datos-funcion">
-                <div class="dato">
-                  <span>Función</span>
+                      <h2>{{ reserva.peliculaNombre }}</h2>
+                    </div>
 
-                  <strong>
-                    {{ formatearFecha(reserva.fechaHoraInicio) }}
-                    ·
-                    {{ formatearHora(reserva.fechaHoraInicio) }}
-                  </strong>
-                </div>
+                    <span class="clasificacion">
+                      {{ reserva.peliculaClasificacion }}
+                    </span>
+                  </div>
 
-                <div class="dato">
-                  <span>Sala</span>
+                  <div class="datos-funcion">
+                    <div class="dato">
+                      <span>Función</span>
 
-                  <strong>{{ reserva.salaNombre }}</strong>
-                </div>
+                      <strong>
+                        {{ formatearFecha(reserva.fechaHoraInicio) }}
+                        ·
+                        {{ formatearHora(reserva.fechaHoraInicio) }}
+                      </strong>
+                    </div>
 
-                <div class="dato">
-                  <span>Butacas</span>
+                    <div class="dato">
+                      <span>Sala</span>
 
-                  <strong>
-                    {{ reserva.butacas.length > 0 ? obtenerButacas(reserva) : 'Liberadas' }}
-                  </strong>
-                </div>
+                      <strong>{{ reserva.salaNombre }}</strong>
+                    </div>
 
-                <div class="dato">
-                  <span>Compra</span>
+                    <div class="dato">
+                      <span>Butacas</span>
 
-                  <strong>
-                    {{ formatearFecha(reserva.createdAt) }}
-                  </strong>
-                </div>
-              </div>
+                      <strong>
+                        {{ reserva.butacas.length > 0 ? obtenerButacas(reserva) : 'Liberadas' }}
+                      </strong>
+                    </div>
 
-              @if (reserva.cancelada) {
-                <div class="cancelacion-resumen">
-                  <strong>Reserva cancelada</strong>
+                    <div class="dato">
+                      <span>Compra</span>
 
-                  <span>
-                    Crédito devuelto:
-                    <b>${{ formatearPrecio(reserva.creditoDevuelto) }}</b>
-                  </span>
+                      <strong>
+                        {{ formatearFecha(reserva.createdAt) }}
+                      </strong>
+                    </div>
+                  </div>
 
-                  @if (reserva.canceladaAt) {
-                    <small>Cancelada el {{ formatearFecha(reserva.canceladaAt) }}</small>
+                  @if (tieneCandy(reserva)) {
+                    <div class="candy-resumen">
+                      <div class="candy-titulo">
+                        <span>🍿</span>
+                        <strong>Candy</strong>
+                      </div>
+
+                      <div class="candy-productos">
+                        @for (producto of reserva.productosCandy; track producto.id) {
+                          <span>
+                            {{ producto.cantidad }}×
+                            {{ producto.nombre }}
+                          </span>
+                        }
+                      </div>
+
+                      <span class="candy-cantidad">
+                        {{ obtenerCantidadCandy(reserva) }}
+                        {{ obtenerCantidadCandy(reserva) === 1 ? 'producto' : 'productos' }}
+                      </span>
+                    </div>
+                  }
+
+                  <div class="reserva-pie">
+                    <div>
+                      <span>Total</span>
+
+                      <strong> ${{ formatearPrecio(reserva.total) }} </strong>
+                    </div>
+
+                    <div class="codigo">
+                      <span>Código</span>
+
+                      <strong>
+                        {{ reserva.reservaId.slice(0, 8).toUpperCase() }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  @if (puedeCancelar(reserva)) {
+                    <div class="cancelacion-accion">
+                      <button
+                        type="button"
+                        class="btn-cancelar"
+                        [disabled]="cancelando() === reserva.reservaId"
+                        (click)="cancelarReserva(reserva)"
+                      >
+                        @if (cancelando() === reserva.reservaId) {
+                          Cancelando...
+                        } @else {
+                          Cancelar reserva
+                        }
+                      </button>
+
+                      <span> Disponible hasta 2 horas antes de la función. </span>
+                    </div>
                   }
                 </div>
-              }
+              </article>
+            }
+          </div>
+        </section>
+      }
 
-              @if (tieneCandy(reserva)) {
-                <div class="candy-resumen">
-                  <div class="candy-titulo">
-                    <span>🍿</span>
-                    <strong>Candy</strong>
-                  </div>
+      @if (obtenerReservasVistas().length > 0) {
+        <section class="grupo-reservas">
+          <div class="grupo-titulo">
+            <div>
+              <span class="resumen-kicker">HISTORIAL</span>
+              <h2>Ya vistas</h2>
+            </div>
 
-                  <div class="candy-productos">
-                    @for (producto of reserva.productosCandy; track producto.id) {
-                      <span>
-                        {{ producto.cantidad }}×
-                        {{ producto.nombre }}
-                      </span>
-                    }
-                  </div>
+            <span>{{ obtenerReservasVistas().length }}</span>
+          </div>
 
-                  <span class="candy-cantidad">
-                    {{ obtenerCantidadCandy(reserva) }}
-                    {{ obtenerCantidadCandy(reserva) === 1 ? 'producto' : 'productos' }}
+          <div class="reservas-lista">
+            @for (reserva of obtenerReservasVistas(); track reserva.reservaId) {
+              <article class="reserva-card">
+                <div class="pelicula-portada">
+                  <img [src]="reserva.peliculaPortadaUrl" [alt]="reserva.peliculaNombre" />
+
+                  <span class="estado" [class]="obtenerClaseEstado(reserva)">
+                    {{ obtenerEstado(reserva) }}
                   </span>
                 </div>
-              }
 
-              <div class="reserva-pie">
-                <div>
-                  <span>Total</span>
+                <div class="reserva-contenido">
+                  <div class="reserva-cabecera">
+                    <div>
+                      <span class="reserva-kicker">
+                        {{ reserva.peliculaFormato }}
+                        ·
+                        {{ reserva.peliculaIdioma }}
+                      </span>
 
-                  <strong>${{ formatearPrecio(reserva.total) }}</strong>
+                      <h2>{{ reserva.peliculaNombre }}</h2>
+                    </div>
+
+                    <span class="clasificacion">
+                      {{ reserva.peliculaClasificacion }}
+                    </span>
+                  </div>
+
+                  <div class="datos-funcion">
+                    <div class="dato">
+                      <span>Función</span>
+
+                      <strong>
+                        {{ formatearFecha(reserva.fechaHoraInicio) }}
+                        ·
+                        {{ formatearHora(reserva.fechaHoraInicio) }}
+                      </strong>
+                    </div>
+
+                    <div class="dato">
+                      <span>Sala</span>
+
+                      <strong>{{ reserva.salaNombre }}</strong>
+                    </div>
+
+                    <div class="dato">
+                      <span>Butacas</span>
+
+                      <strong>
+                        {{ reserva.butacas.length > 0 ? obtenerButacas(reserva) : 'Liberadas' }}
+                      </strong>
+                    </div>
+
+                    <div class="dato">
+                      <span>Compra</span>
+
+                      <strong>
+                        {{ formatearFecha(reserva.createdAt) }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  @if (tieneCandy(reserva)) {
+                    <div class="candy-resumen">
+                      <div class="candy-titulo">
+                        <span>🍿</span>
+                        <strong>Candy</strong>
+                      </div>
+
+                      <div class="candy-productos">
+                        @for (producto of reserva.productosCandy; track producto.id) {
+                          <span>
+                            {{ producto.cantidad }}×
+                            {{ producto.nombre }}
+                          </span>
+                        }
+                      </div>
+
+                      <span class="candy-cantidad">
+                        {{ obtenerCantidadCandy(reserva) }}
+                        {{ obtenerCantidadCandy(reserva) === 1 ? 'producto' : 'productos' }}
+                      </span>
+                    </div>
+                  }
+
+                  <div class="reserva-pie">
+                    <div>
+                      <span>Total</span>
+
+                      <strong> ${{ formatearPrecio(reserva.total) }} </strong>
+                    </div>
+
+                    <div class="codigo">
+                      <span>Código</span>
+
+                      <strong>
+                        {{ reserva.reservaId.slice(0, 8).toUpperCase() }}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
+              </article>
+            }
+          </div>
+        </section>
+      }
 
-                <div class="codigo">
-                  <span>Código</span>
-
-                  <strong>
-                    {{ reserva.reservaId.slice(0, 8).toUpperCase() }}
-                  </strong>
-                </div>
-              </div>
-
-              @if (puedeCancelar(reserva)) {
-                <div class="cancelacion-accion">
-                  <button
-                    type="button"
-                    class="btn-cancelar"
-                    [disabled]="cancelando() === reserva.reservaId"
-                    (click)="cancelarReserva(reserva)"
-                  >
-                    @if (cancelando() === reserva.reservaId) {
-                      Cancelando...
-                    } @else {
-                      Cancelar reserva
-                    }
-                  </button>
-
-                  <span>Disponible hasta 2 horas antes de la función.</span>
-                </div>
-              }
+      @if (obtenerReservasCanceladas().length > 0) {
+        <section class="grupo-reservas">
+          <div class="grupo-titulo">
+            <div>
+              <span class="resumen-kicker">HISTORIAL</span>
+              <h2>Canceladas</h2>
             </div>
-          </article>
-        }
-      </div>
+
+            <span>{{ obtenerReservasCanceladas().length }}</span>
+          </div>
+
+          <div class="reservas-lista">
+            @for (reserva of obtenerReservasCanceladas(); track reserva.reservaId) {
+              <article class="reserva-card">
+                <div class="pelicula-portada">
+                  <img [src]="reserva.peliculaPortadaUrl" [alt]="reserva.peliculaNombre" />
+
+                  <span class="estado" [class]="obtenerClaseEstado(reserva)">
+                    {{ obtenerEstado(reserva) }}
+                  </span>
+                </div>
+
+                <div class="reserva-contenido">
+                  <div class="reserva-cabecera">
+                    <div>
+                      <span class="reserva-kicker">
+                        {{ reserva.peliculaFormato }}
+                        ·
+                        {{ reserva.peliculaIdioma }}
+                      </span>
+
+                      <h2>{{ reserva.peliculaNombre }}</h2>
+                    </div>
+
+                    <span class="clasificacion">
+                      {{ reserva.peliculaClasificacion }}
+                    </span>
+                  </div>
+
+                  <div class="datos-funcion">
+                    <div class="dato">
+                      <span>Función</span>
+
+                      <strong>
+                        {{ formatearFecha(reserva.fechaHoraInicio) }}
+                        ·
+                        {{ formatearHora(reserva.fechaHoraInicio) }}
+                      </strong>
+                    </div>
+
+                    <div class="dato">
+                      <span>Sala</span>
+
+                      <strong>{{ reserva.salaNombre }}</strong>
+                    </div>
+
+                    <div class="dato">
+                      <span>Butacas</span>
+
+                      <strong>Liberadas</strong>
+                    </div>
+
+                    <div class="dato">
+                      <span>Compra</span>
+
+                      <strong>
+                        {{ formatearFecha(reserva.createdAt) }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div class="cancelacion-resumen">
+                    <strong>Reserva cancelada</strong>
+
+                    <span>
+                      Crédito devuelto:
+                      <b>${{ formatearPrecio(reserva.creditoDevuelto) }}</b>
+                    </span>
+
+                    @if (reserva.canceladaAt) {
+                      <small>
+                        Cancelada el
+                        {{ formatearFecha(reserva.canceladaAt) }}
+                      </small>
+                    }
+                  </div>
+
+                  @if (tieneCandy(reserva)) {
+                    <div class="candy-resumen">
+                      <div class="candy-titulo">
+                        <span>🍿</span>
+                        <strong>Candy</strong>
+                      </div>
+
+                      <div class="candy-productos">
+                        @for (producto of reserva.productosCandy; track producto.id) {
+                          <span>
+                            {{ producto.cantidad }}×
+                            {{ producto.nombre }}
+                          </span>
+                        }
+                      </div>
+
+                      <span class="candy-cantidad">
+                        {{ obtenerCantidadCandy(reserva) }}
+                        {{ obtenerCantidadCandy(reserva) === 1 ? 'producto' : 'productos' }}
+                      </span>
+                    </div>
+                  }
+
+                  <div class="reserva-pie">
+                    <div>
+                      <span>Total</span>
+
+                      <strong> ${{ formatearPrecio(reserva.total) }} </strong>
+                    </div>
+
+                    <div class="codigo">
+                      <span>Código</span>
+
+                      <strong>
+                        {{ reserva.reservaId.slice(0, 8).toUpperCase() }}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+      }
     }
   </div>
 </section>

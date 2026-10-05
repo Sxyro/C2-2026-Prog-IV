@@ -64,7 +64,7 @@ export class FuncionesAdminComponent implements OnInit {
   ];
 
   async ngOnInit(): Promise<void> {
-    await this.peliculasService.cargarPeliculas(false);
+    await this.peliculasService.cargarPeliculas();
     await this.funcionesService.cargarFunciones();
     await this.salasService.cargarSalas();
 

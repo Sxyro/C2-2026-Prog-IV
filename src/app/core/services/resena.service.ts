@@ -3,7 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { Resena } from '../models/resena.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ResenasService {
   private supabase = inject(SupabaseService).client;
@@ -37,10 +37,7 @@ export class ResenasService {
       return 0;
     }
 
-    const suma = resenas.reduce(
-      (total, resena) => total + resena.estrellas,
-      0
-    );
+    const suma = resenas.reduce((total, resena) => total + resena.estrellas, 0);
 
     return Number((suma / resenas.length).toFixed(1));
   }
@@ -48,79 +45,81 @@ export class ResenasService {
   async agregarResena(
     peliculaId: string,
     estrellas: number,
-    comentario: string
+    comentario: string,
   ): Promise<{ exito: boolean; mensaje: string }> {
     if (estrellas < 1 || estrellas > 5) {
       return {
         exito: false,
-        mensaje: 'La puntuación debe estar entre 1 y 5 estrellas.'
+        mensaje: 'La puntuación debe estar entre 1 y 5 estrellas.',
       };
     }
 
     if (!comentario.trim()) {
       return {
         exito: false,
-        mensaje: 'Escribí un comentario antes de publicar.'
+        mensaje: 'Escribí un comentario antes de publicar.',
       };
     }
 
     const {
-      data: { user }
+      data: { user },
     } = await this.supabase.auth.getUser();
 
-    if (!user || !user.email) {
+    if (!user) {
       return {
         exito: false,
-        mensaje: 'Debés iniciar sesión para dejar una reseña.'
+        mensaje: 'Debés iniciar sesión para dejar una reseña.',
       };
     }
 
-    const { data: usuario, error: errorUsuario } = await this.supabase
-      .from('usuarios')
-      .select('id')
-      .eq('email', user.email)
-      .single();
+    const { data: usuarioId, error: errorUsuario } = await this.supabase.rpc(
+      'obtener_id_usuario_actual',
+    );
 
-    if (errorUsuario || !usuario) {
-      console.error(
-        'No se encontró el usuario en la tabla usuarios:',
-        errorUsuario?.message
-      );
+    if (errorUsuario || !usuarioId) {
+      console.error('No se pudo obtener el usuario actual:', errorUsuario?.message);
 
       return {
         exito: false,
-        mensaje: 'No se encontró tu usuario en la base de datos.'
+        mensaje: 'No se pudo identificar tu usuario.',
       };
     }
 
-    const { error } = await this.supabase
-      .from('resenas')
-      .insert([{
+    const { error } = await this.supabase.from('resenas').insert([
+      {
         id: crypto.randomUUID(),
         pelicula_id: peliculaId,
-        usuario_id: usuario.id,
+        usuario_id: usuarioId,
         estrellas,
         comentario: comentario.trim(),
-      }]);
+      },
+    ]);
 
     if (error) {
+      if (error.code === '23505' || error.message.includes('resenas_usuario_pelicula_unica')) {
+        return {
+          exito: false,
+          mensaje: 'Ya calificaste esta película.',
+        };
+      }
+
       console.error('Error al guardar reseña:', error.message);
 
       return {
         exito: false,
-        mensaje: error.message
+        mensaje: 'No se pudo publicar la reseña.',
       };
     }
 
     return {
       exito: true,
-      mensaje: '¡Reseña publicada correctamente!'
+      mensaje: '¡Reseña publicada correctamente!',
     };
   }
 
   async usuarioEstaAutenticado(): Promise<boolean> {
     const {
-      data: { user }
+      data: { user },
     } = await this.supabase.auth.getUser();
 
     return !!user;

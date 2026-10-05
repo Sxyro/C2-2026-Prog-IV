@@ -47,12 +47,12 @@ export class CarteleraComponent implements OnInit {
   public peliculaTop3Ids = new Set<string>();
 
   public resenaAbierta: string | null = null;
-
   public estrellasNuevaResena: Record<string, number> = {};
   public estrellasHover: Record<string, number> = {};
   public comentarioNuevaResena: Record<string, string> = {};
   public mensajeResena: Record<string, string> = {};
   public mensajesAlerta: Record<string, string> = {};
+  public peliculasResenadas = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     void this.cargarDatos();
@@ -64,7 +64,9 @@ export class CarteleraComponent implements OnInit {
       this.funcionesService.cargarFunciones(),
     ]);
 
-    this.proximamente.set(await this.peliculasService.obtenerPeliculasProximamente());
+    this.proximamente.set(
+      await this.peliculasService.obtenerPeliculasProximamente()
+    );
 
     await this.cargarTop3();
     await this.cargarResenas();
@@ -82,15 +84,18 @@ export class CarteleraComponent implements OnInit {
 
     const alertas = await this.alertasService.obtenerMisAlertas(usuario.id);
 
-    this.alertasActivadas.set(new Set(alertas.map((alerta) => alerta.peliculaId)));
+    this.alertasActivadas.set(
+      new Set(alertas.map((alerta) => alerta.peliculaId))
+    );
 
     const peliculaIdsConFunciones = this.funcionesService
       .obtenerFunciones()()
       .map((funcion) => funcion.peliculaId);
 
-    const disponibles = await this.alertasService.obtenerAlertasDisponibles(usuario.id, [
-      ...new Set(peliculaIdsConFunciones),
-    ]);
+    const disponibles = await this.alertasService.obtenerAlertasDisponibles(
+      usuario.id,
+      [...new Set(peliculaIdsConFunciones)]
+    );
 
     this.alertasDisponibles.set(disponibles);
   }
@@ -105,7 +110,10 @@ export class CarteleraComponent implements OnInit {
       return;
     }
 
-    const resultado = await this.alertasService.activarAlerta(usuario.id, pelicula.id);
+    const resultado = await this.alertasService.activarAlerta(
+      usuario.id,
+      pelicula.id
+    );
 
     this.mensajesAlerta[pelicula.id] = resultado.mensaje;
 
@@ -129,7 +137,10 @@ export class CarteleraComponent implements OnInit {
       return;
     }
 
-    const resultado = await this.alertasService.desactivarAlerta(usuario.id, pelicula.id);
+    const resultado = await this.alertasService.desactivarAlerta(
+      usuario.id,
+      pelicula.id
+    );
 
     this.mensajesAlerta[pelicula.id] = resultado.mensaje;
 
@@ -160,16 +171,23 @@ export class CarteleraComponent implements OnInit {
     }
 
     const inicioPreventa =
-      new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime() - 7 * 24 * 60 * 60 * 1000;
+      new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime() -
+      7 * 24 * 60 * 60 * 1000;
 
-    const estreno = new Date(`${pelicula.fechaEstreno}T00:00:00`).getTime();
+    const estreno = new Date(
+      `${pelicula.fechaEstreno}T00:00:00`
+    ).getTime();
+
     const ahora = Date.now();
 
     return ahora >= inicioPreventa && ahora < estreno;
   }
 
   puedeComprarEnPreventa(pelicula: Pelicula): boolean {
-    return this.estaEnPreventa(pelicula) && this.obtenerFuncionesPelicula(pelicula.id).length > 0;
+    return (
+      this.estaEnPreventa(pelicula) &&
+      this.obtenerFuncionesPelicula(pelicula.id).length > 0
+    );
   }
 
   obtenerFechaPreventa(pelicula: Pelicula): string {
@@ -188,41 +206,65 @@ export class CarteleraComponent implements OnInit {
       return 'Fecha no definida';
     }
 
-    return new Date(`${pelicula.fechaEstreno}T00:00:00`).toLocaleDateString('es-AR');
+    return new Date(
+      `${pelicula.fechaEstreno}T00:00:00`
+    ).toLocaleDateString('es-AR');
   }
 
   async cargarResenas(): Promise<void> {
     const peliculas = this.peliculas();
-
     const nuevasResenas: Record<string, Resena[]> = {};
     const nuevosPromedios: Record<string, number> = {};
+    const nuevasPeliculasResenadas = new Set<string>();
+
+    await this.usuariosService.esperarSesionLista();
+
+    const usuario = this.usuariosService.obtenerUsuarioActual()();
 
     for (const pelicula of peliculas) {
       const resenas = await this.resenasService.obtenerResenas(pelicula.id);
 
       nuevasResenas[pelicula.id] = resenas;
 
+      if (
+        usuario &&
+        resenas.some((resena) => resena.usuarioId === usuario.id)
+      ) {
+        nuevasPeliculasResenadas.add(pelicula.id);
+      }
+
       if (resenas.length === 0) {
         nuevosPromedios[pelicula.id] = 0;
       } else {
-        const suma = resenas.reduce((total, resena) => total + resena.estrellas, 0);
+        const suma = resenas.reduce(
+          (total, resena) => total + resena.estrellas,
+          0
+        );
 
-        nuevosPromedios[pelicula.id] = Number((suma / resenas.length).toFixed(1));
+        nuevosPromedios[pelicula.id] = Number(
+          (suma / resenas.length).toFixed(1)
+        );
       }
     }
 
     this.resenas.set(nuevasResenas);
     this.promedios.set(nuevosPromedios);
+    this.peliculasResenadas.set(nuevasPeliculasResenadas);
   }
 
   async cargarTop3(): Promise<void> {
-    this.top3 = await this.estadisticasService.obtenerTop3PeliculasVendidas();
+    this.top3 =
+      await this.estadisticasService.obtenerTop3PeliculasVendidas();
 
-    this.peliculaTop3Ids = new Set(this.top3.map((pelicula) => pelicula.peliculaId));
+    this.peliculaTop3Ids = new Set(
+      this.top3.map((pelicula) => pelicula.peliculaId)
+    );
   }
 
   get generosDisponibles() {
-    const generos = this.peliculas().flatMap((pelicula) => pelicula.generos || []);
+    const generos = this.peliculas().flatMap(
+      (pelicula) => pelicula.generos || []
+    );
 
     const unicos = new Map<string, { id: string; nombre: string }>();
 
@@ -241,7 +283,9 @@ export class CarteleraComponent implements OnInit {
 
       const coincideGenero =
         !this.generoSeleccionado ||
-        (pelicula.generos || []).some((genero) => genero.id === this.generoSeleccionado);
+        (pelicula.generos || []).some(
+          (genero) => genero.id === this.generoSeleccionado
+        );
 
       return coincideNombre && coincideGenero;
     });
@@ -274,13 +318,17 @@ export class CarteleraComponent implements OnInit {
   }
 
   obtenerPosicionTop3(peliculaId: string): number {
-    const posicion = this.top3.findIndex((pelicula) => pelicula.peliculaId === peliculaId);
+    const posicion = this.top3.findIndex(
+      (pelicula) => pelicula.peliculaId === peliculaId
+    );
 
     return posicion >= 0 ? posicion + 1 : 0;
   }
 
   obtenerVentas(peliculaId: string): number {
-    const pelicula = this.top3.find((item) => item.peliculaId === peliculaId);
+    const pelicula = this.top3.find(
+      (item) => item.peliculaId === peliculaId
+    );
 
     return pelicula?.cantidadEntradas || 0;
   }
@@ -306,6 +354,11 @@ export class CarteleraComponent implements OnInit {
   }
 
   async publicarResena(peliculaId: string): Promise<void> {
+    if (this.peliculasResenadas().has(peliculaId)) {
+      this.mensajeResena[peliculaId] = 'Ya calificaste esta película.';
+      return;
+    }
+
     const estrellas = this.estrellasNuevaResena[peliculaId] || 0;
     const comentario = this.comentarioNuevaResena[peliculaId] || '';
 
@@ -319,7 +372,11 @@ export class CarteleraComponent implements OnInit {
       return;
     }
 
-    const resultado = await this.resenasService.agregarResena(peliculaId, estrellas, comentario);
+    const resultado = await this.resenasService.agregarResena(
+      peliculaId,
+      estrellas,
+      comentario
+    );
 
     this.mensajeResena[peliculaId] = resultado.mensaje;
 
@@ -327,11 +384,18 @@ export class CarteleraComponent implements OnInit {
       return;
     }
 
+    this.peliculasResenadas.update((actuales) => {
+      const nuevas = new Set(actuales);
+      nuevas.add(peliculaId);
+      return nuevas;
+    });
+
     this.estrellasNuevaResena[peliculaId] = 0;
     this.estrellasHover[peliculaId] = 0;
     this.comentarioNuevaResena[peliculaId] = '';
 
-    const nuevasResenas = await this.resenasService.obtenerResenas(peliculaId);
+    const nuevasResenas =
+      await this.resenasService.obtenerResenas(peliculaId);
 
     this.resenas.update((actuales) => ({
       ...actuales,
@@ -344,8 +408,14 @@ export class CarteleraComponent implements OnInit {
         [peliculaId]: 0,
       }));
     } else {
-      const suma = nuevasResenas.reduce((total, resena) => total + resena.estrellas, 0);
-      const promedio = Number((suma / nuevasResenas.length).toFixed(1));
+      const suma = nuevasResenas.reduce(
+        (total, resena) => total + resena.estrellas,
+        0
+      );
+
+      const promedio = Number(
+        (suma / nuevasResenas.length).toFixed(1)
+      );
 
       this.promedios.update((actuales) => ({
         ...actuales,

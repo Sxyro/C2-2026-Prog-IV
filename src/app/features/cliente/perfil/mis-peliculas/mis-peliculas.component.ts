@@ -1,8 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
+
 import { Router, RouterLink } from '@angular/router';
+
 import { UsuariosService } from '../../../../core/services/usuarios.service';
+
 import { ReservasService } from '../../../../core/services/reservas.service';
+
 import { ReservaUsuario } from '../../../../core/models/reserva.model';
 
 @Component({
@@ -14,21 +19,33 @@ import { ReservaUsuario } from '../../../../core/models/reserva.model';
 })
 export class MisPeliculasComponent implements OnInit {
   private usuariosService = inject(UsuariosService);
+
   private reservasService = inject(ReservasService);
+
   private router = inject(Router);
+
   private cdr = inject(ChangeDetectorRef);
 
   public usuarioActual = this.usuariosService.obtenerUsuarioActual();
+
   public reservas: ReservaUsuario[] = [];
+
   public cargando = signal(true);
+
   public cancelando = signal<string | null>(null);
+
   public mensajeError = '';
 
   public modalAbierto = false;
+
   public modalTitulo = '';
+
   public modalMensaje = '';
+
   public modalTipo: 'error' | 'exito' = 'error';
+
   public modalConfirmacion = false;
+
   public accionConfirmacion: (() => void) | null = null;
 
   async ngOnInit(): Promise<void> {
@@ -47,18 +64,50 @@ export class MisPeliculasComponent implements OnInit {
 
   private async cargarReservas(): Promise<void> {
     this.cargando.set(true);
+
     this.mensajeError = '';
 
     try {
       this.reservas = await this.reservasService.obtenerMisReservas();
     } catch (error) {
       console.error('Error al cargar Mis películas:', error);
+
       this.reservas = [];
+
       this.mensajeError = 'No se pudieron cargar tus compras. Intentá nuevamente.';
     } finally {
       this.cargando.set(false);
+
       this.cdr.detectChanges();
     }
+  }
+
+  obtenerReservasProximas(): ReservaUsuario[] {
+    return this.reservas
+      .filter(
+        (reserva) => !reserva.cancelada && !reserva.entradaValidada && this.esProxima(reserva),
+      )
+      .sort(
+        (a, b) => new Date(a.fechaHoraInicio).getTime() - new Date(b.fechaHoraInicio).getTime(),
+      );
+  }
+
+  obtenerReservasVistas(): ReservaUsuario[] {
+    return this.reservas
+      .filter(
+        (reserva) => !reserva.cancelada && (reserva.entradaValidada || this.esPasada(reserva)),
+      )
+      .sort(
+        (a, b) => new Date(b.fechaHoraInicio).getTime() - new Date(a.fechaHoraInicio).getTime(),
+      );
+  }
+
+  obtenerReservasCanceladas(): ReservaUsuario[] {
+    return this.reservas
+      .filter((reserva) => reserva.cancelada)
+      .sort(
+        (a, b) => new Date(b.fechaHoraInicio).getTime() - new Date(a.fechaHoraInicio).getTime(),
+      );
   }
 
   esProxima(reserva: ReservaUsuario): boolean {
@@ -117,13 +166,18 @@ export class MisPeliculasComponent implements OnInit {
     }
 
     this.modalTitulo = 'Cancelar reserva';
+
     this.modalMensaje = `¿Querés cancelar la reserva de "${reserva.peliculaNombre}"? Se te devolverán $${this.formatearPrecio(reserva.total)} como crédito en tu cuenta.`;
+
     this.modalTipo = 'error';
+
     this.modalConfirmacion = true;
+
     this.modalAbierto = true;
 
     this.accionConfirmacion = () => {
       this.cerrarModal();
+
       void this.ejecutarCancelacion(reserva);
     };
   }
@@ -134,6 +188,7 @@ export class MisPeliculasComponent implements OnInit {
     }
 
     this.cancelando.set(reserva.reservaId);
+
     this.mensajeError = '';
 
     try {
@@ -142,15 +197,18 @@ export class MisPeliculasComponent implements OnInit {
       if (!resultado.exito) {
         this.mensajeError =
           resultado.mensaje || 'No se pudo cancelar la reserva. Intentá nuevamente.';
+
         return;
       }
 
       await this.cargarReservas();
     } catch (error) {
       console.error('Error al cancelar reserva:', error);
+
       this.mensajeError = 'No se pudo cancelar la reserva. Intentá nuevamente.';
     } finally {
       this.cancelando.set(null);
+
       this.cdr.detectChanges();
     }
   }
@@ -191,16 +249,23 @@ export class MisPeliculasComponent implements OnInit {
 
   abrirModal(titulo: string, mensaje: string, tipo: 'error' | 'exito' = 'error'): void {
     this.modalTitulo = titulo;
+
     this.modalMensaje = mensaje;
+
     this.modalTipo = tipo;
+
     this.modalAbierto = true;
+
     this.modalConfirmacion = false;
+
     this.accionConfirmacion = null;
   }
 
   cerrarModal(): void {
     this.modalAbierto = false;
+
     this.modalConfirmacion = false;
+
     this.accionConfirmacion = null;
   }
 

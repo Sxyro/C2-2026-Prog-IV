@@ -45,7 +45,6 @@ export class RegistroComponent {
   public mesCalendario = new Date().getMonth();
   public anioCalendario = new Date().getFullYear();
   public aniosDisponibles: number[] = [];
-
   public modalAbierto = false;
   public modalTitulo = '';
   public modalMensaje = '';
@@ -77,7 +76,6 @@ export class RegistroComponent {
 
   obtenerDiasCalendario(): DiaNacimiento[] {
     const primerDia = new Date(this.anioCalendario, this.mesCalendario, 1);
-
     const ultimoDia = new Date(this.anioCalendario, this.mesCalendario + 1, 0);
 
     let primerDiaSemana = primerDia.getDay();
@@ -87,18 +85,15 @@ export class RegistroComponent {
     }
 
     const dias: DiaNacimiento[] = [];
-
     const diasAnteriores = primerDiaSemana - 1;
 
     for (let i = diasAnteriores; i > 0; i--) {
       const fecha = new Date(this.anioCalendario, this.mesCalendario, 1 - i);
-
       dias.push(this.crearDiaCalendario(fecha, false));
     }
 
     for (let numero = 1; numero <= ultimoDia.getDate(); numero++) {
       const fecha = new Date(this.anioCalendario, this.mesCalendario, numero);
-
       dias.push(this.crearDiaCalendario(fecha, true));
     }
 
@@ -106,7 +101,6 @@ export class RegistroComponent {
 
     for (let i = 1; i <= diasRestantes; i++) {
       const fecha = new Date(this.anioCalendario, this.mesCalendario + 1, i);
-
       dias.push(this.crearDiaCalendario(fecha, false));
     }
 
@@ -116,25 +110,32 @@ export class RegistroComponent {
   private crearDiaCalendario(fecha: Date, esDelMesActual: boolean): DiaNacimiento {
     const hoy = new Date();
 
-    const fechaSinHora = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+    const fechaSinHora = new Date(
+      fecha.getFullYear(),
+      fecha.getMonth(),
+      fecha.getDate(),
+    );
 
-    const hoySinHora = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const hoySinHora = new Date(
+      hoy.getFullYear(),
+      hoy.getMonth(),
+      hoy.getDate(),
+    );
 
     return {
       fecha,
       numero: fecha.getDate(),
       esDelMesActual,
       esHoy: fechaSinHora.getTime() === hoySinHora.getTime(),
-      esSeleccionado: this.form.get('fechaNacimiento')?.value === this.formatearFecha(fecha),
+      esSeleccionado:
+        this.form.get('fechaNacimiento')?.value === this.formatearFecha(fecha),
       esFuturo: fechaSinHora.getTime() > hoySinHora.getTime(),
     };
   }
 
   private formatearFecha(fecha: Date): string {
     const anio = fecha.getFullYear();
-
     const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
-
     const dia = fecha.getDate().toString().padStart(2, '0');
 
     return `${anio}-${mes}-${dia}`;
@@ -154,16 +155,13 @@ export class RegistroComponent {
 
   abrirCalendario(): void {
     this.selectorAnioAbierto = false;
-
     this.calendarioAbierto = !this.calendarioAbierto;
 
     const fechaActual = this.form.get('fechaNacimiento')?.value;
 
     if (this.calendarioAbierto && fechaActual) {
       const partes = fechaActual.split('-');
-
       this.anioCalendario = Number(partes[0]);
-
       this.mesCalendario = Number(partes[1]) - 1;
     }
   }
@@ -201,13 +199,18 @@ export class RegistroComponent {
   mesSiguiente(): void {
     const hoy = new Date();
 
-    const siguienteMes = this.mesCalendario === 11 ? 0 : this.mesCalendario + 1;
+    const siguienteMes =
+      this.mesCalendario === 11 ? 0 : this.mesCalendario + 1;
 
-    const siguienteAnio = this.mesCalendario === 11 ? this.anioCalendario + 1 : this.anioCalendario;
+    const siguienteAnio =
+      this.mesCalendario === 11
+        ? this.anioCalendario + 1
+        : this.anioCalendario;
 
     if (
       siguienteAnio > hoy.getFullYear() ||
-      (siguienteAnio === hoy.getFullYear() && siguienteMes > hoy.getMonth())
+      (siguienteAnio === hoy.getFullYear() &&
+        siguienteMes > hoy.getMonth())
     ) {
       return;
     }
@@ -219,14 +222,16 @@ export class RegistroComponent {
   esMesActual(): boolean {
     const hoy = new Date();
 
-    return this.anioCalendario === hoy.getFullYear() && this.mesCalendario === hoy.getMonth();
+    return (
+      this.anioCalendario === hoy.getFullYear() &&
+      this.mesCalendario === hoy.getMonth()
+    );
   }
 
   volverAlMesActual(): void {
     const hoy = new Date();
 
     this.anioCalendario = hoy.getFullYear();
-
     this.mesCalendario = hoy.getMonth();
   }
 
@@ -259,15 +264,21 @@ export class RegistroComponent {
         resultado.mensaje || 'Ocurrió un error al intentar crear tu cuenta.',
         'error',
       );
-
       return;
     }
 
-    this.abrirModal(
-      '¡Registro exitoso!',
-      `Tu cuenta fue creada correctamente. Se ha aplicado un ${this.configuracion().porcentajeDescuentoPrimeraCompra}% de descuento para tu primera compra.`,
-      'exito',
-    );
+    this.form.reset({
+      email: '',
+      password: '',
+      nombre: '',
+      apellido: '',
+      fechaNacimiento: '',
+      tipoSangre: 'A+',
+      colorOjos: '',
+      diasVacaciones: 0,
+    });
+
+    await this.router.navigate(['/cartelera']);
   }
 
   public omitirAnonimo(): void {
@@ -275,7 +286,11 @@ export class RegistroComponent {
     this.router.navigate(['/cartelera']);
   }
 
-  abrirModal(titulo: string, mensaje: string, tipo: 'error' | 'exito' = 'error'): void {
+  abrirModal(
+    titulo: string,
+    mensaje: string,
+    tipo: 'error' | 'exito' = 'error',
+  ): void {
     this.modalTitulo = titulo;
     this.modalMensaje = mensaje;
     this.modalTipo = tipo;
