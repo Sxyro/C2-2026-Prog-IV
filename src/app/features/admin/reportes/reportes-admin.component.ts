@@ -206,10 +206,11 @@ export class ReportesAdminComponent implements OnInit {
   formatearFecha(fecha: Date | string): string {
     const fechaConvertida = typeof fecha === 'string' ? new Date(fecha) : fecha;
 
-    return fechaConvertida.toLocaleString('es-AR', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    });
+    const anio = fechaConvertida.getFullYear();
+    const mes = String(fechaConvertida.getMonth() + 1).padStart(2, '0');
+    const dia = String(fechaConvertida.getDate()).padStart(2, '0');
+
+    return `${anio}-${mes}-${dia}`;
   }
 
   mesAnterior(): void {
